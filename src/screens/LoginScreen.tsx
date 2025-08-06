@@ -10,25 +10,68 @@ import {
   Platform,
   ScrollView,
 } from 'react-native';
+import { authService } from '../services/auth';
 
 const LoginScreen = ({navigation}: any) => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
-  const handleLogin = () => {
+  const handleLogin = async () => {
     if (!email || !password) {
-      Alert.alert('Erro', 'Por favor, preencha todos os campos');
+      setError('Por favor, preencha todos os campos');
       return;
     }
 
     setIsLoading(true);
+    setError(null);
     
-    // Simular login
-    setTimeout(() => {
+    try {
+      const response = await authService.login({ email, password });
+
+      if (response.success) {
+        Alert.alert(
+          'Sucesso!',
+          `Bem-vindo, ${response.user?.name || 'Usuário'}!`,
+          [
+            {
+              text: 'OK',
+              onPress: () => {
+                // Aqui você pode navegar para a tela principal
+                // navigation.navigate('Home');
+              },
+            },
+          ]
+        );
+        
+        // Limpar campos após login bem-sucedido
+        setEmail('');
+        setPassword('');
+      } else {
+        setError(response.message || 'Erro no login');
+      }
+    } catch (error) {
+      setError('Erro de conexão. Tente novamente.');
+    } finally {
       setIsLoading(false);
-      Alert.alert('Sucesso', 'Login realizado com sucesso!');
-    }, 2000);
+    }
+  };
+
+  const handleForgotPassword = () => {
+    Alert.alert(
+      'Recuperar Senha',
+      'Entre em contato com o suporte do CRF para recuperar sua senha.',
+      [{ text: 'OK' }]
+    );
+  };
+
+  const handleSignUp = () => {
+    Alert.alert(
+      'Cadastro',
+      'Para se cadastrar, entre em contato com o CRF.',
+      [{ text: 'OK' }]
+    );
   };
 
   return (
@@ -38,11 +81,17 @@ const LoginScreen = ({navigation}: any) => {
       <ScrollView contentContainerStyle={styles.scrollContainer}>
         <View style={styles.content}>
           <View style={styles.header}>
-            <Text style={styles.title}>FEM App</Text>
+            <Text style={styles.title}>CRF App</Text>
             <Text style={styles.subtitle}>Faça login para continuar</Text>
           </View>
 
           <View style={styles.form}>
+            {error && (
+              <View style={styles.errorContainer}>
+                <Text style={styles.errorText}>{error}</Text>
+              </View>
+            )}
+
             <View style={styles.inputContainer}>
               <Text style={styles.label}>Email</Text>
               <TextInput
@@ -53,6 +102,7 @@ const LoginScreen = ({navigation}: any) => {
                 keyboardType="email-address"
                 autoCapitalize="none"
                 autoCorrect={false}
+                editable={!isLoading}
               />
             </View>
 
@@ -66,8 +116,18 @@ const LoginScreen = ({navigation}: any) => {
                 secureTextEntry
                 autoCapitalize="none"
                 autoCorrect={false}
+                editable={!isLoading}
               />
             </View>
+
+            <TouchableOpacity
+              style={styles.forgotPassword}
+              onPress={handleForgotPassword}
+              disabled={isLoading}>
+              <Text style={styles.forgotPasswordText}>
+                Esqueceu sua senha?
+              </Text>
+            </TouchableOpacity>
 
             <TouchableOpacity
               style={[styles.loginButton, isLoading && styles.loginButtonDisabled]}
@@ -77,6 +137,19 @@ const LoginScreen = ({navigation}: any) => {
                 {isLoading ? 'Entrando...' : 'Entrar'}
               </Text>
             </TouchableOpacity>
+
+            <View style={styles.signUpContainer}>
+              <Text style={styles.signUpText}>Não tem uma conta? </Text>
+              <TouchableOpacity onPress={handleSignUp} disabled={isLoading}>
+                <Text style={styles.signUpLink}>Cadastre-se</Text>
+              </TouchableOpacity>
+            </View>
+
+            <View style={styles.testInfo}>
+              <Text style={styles.testInfoTitle}>🔐 API CRF Conectada:</Text>
+              <Text style={styles.testInfoText}>Apenas fiscais ativos podem acessar</Text>
+              <Text style={styles.testInfoText}>Use suas credenciais do CRF</Text>
+            </View>
           </View>
         </View>
       </ScrollView>
@@ -116,6 +189,19 @@ const styles = StyleSheet.create({
   form: {
     flex: 1,
   },
+  errorContainer: {
+    backgroundColor: '#FFE5E5',
+    borderColor: '#FFCDD2',
+    borderWidth: 1,
+    borderRadius: 8,
+    padding: 12,
+    marginBottom: 20,
+  },
+  errorText: {
+    color: '#D32F2F',
+    fontSize: 14,
+    textAlign: 'center',
+  },
   inputContainer: {
     marginBottom: 20,
   },
@@ -134,12 +220,20 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
     fontSize: 16,
   },
+  forgotPassword: {
+    alignSelf: 'flex-end',
+    marginBottom: 30,
+  },
+  forgotPasswordText: {
+    color: '#007AFF',
+    fontSize: 14,
+  },
   loginButton: {
     backgroundColor: '#007AFF',
     borderRadius: 8,
     paddingVertical: 16,
     alignItems: 'center',
-    marginTop: 20,
+    marginBottom: 20,
   },
   loginButtonDisabled: {
     backgroundColor: '#ccc',
@@ -148,6 +242,38 @@ const styles = StyleSheet.create({
     color: '#fff',
     fontSize: 16,
     fontWeight: '600',
+  },
+  signUpContainer: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 30,
+  },
+  signUpText: {
+    color: '#666',
+    fontSize: 14,
+  },
+  signUpLink: {
+    color: '#007AFF',
+    fontSize: 14,
+    fontWeight: '600',
+  },
+  testInfo: {
+    backgroundColor: '#f0f0f0',
+    borderRadius: 8,
+    padding: 16,
+    marginTop: 20,
+  },
+  testInfoTitle: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#333',
+    marginBottom: 8,
+  },
+  testInfoText: {
+    fontSize: 12,
+    color: '#666',
+    marginBottom: 4,
   },
 });
 
