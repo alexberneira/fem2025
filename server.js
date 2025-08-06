@@ -1,21 +1,10 @@
-const { getDefaultConfig, mergeConfig } = require('@react-native/metro-config');
+const http = require('http');
+const fs = require('fs');
 const path = require('path');
 
-/**
- * Metro configuration
- * https://reactnative.dev/docs/metro
- *
- * @type {import('@react-native/metro-config').MetroConfig}
- */
-const config = {
-  server: {
-    port: 8081,
-    enhanceMiddleware: (middleware, server) => {
-      return (req, res, next) => {
-        // Servir o arquivo HTML na raiz
-        if (req.url === '/' || req.url === '/index.html') {
-          res.setHeader('Content-Type', 'text/html');
-          res.end(`
+const PORT = 8081;
+
+const htmlContent = `
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
@@ -185,7 +174,7 @@ const config = {
         </form>
 
         <div class="status">
-            ✅ Metro Bundler rodando na porta 8081<br>
+            ✅ Servidor rodando na porta 8081<br>
             📱 Tela de login funcionando no navegador
         </div>
     </div>
@@ -239,25 +228,40 @@ const config = {
     </script>
 </body>
 </html>
-          `);
-          return;
-        }
-        return middleware(req, res, next);
-      };
-    },
-  },
-  resolver: {
-    sourceExts: ['js', 'json', 'ts', 'tsx', 'jsx', 'web.js', 'web.ts', 'web.tsx'],
-    platforms: ['ios', 'android', 'native', 'web'],
-  },
-  transformer: {
-    getTransformOptions: async () => ({
-      transform: {
-        experimentalImportSupport: false,
-        inlineRequires: true,
-      },
-    }),
-  },
-};
+`;
 
-module.exports = mergeConfig(getDefaultConfig(__dirname), config);
+const server = http.createServer((req, res) => {
+    // Configurar CORS
+    res.setHeader('Access-Control-Allow-Origin', '*');
+    res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
+    res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+
+    if (req.method === 'OPTIONS') {
+        res.writeHead(200);
+        res.end();
+        return;
+    }
+
+    // Servir a tela de login para qualquer rota
+    res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' });
+    res.end(htmlContent);
+});
+
+server.listen(PORT, () => {
+    console.log('🚀 Servidor FEM App iniciado!');
+    console.log('📱 Tela de login disponível em:');
+    console.log(`   http://localhost:${PORT}`);
+    console.log('');
+    console.log('📋 Para parar o servidor, pressione Ctrl+C');
+    console.log('');
+});
+
+// Tratamento de erro
+server.on('error', (err) => {
+    if (err.code === 'EADDRINUSE') {
+        console.log(`❌ Porta ${PORT} já está em uso!`);
+        console.log('💡 Tente parar outros processos na porta 8081');
+    } else {
+        console.log('❌ Erro no servidor:', err.message);
+    }
+}); 
