@@ -295,7 +295,7 @@ const appHtmlContent = `<!DOCTYPE html>
         .header {
             background: linear-gradient(135deg, #3CB3A7 0%, #5F8C82 100%);
             color: white;
-            padding: 12px 20px;
+            padding: 8px 20px;
             box-shadow: 0 2px 10px rgba(0,0,0,0.1);
         }
 
@@ -308,7 +308,7 @@ const appHtmlContent = `<!DOCTYPE html>
         }
 
         .logo {
-            font-size: 20px;
+            font-size: 18px;
             font-weight: bold;
         }
 
@@ -320,6 +320,7 @@ const appHtmlContent = `<!DOCTYPE html>
 
         .user-name {
             font-weight: 600;
+            font-size: 14px;
         }
 
         .logout-btn {
@@ -338,36 +339,36 @@ const appHtmlContent = `<!DOCTYPE html>
 
         .main-content {
             max-width: 1200px;
-            margin: 20px auto;
+            margin: 15px auto;
             padding: 0 20px;
         }
 
         .welcome-card {
             background: white;
             border-radius: 12px;
-            padding: 30px;
+            padding: 20px;
             box-shadow: 0 4px 20px rgba(0,0,0,0.1);
-            margin-bottom: 30px;
+            margin-bottom: 20px;
             text-align: center;
         }
 
         .welcome-title {
-            font-size: 28px;
+            font-size: 24px;
             color: #333;
-            margin-bottom: 10px;
+            margin-bottom: 8px;
         }
 
         .welcome-name {
-            font-size: 20px;
+            font-size: 18px;
             color: #2C4B8C;
-            margin-bottom: 10px;
+            margin-bottom: 8px;
             font-weight: 600;
         }
 
         .welcome-subtitle {
-            font-size: 16px;
+            font-size: 14px;
             color: #666;
-            margin-bottom: 20px;
+            margin-bottom: 15px;
         }
 
         .stats-grid {
@@ -480,7 +481,14 @@ const appHtmlContent = `<!DOCTYPE html>
 
         .empresa-razao {
             color: #666;
-            font-size: 13px;
+            font-size: 14px;
+            margin-bottom: 3px;
+        }
+
+        .empresa-endereco {
+            color: #999;
+            font-size: 12px;
+            margin-top: 4px;
         }
 
         .stat-card {
@@ -494,20 +502,31 @@ const appHtmlContent = `<!DOCTYPE html>
         }
 
         .actions-grid {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            margin-top: 20px;
+        }
+
+        .actions-row {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 20px;
-            margin-top: 30px;
+            gap: 8px;
+            margin-bottom: 8px;
         }
 
         .action-card {
             background: white;
             border-radius: 12px;
-            padding: 25px;
+            padding: 12px;
             box-shadow: 0 4px 20px rgba(0,0,0,0.1);
-            text-align: center;
+            text-align: left;
             cursor: pointer;
             transition: transform 0.2s;
+            min-height: 50px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
         }
 
         .action-card:hover {
@@ -516,20 +535,15 @@ const appHtmlContent = `<!DOCTYPE html>
         }
 
         .action-icon {
-            font-size: 32px;
-            margin-bottom: 15px;
+            font-size: 20px;
+            flex-shrink: 0;
         }
 
         .action-title {
-            font-size: 18px;
+            font-size: 14px;
             font-weight: 600;
             color: #333;
-            margin-bottom: 8px;
-        }
-
-        .action-description {
-            font-size: 14px;
-            color: #666;
+            margin: 0;
         }
     </style>
 </head>
@@ -614,13 +628,147 @@ const appHtmlContent = `<!DOCTYPE html>
             </div>
         </div>
 
-        <div class="actions-grid">
-            <div class="action-card" onclick="sincronizarDados()">
-                <div class="action-icon">🔄</div>
-                <div class="action-title">Sincronizar</div>
-                <div class="action-description" id="syncDescription">Buscar empresas do servidor</div>
+                    <div class="actions-grid">
+                <!-- Linha 1: Baixar Tudo -->
+                <div class="actions-row">
+                    <div class="action-card" onclick="baixarTudo()" style="background: linear-gradient(135deg, #28a745 0%, #20c997 100%); color: white;">
+                        <div class="action-icon">🚀</div>
+                        <div class="action-title">Baixar Tudo</div>
+                    </div>
+                </div>
+
+                <!-- Linha 2: Sincronização e Visualização -->
+                <div class="actions-row">
+                    <div class="action-card" onclick="sincronizarDados()">
+                        <div class="action-icon">🔄</div>
+                        <div class="action-title">Sincronizar</div>
+                    </div>
+                    <div class="action-card" onclick="visualizarEmpresasLocais()" style="background-color: #ff6b6b;">
+                        <div class="action-icon">👁️</div>
+                        <div class="action-title">Ver Empresas</div>
+                    </div>
+                </div>
+
+                <!-- Linha 3: Configuração do Termo -->
+                <div class="actions-row">
+                    <div class="action-card" onclick="baixarConfigTermo()">
+                        <div class="action-icon">📋</div>
+                        <div class="action-title">Baixar Configuração</div>
+                    </div>
+                    <div class="action-card" onclick="visualizarConfigTermo()" style="background-color: #4ecdc4;">
+                        <div class="action-icon">📋</div>
+                        <div class="action-title">Ver Configuração</div>
+                    </div>
+                </div>
+
+                <!-- Linha 4: Histórico de RTS -->
+                <div class="actions-row">
+                    <div class="action-card" onclick="baixarRtsHistorico()">
+                        <div class="action-icon">👥</div>
+                        <div class="action-title">Baixar RTS</div>
+                    </div>
+                    <div class="action-card" onclick="visualizarRtsHistorico()" style="background-color: #ffa726;">
+                        <div class="action-icon">👥</div>
+                        <div class="action-title">Ver RTS</div>
+                    </div>
+                </div>
+
+                <!-- Linha 5: Tipos de Inspeção -->
+                <div class="actions-row">
+                    <div class="action-card" onclick="baixarTiposInspecao()">
+                        <div class="action-icon">🔍</div>
+                        <div class="action-title">Baixar Tipos</div>
+                    </div>
+                    <div class="action-card" onclick="visualizarTiposInspecao()" style="background-color: #9c27b0;">
+                        <div class="action-icon">🔍</div>
+                        <div class="action-title">Ver Tipos</div>
+                    </div>
+                </div>
+
+                <!-- Linha 6: Histórico de Inspeções -->
+                <div class="actions-row">
+                    <div class="action-card" onclick="baixarInspecoesHistorico()">
+                        <div class="action-icon">📊</div>
+                        <div class="action-title">Baixar Inspeções</div>
+                    </div>
+                    <div class="action-card" onclick="visualizarInspecoesHistorico()" style="background-color: #e91e63;">
+                        <div class="action-icon">📊</div>
+                        <div class="action-title">Ver Inspeções</div>
+                    </div>
+                </div>
+
+                <!-- Linha 7: Protocolos -->
+                <div class="actions-row">
+                    <div class="action-card" onclick="baixarProtocolos()">
+                        <div class="action-icon">📄</div>
+                        <div class="action-title">Baixar Protocolos</div>
+                    </div>
+                    <div class="action-card" onclick="visualizarProtocolos()" style="background-color: #795548;">
+                        <div class="action-icon">📄</div>
+                        <div class="action-title">Ver Protocolos</div>
+                    </div>
+                </div>
+
+                <!-- Linha 8: Afastamentos -->
+                <div class="actions-row">
+                    <div class="action-card" onclick="baixarAfastamentos()">
+                        <div class="action-icon">🏥</div>
+                        <div class="action-title">Baixar Afastamentos</div>
+                    </div>
+                    <div class="action-card" onclick="visualizarAfastamentos()" style="background-color: #607d8b;">
+                        <div class="action-icon">🏥</div>
+                        <div class="action-title">Ver Afastamentos</div>
+                    </div>
+                </div>
+
+                <!-- Linha 9: Denúncias -->
+                <div class="actions-row">
+                    <div class="action-card" onclick="baixarDenuncias()">
+                        <div class="action-icon">🚨</div>
+                        <div class="action-title">Baixar Denúncias</div>
+                    </div>
+                    <div class="action-card" onclick="visualizarDenuncias()" style="background-color: #f44336;">
+                        <div class="action-icon">🚨</div>
+                        <div class="action-title">Ver Denúncias</div>
+                    </div>
+                </div>
+
+                <!-- Linha 10: Outros Profissionais -->
+                <div class="actions-row">
+                    <div class="action-card" onclick="baixarOutrosProfissionais()">
+                        <div class="action-icon">👨‍⚕️</div>
+                        <div class="action-title">Baixar Outros Profissionais</div>
+                    </div>
+                    <div class="action-card" onclick="visualizarOutrosProfissionais()" style="background-color: #2196f3;">
+                        <div class="action-icon">👨‍⚕️</div>
+                        <div class="action-title">Ver Outros Profissionais</div>
+                    </div>
+                </div>
+
+                <!-- Linha 11: Outros Vínculos -->
+                <div class="actions-row">
+                    <div class="action-card" onclick="baixarOutrosVinculos()">
+                        <div class="action-icon">🔗</div>
+                        <div class="action-title">Baixar Outros Vínculos</div>
+                    </div>
+                    <div class="action-card" onclick="visualizarOutrosVinculos()" style="background-color: #ff9800;">
+                        <div class="action-icon">🔗</div>
+                        <div class="action-title">Ver Outros Vínculos</div>
+                    </div>
+                </div>
+
+                <!-- Linha 12: Processos Éticos -->
+                <div class="actions-row">
+                    <div class="action-card" onclick="baixarProcessosEticos()">
+                        <div class="action-icon">⚖️</div>
+                        <div class="action-title">Baixar Processos Éticos</div>
+                    </div>
+                    <div class="action-card" onclick="visualizarProcessosEticos()" style="background-color: #673ab7;">
+                        <div class="action-icon">⚖️</div>
+                        <div class="action-title">Ver Processos Éticos</div>
+                    </div>
+                </div>
             </div>
-        </div>
     </div>
 
     <script>
@@ -652,6 +800,36 @@ const appHtmlContent = `<!DOCTYPE html>
                     
                     // Verificar dados locais
                     verificarDadosLocais();
+                    
+                    // Verificar configuração do termo
+                    verificarConfigTermo();
+                    
+                    // Verificar histórico de RTS
+                    verificarRtsHistorico();
+                    
+                    // Verificar tipos de inspeção
+                    verificarTiposInspecao();
+                    
+                    // Verificar histórico de inspeções
+                    verificarInspecoesHistorico();
+                    
+                    // Verificar protocolos
+                    verificarProtocolos();
+                    
+                    // Verificar afastamentos
+                    verificarAfastamentos();
+                    
+                    // Verificar denúncias
+                    verificarDenuncias();
+                    
+                    // Verificar outros profissionais
+                    verificarOutrosProfissionais();
+                    
+                    // Verificar outros vínculos
+                    verificarOutrosVinculos();
+                    
+                    // Verificar processos éticos
+                    verificarProcessosEticos();
                 } else {
                     localStorage.removeItem('sessionId');
                     window.location.href = '/';
@@ -720,12 +898,32 @@ const appHtmlContent = `<!DOCTYPE html>
                 } else {
                     console.log('🔄 Sincronização: Nenhuma empresa encontrada');
                     
-                    // Limpar dados locais se não há empresas
-                    localStorage.removeItem('empresas');
-                    localStorage.removeItem('empresas_timestamp');
-                    
-                    // Mostrar mensagem de nenhum dado
-                    syncButton.innerHTML = '<div class="action-icon">ℹ️</div><div class="action-title">Nenhum dado</div><div class="action-description">Nenhuma empresa pendente</div>';
+                    // Desativar todas as empresas locais
+                    const empresasLocais = getEmpresasLocais();
+                    if (empresasLocais && empresasLocais.length > 0) {
+                        const empresasDesativadas = empresasLocais.map(empresa => ({
+                            ...empresa,
+                            ativa: false
+                        }));
+                        
+                        localStorage.setItem('empresas', JSON.stringify(empresasDesativadas));
+                        localStorage.setItem('empresas_timestamp', Date.now().toString());
+                        
+                        console.log('🔄 Sincronização: Todas as empresas foram desativadas');
+                        
+                        // Atualizar estatísticas com empresas desativadas
+                        atualizarEstatisticas(empresasDesativadas);
+                        
+                        // Mostrar mensagem de empresas desativadas
+                        syncButton.innerHTML = '<div class="action-icon">⚠️</div><div class="action-title">Empresas Desativadas</div><div class="action-description">Todas as empresas foram desativadas</div>';
+                    } else {
+                        // Limpar dados locais se não há empresas
+                        localStorage.removeItem('empresas');
+                        localStorage.removeItem('empresas_timestamp');
+                        
+                        // Mostrar mensagem de nenhum dado
+                        syncButton.innerHTML = '<div class="action-icon">ℹ️</div><div class="action-title">Nenhum dado</div><div class="action-description">Nenhuma empresa pendente</div>';
+                    }
                     
                     // Restaurar após 3 segundos
                     setTimeout(() => {
@@ -754,6 +952,963 @@ const appHtmlContent = `<!DOCTYPE html>
             });
         }
 
+        function baixarConfigTermo() {
+            const sessionId = localStorage.getItem('sessionId');
+            if (!sessionId) {
+                alert('Sessão expirada. Faça login novamente.');
+                window.location.href = '/';
+                return;
+            }
+
+            // Mostrar loading
+            const configButton = event.target.closest('.action-card');
+            const originalContent = configButton.innerHTML;
+            configButton.innerHTML = '<div class="action-icon">⏳</div><div class="action-title">Baixando...</div><div class="action-description">Configuração do termo...</div>';
+            configButton.style.opacity = '0.7';
+            configButton.style.cursor = 'not-allowed';
+
+            // Buscar configuração do termo
+            fetch('/api/config-termo', {
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': sessionId
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.msg === 'sucesso') {
+                    // Salvar configuração localmente
+                    localStorage.setItem('config_termo', JSON.stringify(data));
+                    localStorage.setItem('config_termo_timestamp', Date.now().toString());
+                    
+                    console.log('📋 CONFIG-TERMO: Configuração salva localmente');
+                    console.log('💾 Armazenamento: Configuração do termo salva');
+                    
+                    // Mostrar sucesso
+                    configButton.innerHTML = '<div class="action-icon">✅</div><div class="action-title">Baixado!</div><div class="action-description">Configuração salva</div>';
+                    configButton.style.background = '#d4edda';
+                    configButton.style.color = '#155724';
+                    
+                    // Restaurar após 3 segundos
+                    setTimeout(() => {
+                        configButton.innerHTML = originalContent;
+                        configButton.style.opacity = '1';
+                        configButton.style.cursor = 'pointer';
+                        configButton.style.background = '';
+                        configButton.style.color = '';
+                    }, 3000);
+                } else {
+                    console.log('📋 CONFIG-TERMO: Nenhuma configuração encontrada');
+                    
+                    // Mostrar mensagem de nenhum dado
+                    configButton.innerHTML = '<div class="action-icon">ℹ️</div><div class="action-title">Nenhum dado</div><div class="action-description">Configuração não encontrada</div>';
+                    
+                    // Restaurar após 3 segundos
+                    setTimeout(() => {
+                        configButton.innerHTML = originalContent;
+                        configButton.style.opacity = '1';
+                        configButton.style.cursor = 'pointer';
+                    }, 3000);
+                }
+            })
+            .catch(error => {
+                console.error('Erro ao baixar configuração:', error);
+                
+                // Mostrar erro
+                configButton.innerHTML = '<div class="action-icon">❌</div><div class="action-title">Erro</div><div class="action-description">Falha no download</div>';
+                configButton.style.background = '#f8d7da';
+                configButton.style.color = '#721c24';
+                
+                // Restaurar após 3 segundos
+                setTimeout(() => {
+                    configButton.innerHTML = originalContent;
+                    configButton.style.opacity = '1';
+                    configButton.style.cursor = 'pointer';
+                    configButton.style.background = '';
+                    configButton.style.color = '';
+                }, 3000);
+            });
+        }
+
+        function baixarRtsHistorico() {
+            const sessionId = localStorage.getItem('sessionId');
+            if (!sessionId) {
+                alert('Sessão expirada. Faça login novamente.');
+                window.location.href = '/';
+                return;
+            }
+
+            // Mostrar loading
+            const rtsButton = event.target.closest('.action-card');
+            const originalContent = rtsButton.innerHTML;
+            rtsButton.innerHTML = '<div class="action-icon">⏳</div><div class="action-title">Baixando...</div><div class="action-description">Histórico de RTS...</div>';
+            rtsButton.style.opacity = '0.7';
+            rtsButton.style.cursor = 'not-allowed';
+
+            // Buscar histórico de RTS
+            fetch('/api/rts-historico', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': sessionId
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.msg === 'sucesso') {
+                    // Salvar histórico localmente
+                    localStorage.setItem('rts_historico', JSON.stringify(data));
+                    localStorage.setItem('rts_historico_timestamp', Date.now().toString());
+                    
+                    console.log('📋 RTS-HISTORICO: Histórico salvo localmente');
+                    console.log('💾 Armazenamento: Histórico de RTS salvo');
+                    
+                    // Mostrar sucesso
+                    rtsButton.innerHTML = '<div class="action-icon">✅</div><div class="action-title">Baixado!</div><div class="action-description">Histórico salvo</div>';
+                    rtsButton.style.background = '#d4edda';
+                    rtsButton.style.color = '#155724';
+                    
+                    // Restaurar após 3 segundos
+                    setTimeout(() => {
+                        rtsButton.innerHTML = originalContent;
+                        rtsButton.style.opacity = '1';
+                        rtsButton.style.cursor = 'pointer';
+                        rtsButton.style.background = '';
+                        rtsButton.style.color = '';
+                    }, 3000);
+                } else {
+                    console.log('📋 RTS-HISTORICO: Nenhum histórico encontrado');
+                    
+                    // Mostrar mensagem de nenhum dado
+                    rtsButton.innerHTML = '<div class="action-icon">ℹ️</div><div class="action-title">Nenhum dado</div><div class="action-description">Histórico não encontrado</div>';
+                    
+                    // Restaurar após 3 segundos
+                    setTimeout(() => {
+                        rtsButton.innerHTML = originalContent;
+                        rtsButton.style.opacity = '1';
+                        rtsButton.style.cursor = 'pointer';
+                    }, 3000);
+                }
+            })
+            .catch(error => {
+                console.error('Erro ao baixar histórico:', error);
+                
+                // Mostrar erro
+                rtsButton.innerHTML = '<div class="action-icon">❌</div><div class="action-title">Erro</div><div class="action-description">Falha no download</div>';
+                rtsButton.style.background = '#f8d7da';
+                rtsButton.style.color = '#721c24';
+                
+                // Restaurar após 3 segundos
+                setTimeout(() => {
+                    rtsButton.innerHTML = originalContent;
+                    rtsButton.style.opacity = '1';
+                    rtsButton.style.cursor = 'pointer';
+                    rtsButton.style.background = '';
+                    rtsButton.style.color = '';
+                }, 3000);
+            });
+        }
+
+        function baixarTiposInspecao() {
+            const sessionId = localStorage.getItem('sessionId');
+            if (!sessionId) {
+                alert('Sessão expirada. Faça login novamente.');
+                window.location.href = '/';
+                return;
+            }
+
+            // Mostrar loading
+            const tiposButton = event.target.closest('.action-card');
+            const originalContent = tiposButton.innerHTML;
+            tiposButton.innerHTML = '<div class="action-icon">⏳</div><div class="action-title">Baixando...</div><div class="action-description">Tipos de inspeção...</div>';
+            tiposButton.style.opacity = '0.7';
+            tiposButton.style.cursor = 'not-allowed';
+
+            // Buscar tipos de inspeção
+            fetch('/api/tipos-inspecao', {
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': sessionId
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.msg === 'sucesso') {
+                    // Salvar tipos localmente
+                    localStorage.setItem('tipos_inspecao', JSON.stringify(data));
+                    localStorage.setItem('tipos_inspecao_timestamp', Date.now().toString());
+                    
+                    console.log('📋 TIPOS-INSPECAO: Tipos salvos localmente');
+                    console.log('💾 Armazenamento: Tipos de inspeção salvos');
+                    
+                    // Mostrar sucesso
+                    tiposButton.innerHTML = '<div class="action-icon">✅</div><div class="action-title">Baixado!</div><div class="action-description">Tipos salvos</div>';
+                    tiposButton.style.background = '#d4edda';
+                    tiposButton.style.color = '#155724';
+                    
+                    // Restaurar após 3 segundos
+                    setTimeout(() => {
+                        tiposButton.innerHTML = originalContent;
+                        tiposButton.style.opacity = '1';
+                        tiposButton.style.cursor = 'pointer';
+                        tiposButton.style.background = '';
+                        tiposButton.style.color = '';
+                    }, 3000);
+                } else {
+                    console.log('📋 TIPOS-INSPECAO: Nenhum tipo encontrado');
+                    
+                    // Mostrar mensagem de nenhum dado
+                    tiposButton.innerHTML = '<div class="action-icon">ℹ️</div><div class="action-title">Nenhum dado</div><div class="action-description">Tipos não encontrados</div>';
+                    
+                    // Restaurar após 3 segundos
+                    setTimeout(() => {
+                        tiposButton.innerHTML = originalContent;
+                        tiposButton.style.opacity = '1';
+                        tiposButton.style.cursor = 'pointer';
+                    }, 3000);
+                }
+            })
+            .catch(error => {
+                console.error('Erro ao baixar tipos:', error);
+                
+                // Mostrar erro
+                tiposButton.innerHTML = '<div class="action-icon">❌</div><div class="action-title">Erro</div><div class="action-description">Falha no download</div>';
+                tiposButton.style.background = '#f8d7da';
+                tiposButton.style.color = '#721c24';
+                
+                // Restaurar após 3 segundos
+                setTimeout(() => {
+                    tiposButton.innerHTML = originalContent;
+                    tiposButton.style.opacity = '1';
+                    tiposButton.style.cursor = 'pointer';
+                    tiposButton.style.background = '';
+                    tiposButton.style.color = '';
+                }, 3000);
+            });
+        }
+
+        function baixarInspecoesHistorico() {
+            const sessionId = localStorage.getItem('sessionId');
+            if (!sessionId) {
+                alert('Sessão expirada. Faça login novamente.');
+                window.location.href = '/';
+                return;
+            }
+
+            // Mostrar loading
+            const inspecoesButton = event.target.closest('.action-card');
+            const originalContent = inspecoesButton.innerHTML;
+            inspecoesButton.innerHTML = '<div class="action-icon">⏳</div><div class="action-title">Baixando...</div><div class="action-description">Histórico de inspeções...</div>';
+            inspecoesButton.style.opacity = '0.7';
+            inspecoesButton.style.cursor = 'not-allowed';
+
+            // Buscar histórico de inspeções
+            fetch('/api/inspecoes-historico', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': sessionId
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.msg === 'sucesso') {
+                    // Salvar histórico localmente
+                    localStorage.setItem('inspecoes_historico', JSON.stringify(data));
+                    localStorage.setItem('inspecoes_historico_timestamp', Date.now().toString());
+                    
+                    console.log('📋 INSPECOES-HISTORICO: Histórico salvo localmente');
+                    console.log('💾 Armazenamento: Histórico de inspeções salvo');
+                    
+                    // Mostrar sucesso
+                    inspecoesButton.innerHTML = '<div class="action-icon">✅</div><div class="action-title">Baixado!</div><div class="action-description">Histórico salvo</div>';
+                    inspecoesButton.style.background = '#d4edda';
+                    inspecoesButton.style.color = '#155724';
+                    
+                    // Restaurar após 3 segundos
+                    setTimeout(() => {
+                        inspecoesButton.innerHTML = originalContent;
+                        inspecoesButton.style.opacity = '1';
+                        inspecoesButton.style.cursor = 'pointer';
+                        inspecoesButton.style.background = '';
+                        inspecoesButton.style.color = '';
+                    }, 3000);
+                } else {
+                    console.log('📋 INSPECOES-HISTORICO: Nenhum histórico encontrado');
+                    
+                    // Mostrar mensagem de nenhum dado
+                    inspecoesButton.innerHTML = '<div class="action-icon">ℹ️</div><div class="action-title">Nenhum dado</div><div class="action-description">Histórico não encontrado</div>';
+                    
+                    // Restaurar após 3 segundos
+                    setTimeout(() => {
+                        inspecoesButton.innerHTML = originalContent;
+                        inspecoesButton.style.opacity = '1';
+                        inspecoesButton.style.cursor = 'pointer';
+                    }, 3000);
+                }
+            })
+            .catch(error => {
+                console.error('Erro ao baixar histórico:', error);
+                
+                // Mostrar erro
+                inspecoesButton.innerHTML = '<div class="action-icon">❌</div><div class="action-title">Erro</div><div class="action-description">Falha no download</div>';
+                inspecoesButton.style.background = '#f8d7da';
+                inspecoesButton.style.color = '#721c24';
+                
+                // Restaurar após 3 segundos
+                setTimeout(() => {
+                    inspecoesButton.innerHTML = originalContent;
+                    inspecoesButton.style.opacity = '1';
+                    inspecoesButton.style.cursor = 'pointer';
+                    inspecoesButton.style.background = '';
+                    inspecoesButton.style.color = '';
+                }, 3000);
+            });
+        }
+
+        function baixarProtocolos() {
+            const sessionId = localStorage.getItem('sessionId');
+            if (!sessionId) {
+                alert('Sessão expirada. Faça login novamente.');
+                window.location.href = '/';
+                return;
+            }
+
+            // Mostrar loading
+            const protocolosButton = event.target.closest('.action-card');
+            const originalContent = protocolosButton.innerHTML;
+            protocolosButton.innerHTML = '<div class="action-icon">⏳</div><div class="action-title">Baixando...</div><div class="action-description">Protocolos...</div>';
+            protocolosButton.style.opacity = '0.7';
+            protocolosButton.style.cursor = 'not-allowed';
+
+            // Buscar protocolos
+            fetch('/api/protocolos', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': sessionId
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.msg === 'sucesso') {
+                    // Salvar protocolos localmente
+                    localStorage.setItem('protocolos', JSON.stringify(data));
+                    localStorage.setItem('protocolos_timestamp', Date.now().toString());
+                    
+                    console.log('📋 PROTOCOLOS: Protocolos salvos localmente');
+                    console.log('💾 Armazenamento: Protocolos salvos');
+                    
+                    // Mostrar sucesso
+                    protocolosButton.innerHTML = '<div class="action-icon">✅</div><div class="action-title">Baixado!</div><div class="action-description">Protocolos salvos</div>';
+                    protocolosButton.style.background = '#d4edda';
+                    protocolosButton.style.color = '#155724';
+                    
+                    // Restaurar após 3 segundos
+                    setTimeout(() => {
+                        protocolosButton.innerHTML = originalContent;
+                        protocolosButton.style.opacity = '1';
+                        protocolosButton.style.cursor = 'pointer';
+                        protocolosButton.style.background = '';
+                        protocolosButton.style.color = '';
+                    }, 3000);
+                } else {
+                    console.log('📋 PROTOCOLOS: Nenhum protocolo encontrado');
+                    
+                    // Mostrar mensagem de nenhum dado
+                    protocolosButton.innerHTML = '<div class="action-icon">ℹ️</div><div class="action-title">Nenhum dado</div><div class="action-description">Protocolos não encontrados</div>';
+                    
+                    // Restaurar após 3 segundos
+                    setTimeout(() => {
+                        protocolosButton.innerHTML = originalContent;
+                        protocolosButton.style.opacity = '1';
+                        protocolosButton.style.cursor = 'pointer';
+                    }, 3000);
+                }
+            })
+            .catch(error => {
+                console.error('Erro ao baixar protocolos:', error);
+                
+                // Mostrar erro
+                protocolosButton.innerHTML = '<div class="action-icon">❌</div><div class="action-title">Erro</div><div class="action-description">Falha no download</div>';
+                protocolosButton.style.background = '#f8d7da';
+                protocolosButton.style.color = '#721c24';
+                
+                // Restaurar após 3 segundos
+                setTimeout(() => {
+                    protocolosButton.innerHTML = originalContent;
+                    protocolosButton.style.opacity = '1';
+                    protocolosButton.style.cursor = 'pointer';
+                    protocolosButton.style.background = '';
+                    protocolosButton.style.color = '';
+                }, 3000);
+            });
+        }
+
+        function baixarAfastamentos() {
+            const sessionId = localStorage.getItem('sessionId');
+            if (!sessionId) {
+                alert('Sessão expirada. Faça login novamente.');
+                window.location.href = '/';
+                return;
+            }
+
+            // Mostrar loading
+            const afastamentosButton = event.target.closest('.action-card');
+            const originalContent = afastamentosButton.innerHTML;
+            afastamentosButton.innerHTML = '<div class="action-icon">⏳</div><div class="action-title">Baixando...</div><div class="action-description">Afastamentos...</div>';
+            afastamentosButton.style.opacity = '0.7';
+            afastamentosButton.style.cursor = 'not-allowed';
+
+            // Buscar afastamentos
+            fetch('/api/afastamentos', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': sessionId
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.msg === 'sucesso') {
+                    // Salvar afastamentos localmente
+                    localStorage.setItem('afastamentos', JSON.stringify(data));
+                    localStorage.setItem('afastamentos_timestamp', Date.now().toString());
+                    
+                    console.log('📋 AFASTAMENTOS: Afastamentos salvos localmente');
+                    console.log('💾 Armazenamento: Afastamentos salvos');
+                    
+                    // Mostrar sucesso
+                    afastamentosButton.innerHTML = '<div class="action-icon">✅</div><div class="action-title">Baixado!</div><div class="action-description">Afastamentos salvos</div>';
+                    afastamentosButton.style.background = '#d4edda';
+                    afastamentosButton.style.color = '#155724';
+                    
+                    // Restaurar após 3 segundos
+                    setTimeout(() => {
+                        afastamentosButton.innerHTML = originalContent;
+                        afastamentosButton.style.opacity = '1';
+                        afastamentosButton.style.cursor = 'pointer';
+                        afastamentosButton.style.background = '';
+                        afastamentosButton.style.color = '';
+                    }, 3000);
+                } else {
+                    console.log('📋 AFASTAMENTOS: Nenhum afastamento encontrado');
+                    
+                    // Mostrar mensagem de nenhum dado
+                    afastamentosButton.innerHTML = '<div class="action-icon">ℹ️</div><div class="action-title">Nenhum dado</div><div class="action-description">Afastamentos não encontrados</div>';
+                    
+                    // Restaurar após 3 segundos
+                    setTimeout(() => {
+                        afastamentosButton.innerHTML = originalContent;
+                        afastamentosButton.style.opacity = '1';
+                        afastamentosButton.style.cursor = 'pointer';
+                    }, 3000);
+                }
+            })
+            .catch(error => {
+                console.error('Erro ao baixar afastamentos:', error);
+                
+                // Mostrar erro
+                afastamentosButton.innerHTML = '<div class="action-icon">❌</div><div class="action-title">Erro</div><div class="action-description">Falha no download</div>';
+                afastamentosButton.style.background = '#f8d7da';
+                afastamentosButton.style.color = '#721c24';
+                
+                // Restaurar após 3 segundos
+                setTimeout(() => {
+                    afastamentosButton.innerHTML = originalContent;
+                    afastamentosButton.style.opacity = '1';
+                    afastamentosButton.style.cursor = 'pointer';
+                    afastamentosButton.style.background = '';
+                    afastamentosButton.style.color = '';
+                }, 3000);
+            });
+        }
+
+        function baixarDenuncias() {
+            const sessionId = localStorage.getItem('sessionId');
+            if (!sessionId) {
+                alert('Sessão expirada. Faça login novamente.');
+                window.location.href = '/';
+                return;
+            }
+
+            // Mostrar loading
+            const denunciasButton = event.target.closest('.action-card');
+            const originalContent = denunciasButton.innerHTML;
+            denunciasButton.innerHTML = '<div class="action-icon">⏳</div><div class="action-title">Baixando...</div>';
+            denunciasButton.style.opacity = '0.7';
+            denunciasButton.style.cursor = 'not-allowed';
+
+            // Buscar denúncias
+            fetch('/api/denuncias', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': sessionId
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.msg === 'sucesso') {
+                    // Salvar denúncias localmente
+                    localStorage.setItem('denuncias', JSON.stringify(data));
+                    localStorage.setItem('denuncias_timestamp', Date.now().toString());
+                    
+                    console.log('📋 DENUNCIAS: Denúncias salvos localmente');
+                    console.log('💾 Armazenamento: Denúncias salvos');
+                    
+                    // Mostrar sucesso
+                    denunciasButton.innerHTML = '<div class="action-icon">✅</div><div class="action-title">Baixado!</div>';
+                    denunciasButton.style.background = '#d4edda';
+                    denunciasButton.style.color = '#155724';
+                    
+                    // Restaurar após 3 segundos
+                    setTimeout(() => {
+                        denunciasButton.innerHTML = originalContent;
+                        denunciasButton.style.opacity = '1';
+                        denunciasButton.style.cursor = 'pointer';
+                        denunciasButton.style.background = '';
+                        denunciasButton.style.color = '';
+                    }, 3000);
+                } else {
+                    console.log('📋 DENUNCIAS: Nenhuma denúncia encontrada');
+                    
+                    // Mostrar mensagem de nenhum dado
+                    denunciasButton.innerHTML = '<div class="action-icon">ℹ️</div><div class="action-title">Nenhum dado</div>';
+                    
+                    // Restaurar após 3 segundos
+                    setTimeout(() => {
+                        denunciasButton.innerHTML = originalContent;
+                        denunciasButton.style.opacity = '1';
+                        denunciasButton.style.cursor = 'pointer';
+                    }, 3000);
+                }
+            })
+            .catch(error => {
+                console.error('Erro ao baixar denúncias:', error);
+                
+                // Mostrar erro
+                denunciasButton.innerHTML = '<div class="action-icon">❌</div><div class="action-title">Erro</div>';
+                denunciasButton.style.background = '#f8d7da';
+                denunciasButton.style.color = '#721c24';
+                
+                // Restaurar após 3 segundos
+                setTimeout(() => {
+                    denunciasButton.innerHTML = originalContent;
+                    denunciasButton.style.opacity = '1';
+                    denunciasButton.style.cursor = 'pointer';
+                    denunciasButton.style.background = '';
+                    denunciasButton.style.color = '';
+                }, 3000);
+            });
+        }
+
+        function baixarOutrosProfissionais() {
+            const sessionId = localStorage.getItem('sessionId');
+            if (!sessionId) {
+                alert('Sessão expirada. Faça login novamente.');
+                window.location.href = '/';
+                return;
+            }
+
+            // Mostrar loading
+            const outrosProfissionaisButton = event.target.closest('.action-card');
+            const originalContent = outrosProfissionaisButton.innerHTML;
+            outrosProfissionaisButton.innerHTML = '<div class="action-icon">⏳</div><div class="action-title">Baixando...</div>';
+            outrosProfissionaisButton.style.opacity = '0.7';
+            outrosProfissionaisButton.style.cursor = 'not-allowed';
+
+            // Buscar outros profissionais
+            fetch('/api/outros-profissionais', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': sessionId
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.msg === 'sucesso') {
+                    // Salvar outros profissionais localmente
+                    localStorage.setItem('outros_profissionais', JSON.stringify(data));
+                    localStorage.setItem('outros_profissionais_timestamp', Date.now().toString());
+                    
+                    console.log('📋 OUTROS-PROFISSIONAIS: Outros profissionais salvos localmente');
+                    console.log('💾 Armazenamento: Outros profissionais salvos');
+                    
+                    // Mostrar sucesso
+                    outrosProfissionaisButton.innerHTML = '<div class="action-icon">✅</div><div class="action-title">Baixado!</div>';
+                    outrosProfissionaisButton.style.background = '#d4edda';
+                    outrosProfissionaisButton.style.color = '#155724';
+                    
+                    // Restaurar após 3 segundos
+                    setTimeout(() => {
+                        outrosProfissionaisButton.innerHTML = originalContent;
+                        outrosProfissionaisButton.style.opacity = '1';
+                        outrosProfissionaisButton.style.cursor = 'pointer';
+                        outrosProfissionaisButton.style.background = '';
+                        outrosProfissionaisButton.style.color = '';
+                    }, 3000);
+                } else {
+                    console.log('📋 OUTROS-PROFISSIONAIS: Nenhum outro profissional encontrado');
+                    
+                    // Mostrar mensagem de nenhum dado
+                    outrosProfissionaisButton.innerHTML = '<div class="action-icon">ℹ️</div><div class="action-title">Nenhum dado</div>';
+                    
+                    // Restaurar após 3 segundos
+                    setTimeout(() => {
+                        outrosProfissionaisButton.innerHTML = originalContent;
+                        outrosProfissionaisButton.style.opacity = '1';
+                        outrosProfissionaisButton.style.cursor = 'pointer';
+                    }, 3000);
+                }
+            })
+            .catch(error => {
+                console.error('Erro ao baixar outros profissionais:', error);
+                
+                // Mostrar erro
+                outrosProfissionaisButton.innerHTML = '<div class="action-icon">❌</div><div class="action-title">Erro</div>';
+                outrosProfissionaisButton.style.background = '#f8d7da';
+                outrosProfissionaisButton.style.color = '#721c24';
+                
+                // Restaurar após 3 segundos
+                setTimeout(() => {
+                    outrosProfissionaisButton.innerHTML = originalContent;
+                    outrosProfissionaisButton.style.opacity = '1';
+                    outrosProfissionaisButton.style.cursor = 'pointer';
+                    outrosProfissionaisButton.style.background = '';
+                    outrosProfissionaisButton.style.color = '';
+                }, 3000);
+            });
+        }
+
+        function baixarOutrosVinculos() {
+            const sessionId = localStorage.getItem('sessionId');
+            if (!sessionId) {
+                alert('Sessão expirada. Faça login novamente.');
+                window.location.href = '/';
+                return;
+            }
+
+            // Mostrar loading
+            const outrosVinculosButton = event.target.closest('.action-card');
+            const originalContent = outrosVinculosButton.innerHTML;
+            outrosVinculosButton.innerHTML = '<div class="action-icon">⏳</div><div class="action-title">Baixando...</div>';
+            outrosVinculosButton.style.opacity = '0.7';
+            outrosVinculosButton.style.cursor = 'not-allowed';
+
+            // Buscar outros vínculos
+            fetch('/api/outros-vinculos', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': sessionId
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.msg === 'sucesso') {
+                    // Salvar outros vínculos localmente
+                    localStorage.setItem('outros_vinculos', JSON.stringify(data));
+                    localStorage.setItem('outros_vinculos_timestamp', Date.now().toString());
+                    
+                    console.log('📋 OUTROS-VINCULOS: Outros vínculos salvos localmente');
+                    console.log('💾 Armazenamento: Outros vínculos salvos');
+                    
+                    // Mostrar sucesso
+                    outrosVinculosButton.innerHTML = '<div class="action-icon">✅</div><div class="action-title">Baixado!</div>';
+                    outrosVinculosButton.style.background = '#d4edda';
+                    outrosVinculosButton.style.color = '#155724';
+                    
+                    // Restaurar após 3 segundos
+                    setTimeout(() => {
+                        outrosVinculosButton.innerHTML = originalContent;
+                        outrosVinculosButton.style.opacity = '1';
+                        outrosVinculosButton.style.cursor = 'pointer';
+                        outrosVinculosButton.style.background = '';
+                        outrosVinculosButton.style.color = '';
+                    }, 3000);
+                } else {
+                    console.log('📋 OUTROS-VINCULOS: Nenhum outro vínculo encontrado');
+                    
+                    // Mostrar mensagem de nenhum dado
+                    outrosVinculosButton.innerHTML = '<div class="action-icon">ℹ️</div><div class="action-title">Nenhum dado</div>';
+                    
+                    // Restaurar após 3 segundos
+                    setTimeout(() => {
+                        outrosVinculosButton.innerHTML = originalContent;
+                        outrosVinculosButton.style.opacity = '1';
+                        outrosVinculosButton.style.cursor = 'pointer';
+                    }, 3000);
+                }
+            })
+            .catch(error => {
+                console.error('Erro ao baixar outros vínculos:', error);
+                
+                // Mostrar erro
+                outrosVinculosButton.innerHTML = '<div class="action-icon">❌</div><div class="action-title">Erro</div>';
+                outrosVinculosButton.style.background = '#f8d7da';
+                outrosVinculosButton.style.color = '#721c24';
+                
+                // Restaurar após 3 segundos
+                setTimeout(() => {
+                    outrosVinculosButton.innerHTML = originalContent;
+                    outrosVinculosButton.style.opacity = '1';
+                    outrosVinculosButton.style.cursor = 'pointer';
+                    outrosVinculosButton.style.background = '';
+                    outrosVinculosButton.style.color = '';
+                }, 3000);
+            });
+        }
+
+        function baixarProcessosEticos() {
+            const sessionId = localStorage.getItem('sessionId');
+            if (!sessionId) {
+                alert('Sessão expirada. Faça login novamente.');
+                window.location.href = '/';
+                return;
+            }
+
+            // Mostrar loading
+            const processosEticosButton = event.target.closest('.action-card');
+            const originalContent = processosEticosButton.innerHTML;
+            processosEticosButton.innerHTML = '<div class="action-icon">⏳</div><div class="action-title">Baixando...</div>';
+            processosEticosButton.style.opacity = '0.7';
+            processosEticosButton.style.cursor = 'not-allowed';
+
+            // Buscar processos éticos
+            fetch('/api/processos-eticos', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': sessionId
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.msg === 'sucesso') {
+                    // Salvar processos éticos localmente
+                    localStorage.setItem('processos_eticos', JSON.stringify(data));
+                    localStorage.setItem('processos_eticos_timestamp', Date.now().toString());
+                    
+                    console.log('📋 PROCESSOS-ETICOS: Processos éticos salvos localmente');
+                    console.log('💾 Armazenamento: Processos éticos salvos');
+                    
+                    // Mostrar sucesso
+                    processosEticosButton.innerHTML = '<div class="action-icon">✅</div><div class="action-title">Baixado!</div>';
+                    processosEticosButton.style.background = '#d4edda';
+                    processosEticosButton.style.color = '#155724';
+                    
+                    // Restaurar após 3 segundos
+                    setTimeout(() => {
+                        processosEticosButton.innerHTML = originalContent;
+                        processosEticosButton.style.opacity = '1';
+                        processosEticosButton.style.cursor = 'pointer';
+                        processosEticosButton.style.background = '';
+                        processosEticosButton.style.color = '';
+                    }, 3000);
+                } else {
+                    console.log('📋 PROCESSOS-ETICOS: Nenhum processo ético encontrado');
+                    
+                    // Mostrar mensagem de nenhum dado
+                    processosEticosButton.innerHTML = '<div class="action-icon">ℹ️</div><div class="action-title">Nenhum dado</div>';
+                    
+                    // Restaurar após 3 segundos
+                    setTimeout(() => {
+                        processosEticosButton.innerHTML = originalContent;
+                        processosEticosButton.style.opacity = '1';
+                        processosEticosButton.style.cursor = 'pointer';
+                    }, 3000);
+                }
+            })
+            .catch(error => {
+                console.error('Erro ao baixar processos éticos:', error);
+                
+                // Mostrar erro
+                processosEticosButton.innerHTML = '<div class="action-icon">❌</div><div class="action-title">Erro</div>';
+                processosEticosButton.style.background = '#f8d7da';
+                processosEticosButton.style.color = '#721c24';
+                
+                // Restaurar após 3 segundos
+                setTimeout(() => {
+                    processosEticosButton.innerHTML = originalContent;
+                    processosEticosButton.style.opacity = '1';
+                    processosEticosButton.style.cursor = 'pointer';
+                    processosEticosButton.style.background = '';
+                    processosEticosButton.style.color = '';
+                }, 3000);
+            });
+        }
+
+        function baixarTudo() {
+            const sessionId = localStorage.getItem('sessionId');
+            if (!sessionId) {
+                alert('Sessão expirada. Faça login novamente.');
+                window.location.href = '/';
+                return;
+            }
+
+            // Mostrar loading
+            const baixarTudoButton = event.target.closest('.action-card');
+            const originalContent = baixarTudoButton.innerHTML;
+            baixarTudoButton.innerHTML = '<div class="action-icon">⏳</div><div class="action-title">Baixando tudo...</div>';
+            baixarTudoButton.style.opacity = '0.7';
+            baixarTudoButton.style.cursor = 'not-allowed';
+
+            console.log('INICIANDO DOWNLOAD DE TODOS OS DADOS...');
+
+            // Array com todas as funções de download
+            const downloads = [
+                { name: 'Configuracao do Termo', func: baixarConfigTermo },
+                { name: 'Historico de RTS', func: baixarRtsHistorico },
+                { name: 'Tipos de Inspecao', func: baixarTiposInspecao },
+                { name: 'Historico de Inspecoes', func: baixarInspecoesHistorico },
+                { name: 'Protocolos', func: baixarProtocolos },
+                { name: 'Afastamentos', func: baixarAfastamentos },
+                { name: 'Denuncias', func: baixarDenuncias },
+                { name: 'Outros Profissionais', func: baixarOutrosProfissionais },
+                { name: 'Outros Vinculos', func: baixarOutrosVinculos },
+                { name: 'Processos Eticos', func: baixarProcessosEticos }
+            ];
+
+            let completed = 0;
+            let successCount = 0;
+            let errorCount = 0;
+
+            // Função para executar downloads sequencialmente
+            function executarDownload(index) {
+                if (index >= downloads.length) {
+                    // Todos os downloads foram concluídos
+                    console.log('DOWNLOAD COMPLETO: ' + successCount + ' sucessos, ' + errorCount + ' erros');
+                    
+                    if (successCount > 0) {
+                        baixarTudoButton.innerHTML = '<div class="action-icon">✅</div><div class="action-title">Concluído!</div>';
+                        baixarTudoButton.style.background = '#d4edda';
+                        baixarTudoButton.style.color = '#155724';
+                    } else {
+                        baixarTudoButton.innerHTML = '<div class="action-icon">❌</div><div class="action-title">Erro</div>';
+                        baixarTudoButton.style.background = '#f8d7da';
+                        baixarTudoButton.style.color = '#721c24';
+                    }
+                    
+                    // Restaurar após 5 segundos
+                    setTimeout(() => {
+                        baixarTudoButton.innerHTML = originalContent;
+                        baixarTudoButton.style.opacity = '1';
+                        baixarTudoButton.style.cursor = 'pointer';
+                        baixarTudoButton.style.background = '';
+                        baixarTudoButton.style.color = '';
+                    }, 5000);
+                    return;
+                }
+
+                const download = downloads[index];
+                console.log('Baixando: ' + download.name + ' (' + (index + 1) + '/' + downloads.length + ')');
+
+                // Simular a execução da função de download
+                // Como não podemos chamar as funções diretamente, vamos fazer as requisições manualmente
+                const endpoints = [
+                    '/api/config-termo',
+                    '/api/rts-historico',
+                    '/api/tipos-inspecao',
+                    '/api/inspecoes-historico',
+                    '/api/protocolos',
+                    '/api/afastamentos',
+                    '/api/denuncias',
+                    '/api/outros-profissionais',
+                    '/api/outros-vinculos',
+                    '/api/processos-eticos'
+                ];
+
+                const endpoint = endpoints[index];
+                const storageKeys = [
+                    'config_termo',
+                    'rts_historico',
+                    'tipos_inspecao',
+                    'inspecoes_historico',
+                    'protocolos',
+                    'afastamentos',
+                    'denuncias',
+                    'outros_profissionais',
+                    'outros_vinculos',
+                    'processos_eticos'
+                ];
+
+                const storageKey = storageKeys[index];
+
+                // Determinar o método HTTP correto para cada endpoint
+                const method = (endpoint === '/api/config-termo' || endpoint === '/api/tipos-inspecao') ? 'GET' : 'POST';
+                
+                fetch(endpoint, {
+                    method: method,
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': sessionId
+                    }
+                })
+                .then(response => {
+                    // Verificar se a resposta é JSON válido
+                    const contentType = response.headers.get('content-type');
+                    if (!contentType || !contentType.includes('application/json')) {
+                        throw new Error('Resposta não é JSON válido');
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    if (data.msg === 'sucesso') {
+                        localStorage.setItem(storageKey, JSON.stringify(data));
+                        localStorage.setItem(storageKey + '_timestamp', Date.now().toString());
+                        console.log('✅ ' + download.name + ': Baixado com sucesso');
+                        successCount++;
+                    } else {
+                        console.log('ℹ️ ' + download.name + ': Nenhum dado encontrado');
+                    }
+                    completed++;
+                    executarDownload(index + 1);
+                })
+                .catch(error => {
+                    console.error('❌ ' + download.name + ': Erro ao baixar - ' + error.message);
+                    errorCount++;
+                    completed++;
+                    executarDownload(index + 1);
+                });
+            }
+
+            // Iniciar o processo de download
+            executarDownload(0);
+        }
+
+        // Função para validar se uma empresa está dentro do período válido
+        function validarPeriodoEmpresa(empresa) {
+            // Se não há datas definidas, considera válida
+            if (!empresa.dataIni && !empresa.dataFim) {
+                return true;
+            }
+
+            const hoje = new Date();
+            hoje.setHours(0, 0, 0, 0); // Zerar horário para comparar apenas a data
+
+            // Validar data de início
+            if (empresa.dataIni) {
+                const dataIni = new Date(empresa.dataIni);
+                if (hoje < dataIni) {
+                    return false; // Ainda não chegou a data de início
+                }
+            }
+
+            // Validar data de fim
+            if (empresa.dataFim) {
+                const dataFim = new Date(empresa.dataFim);
+                if (hoje > dataFim) {
+                    return false; // Já passou da data de fim
+                }
+            }
+
+            return true;
+        }
+
         function processarEmpresas(data) {
             const empresas = [];
             
@@ -761,7 +1916,9 @@ const appHtmlContent = `<!DOCTYPE html>
             Object.keys(data).forEach(key => {
                 if (!isNaN(key)) {
                     const empresa = data[key];
-                    empresas.push({
+                    
+                    // Criar objeto da empresa com campos de data
+                    const empresaProcessada = {
                         id: empresa.idempresa,
                         nome: empresa.nomeempresa,
                         razao: empresa.razao,
@@ -778,6 +1935,9 @@ const appHtmlContent = `<!DOCTYPE html>
                         denunciaPendente: empresa.denunciapendente,
                         perfil: empresa.detalheperfil,
                         status: empresa.realizado || 0, // Status da fiscalização (0 = pendente, 1 = realizada)
+                        dataIni: empresa.dataini, // Campo da API para data de início
+                        dataFim: empresa.datafim, // Campo da API para data de fim
+                        ativo: true, // Será definido pela validação
                         horarios: {
                             seg: empresa.hr_seg,
                             ter: empresa.hr_ter,
@@ -787,9 +1947,22 @@ const appHtmlContent = `<!DOCTYPE html>
                             sab: empresa.hr_sab,
                             dom: empresa.hr_dom
                         }
-                    });
+                    };
+
+                    // Aplicar validação de período
+                    empresaProcessada.ativo = validarPeriodoEmpresa(empresaProcessada);
+                    
+                    empresas.push(empresaProcessada);
                 }
             });
+            
+            // Contar empresas ativas e inativas para log
+            const ativas = empresas.filter(empresa => empresa.ativo);
+            const inativas = empresas.filter(empresa => !empresa.ativo);
+            
+            console.log('Sincronização: Validação de períodos');
+            console.log('Empresas ativas:', ativas.length);
+            console.log('Empresas inativas (fora do período):', inativas.length);
             
             // Salvar no localStorage
             localStorage.setItem('empresas', JSON.stringify(empresas));
@@ -855,18 +2028,23 @@ const appHtmlContent = `<!DOCTYPE html>
         }
 
         function atualizarEstatisticas(empresas) {
-            const pendentes = empresas.filter(empresa => empresa.status === 0).length;
-            const realizadas = empresas.filter(empresa => empresa.status === 1).length;
-            const total = empresas.length;
+            // Filtrar apenas empresas ativas (dentro do período válido)
+            const empresasAtivas = empresas.filter(empresa => empresa.ativo);
+            
+            const pendentes = empresasAtivas.filter(empresa => empresa.status === 0).length;
+            const realizadas = empresasAtivas.filter(empresa => empresa.status === 1).length;
+            const total = empresasAtivas.length;
+            const inativas = empresas.filter(empresa => !empresa.ativo).length;
             
             document.getElementById('empresasPendentes').textContent = pendentes;
             document.getElementById('empresasRealizadas').textContent = realizadas;
             document.getElementById('totalEmpresas').textContent = total;
             
-            console.log('📊 Estatísticas atualizadas:');
-            console.log('   📋 Pendentes:', pendentes);
-            console.log('   ✅ Realizadas:', realizadas);
-            console.log('   🏢 Total:', total);
+            console.log('Estatísticas atualizadas:');
+            console.log('   Empresas ativas (pendentes):', pendentes);
+            console.log('   Empresas ativas (realizadas):', realizadas);
+            console.log('   Total empresas ativas:', total);
+            console.log('   Empresas inativas (fora do período):', inativas);
         }
 
         function limparEstatisticas() {
@@ -895,6 +2073,893 @@ const appHtmlContent = `<!DOCTYPE html>
             if (syncDescription) {
                 syncDescription.textContent = 'Buscar empresas do servidor';
             }
+        }
+
+        function verificarConfigTermo() {
+            const configData = localStorage.getItem('config_termo');
+            const timestamp = localStorage.getItem('config_termo_timestamp');
+            
+            if (configData && timestamp) {
+                const dataSync = new Date(parseInt(timestamp));
+                const agora = new Date();
+                const diffHoras = (agora - dataSync) / (1000 * 60 * 60);
+                
+                console.log('📋 CONFIG-TERMO: Configuração local encontrada');
+                console.log('📅 Última atualização:', dataSync.toLocaleString());
+                console.log('⏰ Tempo desde sync:', Math.round(diffHoras), 'horas');
+                
+                // Atualizar descrição com data da última sincronização
+                atualizarDescricaoConfig(dataSync);
+                
+                // Verificar se os dados são muito antigos (mais de 24h)
+                if (diffHoras > 24) {
+                    console.log('⚠️ Aviso: Configuração local desatualizada (mais de 24h)');
+                }
+            } else {
+                console.log('📋 CONFIG-TERMO: Nenhuma configuração local encontrada');
+                resetarDescricaoConfig();
+            }
+        }
+
+        function atualizarDescricaoConfig(timestamp) {
+            const configDescription = document.getElementById('configDescription');
+            if (configDescription) {
+                const data = new Date(timestamp);
+                const dataFormatada = data.toLocaleString('pt-BR', {
+                    day: '2-digit',
+                    month: '2-digit',
+                    year: 'numeric',
+                    hour: '2-digit',
+                    minute: '2-digit'
+                });
+                configDescription.textContent = 'Última atualização: ' + dataFormatada;
+            }
+        }
+
+        function resetarDescricaoConfig() {
+            const configDescription = document.getElementById('configDescription');
+            if (configDescription) {
+                configDescription.textContent = 'Configuração do termo de inspeção';
+            }
+        }
+
+        function verificarRtsHistorico() {
+            const rtsData = localStorage.getItem('rts_historico');
+            const timestamp = localStorage.getItem('rts_historico_timestamp');
+            
+            if (rtsData && timestamp) {
+                const dataSync = new Date(parseInt(timestamp));
+                const agora = new Date();
+                const diffHoras = (agora - dataSync) / (1000 * 60 * 60);
+                
+                console.log('📋 RTS-HISTORICO: Histórico local encontrado');
+                console.log('📅 Última atualização:', dataSync.toLocaleString());
+                console.log('⏰ Tempo desde sync:', Math.round(diffHoras), 'horas');
+                
+                // Atualizar descrição com data da última sincronização
+                atualizarDescricaoRts(dataSync);
+                
+                // Verificar se os dados são muito antigos (mais de 24h)
+                if (diffHoras > 24) {
+                    console.log('⚠️ Aviso: Histórico local desatualizado (mais de 24h)');
+                }
+            } else {
+                console.log('📋 RTS-HISTORICO: Nenhum histórico local encontrado');
+                resetarDescricaoRts();
+            }
+        }
+
+        function atualizarDescricaoRts(timestamp) {
+            const rtsDescription = document.getElementById('rtsDescription');
+            if (rtsDescription) {
+                const data = new Date(timestamp);
+                const dataFormatada = data.toLocaleString('pt-BR', {
+                    day: '2-digit',
+                    month: '2-digit',
+                    year: 'numeric',
+                    hour: '2-digit',
+                    minute: '2-digit'
+                });
+                rtsDescription.textContent = 'Última atualização: ' + dataFormatada;
+            }
+        }
+
+        function resetarDescricaoRts() {
+            const rtsDescription = document.getElementById('rtsDescription');
+            if (rtsDescription) {
+                rtsDescription.textContent = 'Histórico de RTS das empresas';
+            }
+        }
+
+        function verificarTiposInspecao() {
+            const tiposData = localStorage.getItem('tipos_inspecao');
+            const timestamp = localStorage.getItem('tipos_inspecao_timestamp');
+            
+            if (tiposData && timestamp) {
+                const dataSync = new Date(parseInt(timestamp));
+                const agora = new Date();
+                const diffHoras = (agora - dataSync) / (1000 * 60 * 60);
+                
+                console.log('📋 TIPOS-INSPECAO: Tipos local encontrado');
+                console.log('📅 Última atualização:', dataSync.toLocaleString());
+                console.log('⏰ Tempo desde sync:', Math.round(diffHoras), 'horas');
+                
+                // Atualizar descrição com data da última sincronização
+                atualizarDescricaoTipos(dataSync);
+                
+                // Verificar se os dados são muito antigos (mais de 24h)
+                if (diffHoras > 24) {
+                    console.log('⚠️ Aviso: Tipos local desatualizado (mais de 24h)');
+                }
+            } else {
+                console.log('📋 TIPOS-INSPECAO: Nenhum tipo local encontrado');
+                resetarDescricaoTipos();
+            }
+        }
+
+        function atualizarDescricaoTipos(timestamp) {
+            const tiposDescription = document.getElementById('tiposDescription');
+            if (tiposDescription) {
+                const data = new Date(timestamp);
+                const dataFormatada = data.toLocaleString('pt-BR', {
+                    day: '2-digit',
+                    month: '2-digit',
+                    year: 'numeric',
+                    hour: '2-digit',
+                    minute: '2-digit'
+                });
+                tiposDescription.textContent = 'Última atualização: ' + dataFormatada;
+            }
+        }
+
+        function resetarDescricaoTipos() {
+            const tiposDescription = document.getElementById('tiposDescription');
+            if (tiposDescription) {
+                tiposDescription.textContent = 'Tipos de inspeção disponíveis';
+            }
+        }
+
+        function verificarInspecoesHistorico() {
+            const inspecoesData = localStorage.getItem('inspecoes_historico');
+            const timestamp = localStorage.getItem('inspecoes_historico_timestamp');
+            
+            if (inspecoesData && timestamp) {
+                const dataSync = new Date(parseInt(timestamp));
+                const agora = new Date();
+                const diffHoras = (agora - dataSync) / (1000 * 60 * 60);
+                
+                console.log('📋 INSPECOES-HISTORICO: Histórico local encontrado');
+                console.log('📅 Última atualização:', dataSync.toLocaleString());
+                console.log('⏰ Tempo desde sync:', Math.round(diffHoras), 'horas');
+                
+                // Atualizar descrição com data da última sincronização
+                atualizarDescricaoInspecoes(dataSync);
+                
+                // Verificar se os dados são muito antigos (mais de 24h)
+                if (diffHoras > 24) {
+                    console.log('⚠️ Aviso: Histórico local desatualizado (mais de 24h)');
+                }
+            } else {
+                console.log('📋 INSPECOES-HISTORICO: Nenhum histórico local encontrado');
+                resetarDescricaoInspecoes();
+            }
+        }
+
+        function atualizarDescricaoInspecoes(timestamp) {
+            const inspecoesDescription = document.getElementById('inspecoesDescription');
+            if (inspecoesDescription) {
+                const data = new Date(timestamp);
+                const dataFormatada = data.toLocaleString('pt-BR', {
+                    day: '2-digit',
+                    month: '2-digit',
+                    year: 'numeric',
+                    hour: '2-digit',
+                    minute: '2-digit'
+                });
+                inspecoesDescription.textContent = 'Última atualização: ' + dataFormatada;
+            }
+        }
+
+        function resetarDescricaoInspecoes() {
+            const inspecoesDescription = document.getElementById('inspecoesDescription');
+            if (inspecoesDescription) {
+                inspecoesDescription.textContent = 'Histórico de inspeções das empresas';
+            }
+        }
+
+        function verificarProtocolos() {
+            const protocolosData = localStorage.getItem('protocolos');
+            const timestamp = localStorage.getItem('protocolos_timestamp');
+            
+            if (protocolosData && timestamp) {
+                const dataSync = new Date(parseInt(timestamp));
+                const agora = new Date();
+                const diffHoras = (agora - dataSync) / (1000 * 60 * 60);
+                
+                console.log('📋 PROTOCOLOS: Protocolos local encontrado');
+                console.log('📅 Última atualização:', dataSync.toLocaleString());
+                console.log('⏰ Tempo desde sync:', Math.round(diffHoras), 'horas');
+                
+                // Atualizar descrição com data da última sincronização
+                atualizarDescricaoProtocolos(dataSync);
+                
+                // Verificar se os dados são muito antigos (mais de 24h)
+                if (diffHoras > 24) {
+                    console.log('⚠️ Aviso: Protocolos local desatualizado (mais de 24h)');
+                }
+            } else {
+                console.log('📋 PROTOCOLOS: Nenhum protocolo local encontrado');
+                resetarDescricaoProtocolos();
+            }
+        }
+
+        function atualizarDescricaoProtocolos(timestamp) {
+            const protocolosDescription = document.getElementById('protocolosDescription');
+            if (protocolosDescription) {
+                const data = new Date(timestamp);
+                const dataFormatada = data.toLocaleString('pt-BR', {
+                    day: '2-digit',
+                    month: '2-digit',
+                    year: 'numeric',
+                    hour: '2-digit',
+                    minute: '2-digit'
+                });
+                protocolosDescription.textContent = 'Última atualização: ' + dataFormatada;
+            }
+        }
+
+        function resetarDescricaoProtocolos() {
+            const protocolosDescription = document.getElementById('protocolosDescription');
+            if (protocolosDescription) {
+                protocolosDescription.textContent = 'Protocolos das empresas';
+            }
+        }
+
+        function verificarAfastamentos() {
+            const afastamentosData = localStorage.getItem('afastamentos');
+            const timestamp = localStorage.getItem('afastamentos_timestamp');
+            
+            if (afastamentosData && timestamp) {
+                const dataSync = new Date(parseInt(timestamp));
+                const agora = new Date();
+                const diffHoras = (agora - dataSync) / (1000 * 60 * 60);
+                
+                console.log('📋 AFASTAMENTOS: Afastamentos local encontrado');
+                console.log('📅 Última atualização:', dataSync.toLocaleString());
+                console.log('⏰ Tempo desde sync:', Math.round(diffHoras), 'horas');
+                
+                // Atualizar descrição com data da última sincronização
+                atualizarDescricaoAfastamentos(dataSync);
+                
+                // Verificar se os dados são muito antigos (mais de 24h)
+                if (diffHoras > 24) {
+                    console.log('⚠️ Aviso: Afastamentos local desatualizado (mais de 24h)');
+                }
+            } else {
+                console.log('📋 AFASTAMENTOS: Nenhum afastamento local encontrado');
+                resetarDescricaoAfastamentos();
+            }
+        }
+
+        function atualizarDescricaoAfastamentos(timestamp) {
+            const afastamentosDescription = document.getElementById('afastamentosDescription');
+            if (afastamentosDescription) {
+                const data = new Date(timestamp);
+                const dataFormatada = data.toLocaleString('pt-BR', {
+                    day: '2-digit',
+                    month: '2-digit',
+                    year: 'numeric',
+                    hour: '2-digit',
+                    minute: '2-digit'
+                });
+                afastamentosDescription.textContent = 'Última atualização: ' + dataFormatada;
+            }
+        }
+
+        function resetarDescricaoAfastamentos() {
+            const afastamentosDescription = document.getElementById('afastamentosDescription');
+            if (afastamentosDescription) {
+                afastamentosDescription.textContent = 'Afastamentos dos farmacêuticos';
+            }
+        }
+
+        function verificarDenuncias() {
+            const denunciasData = localStorage.getItem('denuncias');
+            const timestamp = localStorage.getItem('denuncias_timestamp');
+            
+            if (denunciasData && timestamp) {
+                const dataSync = new Date(parseInt(timestamp));
+                const agora = new Date();
+                const diffHoras = (agora - dataSync) / (1000 * 60 * 60);
+                
+                console.log('📋 DENUNCIAS: Denúncias local encontrado');
+                console.log('📅 Última atualização:', dataSync.toLocaleString());
+                console.log('⏰ Tempo desde sync:', Math.round(diffHoras), 'horas');
+                
+                // Verificar se os dados são muito antigos (mais de 24h)
+                if (diffHoras > 24) {
+                    console.log('⚠️ Aviso: Denúncias local desatualizado (mais de 24h)');
+                }
+            } else {
+                console.log('📋 DENUNCIAS: Nenhuma denúncia local encontrado');
+            }
+        }
+
+        function atualizarDescricaoDenuncias(timestamp) {
+            const denunciasDescription = document.getElementById('denunciasDescription');
+            if (denunciasDescription) {
+                const data = new Date(timestamp);
+                const dataFormatada = data.toLocaleString('pt-BR', {
+                    day: '2-digit',
+                    month: '2-digit',
+                    year: 'numeric',
+                    hour: '2-digit',
+                    minute: '2-digit'
+                });
+                denunciasDescription.textContent = 'Última atualização: ' + dataFormatada;
+            }
+        }
+
+        function resetarDescricaoDenuncias() {
+            const denunciasDescription = document.getElementById('denunciasDescription');
+            if (denunciasDescription) {
+                denunciasDescription.textContent = 'Denúncias das empresas';
+            }
+        }
+
+        function verificarOutrosProfissionais() {
+            const outrosProfissionaisData = localStorage.getItem('outros_profissionais');
+            const timestamp = localStorage.getItem('outros_profissionais_timestamp');
+            
+            if (outrosProfissionaisData && timestamp) {
+                const dataSync = new Date(parseInt(timestamp));
+                const agora = new Date();
+                const diffHoras = (agora - dataSync) / (1000 * 60 * 60);
+                
+                console.log('📋 OUTROS-PROFISSIONAIS: Outros profissionais local encontrado');
+                console.log('📅 Última atualização:', dataSync.toLocaleString());
+                console.log('⏰ Tempo desde sync:', Math.round(diffHoras), 'horas');
+                
+                // Verificar se os dados são muito antigos (mais de 24h)
+                if (diffHoras > 24) {
+                    console.log('⚠️ Aviso: Outros profissionais local desatualizado (mais de 24h)');
+                }
+            } else {
+                console.log('📋 OUTROS-PROFISSIONAIS: Nenhum outro profissional local encontrado');
+            }
+        }
+
+        function atualizarDescricaoOutrosProfissionais(timestamp) {
+            const outrosProfissionaisDescription = document.getElementById('outrosProfissionaisDescription');
+            if (outrosProfissionaisDescription) {
+                const data = new Date(timestamp);
+                const dataFormatada = data.toLocaleString('pt-BR', {
+                    day: '2-digit',
+                    month: '2-digit',
+                    year: 'numeric',
+                    hour: '2-digit',
+                    minute: '2-digit'
+                });
+                outrosProfissionaisDescription.textContent = 'Última atualização: ' + dataFormatada;
+            }
+        }
+
+        function resetarDescricaoOutrosProfissionais() {
+            const outrosProfissionaisDescription = document.getElementById('outrosProfissionaisDescription');
+            if (outrosProfissionaisDescription) {
+                outrosProfissionaisDescription.textContent = 'Outros profissionais das empresas';
+            }
+        }
+
+        function verificarOutrosVinculos() {
+            const outrosVinculosData = localStorage.getItem('outros_vinculos');
+            const timestamp = localStorage.getItem('outros_vinculos_timestamp');
+            
+            if (outrosVinculosData && timestamp) {
+                const dataSync = new Date(parseInt(timestamp));
+                const agora = new Date();
+                const diffHoras = (agora - dataSync) / (1000 * 60 * 60);
+                
+                console.log('📋 OUTROS-VINCULOS: Outros vínculos local encontrado');
+                console.log('📅 Última atualização:', dataSync.toLocaleString());
+                console.log('⏰ Tempo desde sync:', Math.round(diffHoras), 'horas');
+                
+                // Verificar se os dados são muito antigos (mais de 24h)
+                if (diffHoras > 24) {
+                    console.log('⚠️ Aviso: Outros vínculos local desatualizado (mais de 24h)');
+                }
+            } else {
+                console.log('📋 OUTROS-VINCULOS: Nenhum outro vínculo local encontrado');
+            }
+        }
+
+        function atualizarDescricaoOutrosVinculos(timestamp) {
+            const outrosVinculosDescription = document.getElementById('outrosVinculosDescription');
+            if (outrosVinculosDescription) {
+                const data = new Date(timestamp);
+                const dataFormatada = data.toLocaleString('pt-BR', {
+                    day: '2-digit',
+                    month: '2-digit',
+                    year: 'numeric',
+                    hour: '2-digit',
+                    minute: '2-digit'
+                });
+                outrosVinculosDescription.textContent = 'Última atualização: ' + dataFormatada;
+            }
+        }
+
+        function resetarDescricaoOutrosVinculos() {
+            const outrosVinculosDescription = document.getElementById('outrosVinculosDescription');
+            if (outrosVinculosDescription) {
+                outrosVinculosDescription.textContent = 'Outros vínculos dos farmacêuticos';
+            }
+        }
+
+        function verificarProcessosEticos() {
+            const processosEticosData = localStorage.getItem('processos_eticos');
+            const timestamp = localStorage.getItem('processos_eticos_timestamp');
+            
+            if (processosEticosData && timestamp) {
+                const dataSync = new Date(parseInt(timestamp));
+                const agora = new Date();
+                const diffHoras = (agora - dataSync) / (1000 * 60 * 60);
+                
+                console.log('📋 PROCESSOS-ETICOS: Processos éticos local encontrado');
+                console.log('📅 Última atualização:', dataSync.toLocaleString());
+                console.log('⏰ Tempo desde sync:', Math.round(diffHoras), 'horas');
+                
+                // Verificar se os dados são muito antigos (mais de 24h)
+                if (diffHoras > 24) {
+                    console.log('⚠️ Aviso: Processos éticos local desatualizado (mais de 24h)');
+                }
+            } else {
+                console.log('📋 PROCESSOS-ETICOS: Nenhum processo ético local encontrado');
+            }
+        }
+
+        function atualizarDescricaoProcessosEticos(timestamp) {
+            const processosEticosDescription = document.getElementById('processosEticosDescription');
+            if (processosEticosDescription) {
+                const data = new Date(timestamp);
+                const dataFormatada = data.toLocaleString('pt-BR', {
+                    day: '2-digit',
+                    month: '2-digit',
+                    year: 'numeric',
+                    hour: '2-digit',
+                    minute: '2-digit'
+                });
+                processosEticosDescription.textContent = 'Última atualização: ' + dataFormatada;
+            }
+        }
+
+        function resetarDescricaoProcessosEticos() {
+            const processosEticosDescription = document.getElementById('processosEticosDescription');
+            if (processosEticosDescription) {
+                processosEticosDescription.textContent = 'Processos éticos dos farmacêuticos';
+            }
+        }
+
+        function visualizarEmpresasLocais() {
+            const dadosLocais = getEmpresasLocais();
+            
+            if (!dadosLocais) {
+                console.log('Nenhum dado local encontrado. Faça uma sincronização primeiro.');
+                return;
+            }
+
+            const empresas = dadosLocais.empresas;
+            const ativas = empresas.filter(empresa => empresa.ativo);
+            const inativas = empresas.filter(empresa => !empresa.ativo);
+            
+            // Mostrar JSON completo no console
+            console.log('=== JSON COMPLETO DAS EMPRESAS ===');
+            console.log('Empresas salvas no localStorage:');
+            console.log(JSON.stringify(empresas, null, 2));
+            console.log('=== FIM DO JSON ===');
+            
+            // Mostrar também dados estruturados
+            console.log('=== DADOS ESTRUTURADOS ===');
+            console.log('Total de empresas:', empresas.length);
+            console.log('Empresas ativas:', ativas.length);
+            console.log('Empresas inativas:', inativas.length);
+            console.log('Empresas ativas:', ativas);
+            console.log('Empresas inativas:', inativas);
+            console.log('=== FIM DOS DADOS ESTRUTURADOS ===');
+        }
+
+        function visualizarConfigTermo() {
+            const configData = localStorage.getItem('config_termo');
+            const timestamp = localStorage.getItem('config_termo_timestamp');
+            
+            if (!configData) {
+                console.log('Nenhuma configuração local encontrada. Baixe a configuração primeiro.');
+                return;
+            }
+
+            const config = JSON.parse(configData);
+            const dataSync = new Date(parseInt(timestamp));
+            
+            // Mostrar JSON completo no console
+            console.log('=== JSON COMPLETO DA CONFIGURAÇÃO ===');
+            console.log('Configuração salva no localStorage:');
+            console.log(JSON.stringify(config, null, 2));
+            console.log('=== FIM DO JSON ===');
+            
+            // Mostrar também dados estruturados
+            console.log('=== DADOS ESTRUTURADOS ===');
+            console.log('Data de download:', dataSync.toLocaleString());
+            console.log('Total de campos:', Object.keys(config).filter(key => !isNaN(key)).length);
+            console.log('Mensagem:', config.msg);
+            
+            // Mostrar alguns campos de exemplo
+            const campos = Object.keys(config).filter(key => !isNaN(key));
+            console.log('Primeiros 5 campos:');
+            campos.slice(0, 5).forEach(key => {
+                const campo = config[key];
+                console.log('Campo ' + key + ':', {
+                    titulo: campo.titulo_campo,
+                    tipo: campo.tipo_resposta,
+                    ordem: campo.ordem,
+                    opcoes: campo.opcoes ? campo.opcoes.length : 0
+                });
+            });
+            console.log('=== FIM DOS DADOS ESTRUTURADOS ===');
+        }
+
+        function visualizarRtsHistorico() {
+            const rtsData = localStorage.getItem('rts_historico');
+            const timestamp = localStorage.getItem('rts_historico_timestamp');
+            
+            if (!rtsData) {
+                console.log('Nenhum histórico local encontrado. Baixe o histórico primeiro.');
+                return;
+            }
+
+            const rts = JSON.parse(rtsData);
+            const dataSync = new Date(parseInt(timestamp));
+            
+            // Mostrar JSON completo no console
+            console.log('=== JSON COMPLETO DO HISTÓRICO RTS ===');
+            console.log('Histórico salvo no localStorage:');
+            console.log(JSON.stringify(rts, null, 2));
+            console.log('=== FIM DO JSON ===');
+            
+            // Mostrar também dados estruturados
+            console.log('=== DADOS ESTRUTURADOS ===');
+            console.log('Data de download:', dataSync.toLocaleString());
+            console.log('Total de registros:', Object.keys(rts).filter(key => !isNaN(key)).length);
+            console.log('Mensagem:', rts.msg);
+            
+            // Mostrar alguns registros de exemplo
+            const registros = Object.keys(rts).filter(key => !isNaN(key));
+            console.log('Primeiros 5 registros:');
+            registros.slice(0, 5).forEach(key => {
+                const registro = rts[key];
+                console.log('Registro ' + key + ':', {
+                    empresa: registro.empresa || 'N/A',
+                    rts: registro.rts || 'N/A',
+                    data: registro.data || 'N/A',
+                    status: registro.status || 'N/A'
+                });
+            });
+            console.log('=== FIM DOS DADOS ESTRUTURADOS ===');
+        }
+
+        function visualizarTiposInspecao() {
+            const tiposData = localStorage.getItem('tipos_inspecao');
+            const timestamp = localStorage.getItem('tipos_inspecao_timestamp');
+            
+            if (!tiposData) {
+                console.log('Nenhum tipo local encontrado. Baixe os tipos primeiro.');
+                return;
+            }
+
+            const tipos = JSON.parse(tiposData);
+            const dataSync = new Date(parseInt(timestamp));
+            
+            // Mostrar JSON completo no console
+            console.log('=== JSON COMPLETO DOS TIPOS DE INSPEÇÃO ===');
+            console.log('Tipos salvos no localStorage:');
+            console.log(JSON.stringify(tipos, null, 2));
+            console.log('=== FIM DO JSON ===');
+            
+            // Mostrar também dados estruturados
+            console.log('=== DADOS ESTRUTURADOS ===');
+            console.log('Data de download:', dataSync.toLocaleString());
+            console.log('Total de tipos:', Object.keys(tipos).filter(key => !isNaN(key)).length);
+            console.log('Mensagem:', tipos.msg);
+            
+            // Mostrar todos os tipos
+            const tiposList = Object.keys(tipos).filter(key => !isNaN(key));
+            console.log('Tipos de inspeção disponíveis:');
+            tiposList.forEach(key => {
+                const tipo = tipos[key];
+                console.log('Tipo ' + key + ':', {
+                    id: tipo.idtipo_inspecao,
+                    nome: tipo.nome
+                });
+            });
+            console.log('=== FIM DOS DADOS ESTRUTURADOS ===');
+        }
+
+        function visualizarInspecoesHistorico() {
+            const inspecoesData = localStorage.getItem('inspecoes_historico');
+            const timestamp = localStorage.getItem('inspecoes_historico_timestamp');
+            
+            if (!inspecoesData) {
+                console.log('Nenhum histórico local encontrado. Baixe o histórico primeiro.');
+                return;
+            }
+
+            const inspecoes = JSON.parse(inspecoesData);
+            const dataSync = new Date(parseInt(timestamp));
+            
+            // Mostrar JSON completo no console
+            console.log('=== JSON COMPLETO DO HISTÓRICO DE INSPEÇÕES ===');
+            console.log('Histórico salvo no localStorage:');
+            console.log(JSON.stringify(inspecoes, null, 2));
+            console.log('=== FIM DO JSON ===');
+            
+            // Mostrar também dados estruturados
+            console.log('=== DADOS ESTRUTURADOS ===');
+            console.log('Data de download:', dataSync.toLocaleString());
+            console.log('Total de registros:', Object.keys(inspecoes).filter(key => !isNaN(key)).length);
+            console.log('Mensagem:', inspecoes.msg);
+            
+            // Mostrar alguns registros de exemplo
+            const registros = Object.keys(inspecoes).filter(key => !isNaN(key));
+            console.log('Primeiros 5 registros:');
+            registros.slice(0, 5).forEach(key => {
+                const registro = inspecoes[key];
+                console.log('Registro ' + key + ':', {
+                    empresa: registro.empresa || 'N/A',
+                    data: registro.data || 'N/A',
+                    tipo: registro.tipo || 'N/A',
+                    resultado: registro.resultado || 'N/A'
+                });
+            });
+            console.log('=== FIM DOS DADOS ESTRUTURADOS ===');
+        }
+
+        function visualizarProtocolos() {
+            const protocolosData = localStorage.getItem('protocolos');
+            const timestamp = localStorage.getItem('protocolos_timestamp');
+            
+            if (!protocolosData) {
+                console.log('Nenhum protocolo local encontrado. Baixe os protocolos primeiro.');
+                return;
+            }
+
+            const protocolos = JSON.parse(protocolosData);
+            const dataSync = new Date(parseInt(timestamp));
+            
+            // Mostrar JSON completo no console
+            console.log('=== JSON COMPLETO DOS PROTOCOLOS ===');
+            console.log('Protocolos salvos no localStorage:');
+            console.log(JSON.stringify(protocolos, null, 2));
+            console.log('=== FIM DO JSON ===');
+            
+            // Mostrar também dados estruturados
+            console.log('=== DADOS ESTRUTURADOS ===');
+            console.log('Data de download:', dataSync.toLocaleString());
+            console.log('Total de registros:', Object.keys(protocolos).filter(key => !isNaN(key)).length);
+            console.log('Mensagem:', protocolos.msg);
+            
+            // Mostrar alguns registros de exemplo
+            const registros = Object.keys(protocolos).filter(key => !isNaN(key));
+            console.log('Primeiros 5 registros:');
+            registros.slice(0, 5).forEach(key => {
+                const registro = protocolos[key];
+                console.log('Registro ' + key + ':', {
+                    empresa: registro.empresa || 'N/A',
+                    protocolo: registro.protocolo || 'N/A',
+                    data: registro.data || 'N/A',
+                    status: registro.status || 'N/A'
+                });
+            });
+            console.log('=== FIM DOS DADOS ESTRUTURADOS ===');
+        }
+
+        function visualizarAfastamentos() {
+            const afastamentosData = localStorage.getItem('afastamentos');
+            const timestamp = localStorage.getItem('afastamentos_timestamp');
+            
+            if (!afastamentosData) {
+                console.log('Nenhum afastamento local encontrado. Baixe os afastamentos primeiro.');
+                return;
+            }
+
+            const afastamentos = JSON.parse(afastamentosData);
+            const dataSync = new Date(parseInt(timestamp));
+            
+            // Mostrar JSON completo no console
+            console.log('=== JSON COMPLETO DOS AFASTAMENTOS ===');
+            console.log('Afastamentos salvos no localStorage:');
+            console.log(JSON.stringify(afastamentos, null, 2));
+            console.log('=== FIM DO JSON ===');
+            
+            // Mostrar também dados estruturados
+            console.log('=== DADOS ESTRUTURADOS ===');
+            console.log('Data de download:', dataSync.toLocaleString());
+            console.log('Total de registros:', Object.keys(afastamentos).filter(key => !isNaN(key)).length);
+            console.log('Mensagem:', afastamentos.msg);
+            
+            // Mostrar alguns registros de exemplo
+            const registros = Object.keys(afastamentos).filter(key => !isNaN(key));
+            console.log('Primeiros 5 registros:');
+            registros.slice(0, 5).forEach(key => {
+                const registro = afastamentos[key];
+                console.log('Registro ' + key + ':', {
+                    empresa: registro.empresa || 'N/A',
+                    farmaceutico: registro.farmaceutico || 'N/A',
+                    data_inicio: registro.data_inicio || 'N/A',
+                    data_fim: registro.data_fim || 'N/A',
+                    motivo: registro.motivo || 'N/A'
+                });
+            });
+            console.log('=== FIM DOS DADOS ESTRUTURADOS ===');
+        }
+
+        function visualizarDenuncias() {
+            const denunciasData = localStorage.getItem('denuncias');
+            const timestamp = localStorage.getItem('denuncias_timestamp');
+            
+            if (!denunciasData) {
+                console.log('Nenhuma denúncia local encontrado. Baixe as denúncias primeiro.');
+                return;
+            }
+
+            const denuncias = JSON.parse(denunciasData);
+            const dataSync = new Date(parseInt(timestamp));
+            
+            // Mostrar JSON completo no console
+            console.log('=== JSON COMPLETO DAS DENUNCIAS ===');
+            console.log('Denúncias salvos no localStorage:');
+            console.log(JSON.stringify(denuncias, null, 2));
+            console.log('=== FIM DO JSON ===');
+            
+            // Mostrar também dados estruturados
+            console.log('=== DADOS ESTRUTURADOS ===');
+            console.log('Data de download:', dataSync.toLocaleString());
+            console.log('Total de registros:', Object.keys(denuncias).filter(key => !isNaN(key)).length);
+            console.log('Mensagem:', denuncias.msg);
+            
+            // Mostrar alguns registros de exemplo
+            const registros = Object.keys(denuncias).filter(key => !isNaN(key));
+            console.log('Primeiros 5 registros:');
+            registros.slice(0, 5).forEach(key => {
+                const registro = denuncias[key];
+                console.log('Registro ' + key + ':', {
+                    empresa: registro.empresa || 'N/A',
+                    denunciante: registro.denunciante || 'N/A',
+                    data_denuncia: registro.data_denuncia || 'N/A',
+                    descricao: registro.descricao || 'N/A',
+                    status: registro.status || 'N/A'
+                });
+            });
+            console.log('=== FIM DOS DADOS ESTRUTURADOS ===');
+        }
+
+        function visualizarOutrosProfissionais() {
+            const outrosProfissionaisData = localStorage.getItem('outros_profissionais');
+            const timestamp = localStorage.getItem('outros_profissionais_timestamp');
+            
+            if (!outrosProfissionaisData) {
+                console.log('Nenhum outro profissional local encontrado. Baixe os outros profissionais primeiro.');
+                return;
+            }
+
+            const outrosProfissionais = JSON.parse(outrosProfissionaisData);
+            const dataSync = new Date(parseInt(timestamp));
+            
+            // Mostrar JSON completo no console
+            console.log('=== JSON COMPLETO DOS OUTROS PROFISSIONAIS ===');
+            console.log('Outros profissionais salvos no localStorage:');
+            console.log(JSON.stringify(outrosProfissionais, null, 2));
+            console.log('=== FIM DO JSON ===');
+            
+            // Mostrar também dados estruturados
+            console.log('=== DADOS ESTRUTURADOS ===');
+            console.log('Data de download:', dataSync.toLocaleString());
+            console.log('Total de registros:', Object.keys(outrosProfissionais).filter(key => !isNaN(key)).length);
+            console.log('Mensagem:', outrosProfissionais.msg);
+            
+            // Mostrar alguns registros de exemplo
+            const registros = Object.keys(outrosProfissionais).filter(key => !isNaN(key));
+            console.log('Primeiros 5 registros:');
+            registros.slice(0, 5).forEach(key => {
+                const registro = outrosProfissionais[key];
+                console.log('Registro ' + key + ':', {
+                    empresa: registro.empresa || 'N/A',
+                    profissional: registro.profissional || 'N/A',
+                    cargo: registro.cargo || 'N/A',
+                    registro: registro.registro || 'N/A',
+                    status: registro.status || 'N/A'
+                });
+            });
+            console.log('=== FIM DOS DADOS ESTRUTURADOS ===');
+        }
+
+        function visualizarOutrosVinculos() {
+            const outrosVinculosData = localStorage.getItem('outros_vinculos');
+            const timestamp = localStorage.getItem('outros_vinculos_timestamp');
+            
+            if (!outrosVinculosData) {
+                console.log('Nenhum outro vínculo local encontrado. Baixe os outros vínculos primeiro.');
+                return;
+            }
+
+            const outrosVinculos = JSON.parse(outrosVinculosData);
+            const dataSync = new Date(parseInt(timestamp));
+            
+            // Mostrar JSON completo no console
+            console.log('=== JSON COMPLETO DOS OUTROS VINCULOS ===');
+            console.log('Outros vínculos salvos no localStorage:');
+            console.log(JSON.stringify(outrosVinculos, null, 2));
+            console.log('=== FIM DO JSON ===');
+            
+            // Mostrar também dados estruturados
+            console.log('=== DADOS ESTRUTURADOS ===');
+            console.log('Data de download:', dataSync.toLocaleString());
+            console.log('Total de registros:', Object.keys(outrosVinculos).filter(key => !isNaN(key)).length);
+            console.log('Mensagem:', outrosVinculos.msg);
+            
+            // Mostrar alguns registros de exemplo
+            const registros = Object.keys(outrosVinculos).filter(key => !isNaN(key));
+            console.log('Primeiros 5 registros:');
+            registros.slice(0, 5).forEach(key => {
+                const registro = outrosVinculos[key];
+                console.log('Registro ' + key + ':', {
+                    farmaceutico: registro.farmaceutico || 'N/A',
+                    empresa: registro.empresa || 'N/A',
+                    vinculo: registro.vinculo || 'N/A',
+                    data_inicio: registro.data_inicio || 'N/A',
+                    data_fim: registro.data_fim || 'N/A',
+                    status: registro.status || 'N/A'
+                });
+            });
+            console.log('=== FIM DOS DADOS ESTRUTURADOS ===');
+        }
+
+        function visualizarProcessosEticos() {
+            const processosEticosData = localStorage.getItem('processos_eticos');
+            const timestamp = localStorage.getItem('processos_eticos_timestamp');
+            
+            if (!processosEticosData) {
+                console.log('Nenhum processo ético local encontrado. Baixe os processos éticos primeiro.');
+                return;
+            }
+
+            const processosEticos = JSON.parse(processosEticosData);
+            const dataSync = new Date(parseInt(timestamp));
+            
+            // Mostrar JSON completo no console
+            console.log('=== JSON COMPLETO DOS PROCESSOS ETICOS ===');
+            console.log('Processos éticos salvos no localStorage:');
+            console.log(JSON.stringify(processosEticos, null, 2));
+            console.log('=== FIM DO JSON ===');
+            
+            // Mostrar também dados estruturados
+            console.log('=== DADOS ESTRUTURADOS ===');
+            console.log('Data de download:', dataSync.toLocaleString());
+            console.log('Total de registros:', Object.keys(processosEticos).filter(key => !isNaN(key)).length);
+            console.log('Mensagem:', processosEticos.msg);
+            
+            // Mostrar alguns registros de exemplo
+            const registros = Object.keys(processosEticos).filter(key => !isNaN(key));
+            console.log('Primeiros 5 registros:');
+            registros.slice(0, 5).forEach(key => {
+                const registro = processosEticos[key];
+                console.log('Registro ' + key + ':', {
+                    farmaceutico: registro.farmaceutico || 'N/A',
+                    processo: registro.processo || 'N/A',
+                    data_abertura: registro.data_abertura || 'N/A',
+                    data_conclusao: registro.data_conclusao || 'N/A',
+                    status: registro.status || 'N/A',
+                    descricao: registro.descricao || 'N/A'
+                });
+            });
+            console.log('=== FIM DOS DADOS ESTRUTURADOS ===');
         }
 
         function abrirModal(tipo) {
@@ -927,13 +2992,16 @@ const appHtmlContent = `<!DOCTYPE html>
             
             switch(tipo) {
                 case 'pendentes':
-                    empresasFiltradas = dadosLocais.empresas.filter(empresa => empresa.status === 0);
+                    // Mostrar apenas empresas pendentes E ativas
+                    empresasFiltradas = dadosLocais.empresas.filter(empresa => empresa.status === 0 && empresa.ativo);
                     break;
                 case 'realizadas':
-                    empresasFiltradas = dadosLocais.empresas.filter(empresa => empresa.status === 1);
+                    // Mostrar apenas empresas realizadas E ativas
+                    empresasFiltradas = dadosLocais.empresas.filter(empresa => empresa.status === 1 && empresa.ativo);
                     break;
                 case 'total':
-                    empresasFiltradas = dadosLocais.empresas;
+                    // Mostrar apenas empresas ativas
+                    empresasFiltradas = dadosLocais.empresas.filter(empresa => empresa.ativo);
                     break;
             }
 
@@ -948,6 +3016,7 @@ const appHtmlContent = `<!DOCTYPE html>
                         '<div class="empresa-item">' +
                         '<div class="empresa-inscricao">' + (empresa.cnpj || 'N/A') + '</div>' +
                         '<div class="empresa-razao">' + (empresa.razao || empresa.nome || 'N/A') + '</div>' +
+                        '<div class="empresa-endereco">' + (empresa.endereco || 'N/A') + ', ' + (empresa.cidade || 'N/A') + ' - ' + (empresa.uf || 'N/A') + '</div>' +
                         '</div>'
                     ).join('');
                     
@@ -1117,6 +3186,742 @@ const server = http.createServer((req, res) => {
             res.end(JSON.stringify({ error: 'Erro de conexão com a API' }));
         });
 
+        proxyReq.end();
+        return;
+    }
+
+    // API para buscar configuração do termo de inspeção
+    if (req.url === '/api/config-termo' && req.method === 'GET') {
+        const sessionId = req.headers['x-session-id'] || req.headers['authorization'];
+        
+        if (!sessionId || !sessions.has(sessionId)) {
+            res.writeHead(401, { 'Content-Type': 'application/json' });
+            res.end(JSON.stringify({
+                success: false,
+                message: 'Sessão inválida'
+            }));
+            return;
+        }
+
+        console.log('📋 CONFIG-TERMO: Buscando configuração do termo de inspeção');
+
+        const options = {
+            hostname: 'farmasis.crfrs.org.br',
+            port: 443,
+            path: '/ws/fem/campostv-json.php',
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded'
+            }
+        };
+
+        const proxyReq = https.request(options, (proxyRes) => {
+            let data = '';
+            proxyRes.on('data', (chunk) => {
+                data += chunk;
+            });
+            
+            proxyRes.on('end', () => {
+                try {
+                    // Verificar se a resposta começa com HTML (erro comum)
+                    if (data.trim().startsWith('<!DOCTYPE') || data.trim().startsWith('<html')) {
+                        console.log('💥 CONFIG-TERMO: API retornou HTML em vez de JSON');
+                        res.writeHead(500, { 'Content-Type': 'application/json' });
+                        res.end(JSON.stringify({ 
+                            msg: 'erro',
+                            error: 'API retornou HTML em vez de JSON',
+                            message: 'Erro de comunicação com o servidor'
+                        }));
+                        return;
+                    }
+                    
+                    const responseData = JSON.parse(data);
+                    console.log('📋 CONFIG-TERMO: Resposta da API CRF:', responseData.msg);
+                    
+                    if (responseData.msg === 'sucesso') {
+                        // Contar quantos campos foram encontrados
+                        const campos = Object.keys(responseData).filter(key => !isNaN(key)).length;
+                        console.log('📋 CONFIG-TERMO: Campos encontrados:', campos);
+                    } else {
+                        console.log('📋 CONFIG-TERMO: Nenhum campo encontrado');
+                    }
+                    
+                    res.writeHead(200, { 'Content-Type': 'application/json' });
+                    res.end(data);
+                } catch (error) {
+                    console.log('💥 CONFIG-TERMO: Erro ao processar resposta:', error);
+                    res.writeHead(500, { 'Content-Type': 'application/json' });
+                    res.end(JSON.stringify({ 
+                        msg: 'erro',
+                        error: 'Erro ao processar dados da configuração',
+                        message: 'Erro ao processar dados da configuração'
+                    }));
+                }
+            });
+        });
+
+        proxyReq.on('error', (err) => {
+            console.log('💥 CONFIG-TERMO: Erro na requisição:', err);
+            res.writeHead(500, { 'Content-Type': 'application/json' });
+            res.end(JSON.stringify({ 
+                msg: 'erro',
+                error: 'Erro de conexão com a API',
+                message: 'Erro de conexão com a API'
+            }));
+        });
+
+        proxyReq.end();
+        return;
+    }
+
+    // API para buscar histórico de RTS
+    if (req.url === '/api/rts-historico' && req.method === 'POST') {
+        const sessionId = req.headers['x-session-id'] || req.headers['authorization'];
+        
+        if (!sessionId || !sessions.has(sessionId)) {
+            res.writeHead(401, { 'Content-Type': 'application/json' });
+            res.end(JSON.stringify({
+                success: false,
+                message: 'Sessão inválida'
+            }));
+            return;
+        }
+
+        const session = sessions.get(sessionId);
+        const userId = session.user.id;
+
+        console.log('📋 RTS-HISTORICO: Buscando histórico de RTS para fiscal ID:', userId);
+
+        const postData = `iduser=${userId}`;
+
+        const options = {
+            hostname: 'farmasis.crfrs.org.br',
+            port: 443,
+            path: '/ws/fem/rts-hist-json.php',
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded',
+                'Content-Length': Buffer.byteLength(postData)
+            }
+        };
+
+        const proxyReq = https.request(options, (proxyRes) => {
+            let data = '';
+            proxyRes.on('data', (chunk) => {
+                data += chunk;
+            });
+            
+            proxyRes.on('end', () => {
+                try {
+                    const responseData = JSON.parse(data);
+                    console.log('📋 RTS-HISTORICO: Resposta da API CRF:', responseData.msg);
+                    
+                    if (responseData.msg === 'sucesso') {
+                        // Contar quantos registros foram encontrados
+                        const registros = Object.keys(responseData).filter(key => !isNaN(key)).length;
+                        console.log('📋 RTS-HISTORICO: Registros encontrados:', registros);
+                    } else {
+                        console.log('📋 RTS-HISTORICO: Nenhum registro encontrado');
+                    }
+                    
+                    res.writeHead(200, { 'Content-Type': 'application/json' });
+                    res.end(data);
+                } catch (error) {
+                    console.log('💥 RTS-HISTORICO: Erro ao processar resposta:', error);
+                    res.writeHead(500, { 'Content-Type': 'application/json' });
+                    res.end(JSON.stringify({ error: 'Erro ao processar dados do histórico' }));
+                }
+            });
+        });
+
+        proxyReq.on('error', (err) => {
+            console.log('💥 RTS-HISTORICO: Erro na requisição:', err);
+            res.writeHead(500, { 'Content-Type': 'application/json' });
+            res.end(JSON.stringify({ error: 'Erro de conexão com a API' }));
+        });
+
+        proxyReq.write(postData);
+        proxyReq.end();
+        return;
+    }
+
+    // API para buscar tipos de inspeção
+    if (req.url === '/api/tipos-inspecao' && req.method === 'GET') {
+        const sessionId = req.headers['x-session-id'] || req.headers['authorization'];
+        
+        if (!sessionId || !sessions.has(sessionId)) {
+            res.writeHead(401, { 'Content-Type': 'application/json' });
+            res.end(JSON.stringify({
+                success: false,
+                message: 'Sessão inválida'
+            }));
+            return;
+        }
+
+        console.log('📋 TIPOS-INSPECAO: Buscando tipos de inspeção');
+
+        const options = {
+            hostname: 'farmasis.crfrs.org.br',
+            port: 443,
+            path: '/ws/fem/tiposinspecao-json.php',
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded'
+            }
+        };
+
+        const proxyReq = https.request(options, (proxyRes) => {
+            let data = '';
+            proxyRes.on('data', (chunk) => {
+                data += chunk;
+            });
+            
+            proxyRes.on('end', () => {
+                try {
+                    // Verificar se a resposta começa com HTML (erro comum)
+                    if (data.trim().startsWith('<!DOCTYPE') || data.trim().startsWith('<html')) {
+                        console.log('💥 TIPOS-INSPECAO: API retornou HTML em vez de JSON');
+                        res.writeHead(500, { 'Content-Type': 'application/json' });
+                        res.end(JSON.stringify({ 
+                            msg: 'erro',
+                            error: 'API retornou HTML em vez de JSON',
+                            message: 'Erro de comunicação com o servidor'
+                        }));
+                        return;
+                    }
+                    
+                    const responseData = JSON.parse(data);
+                    console.log('📋 TIPOS-INSPECAO: Resposta da API CRF:', responseData.msg);
+                    
+                    if (responseData.msg === 'sucesso') {
+                        // Contar quantos tipos foram encontrados
+                        const tipos = Object.keys(responseData).filter(key => !isNaN(key)).length;
+                        console.log('📋 TIPOS-INSPECAO: Tipos encontrados:', tipos);
+                    } else {
+                        console.log('📋 TIPOS-INSPECAO: Nenhum tipo encontrado');
+                    }
+                    
+                    res.writeHead(200, { 'Content-Type': 'application/json' });
+                    res.end(data);
+                } catch (error) {
+                    console.log('💥 TIPOS-INSPECAO: Erro ao processar resposta:', error);
+                    res.writeHead(500, { 'Content-Type': 'application/json' });
+                    res.end(JSON.stringify({ 
+                        msg: 'erro',
+                        error: 'Erro ao processar dados dos tipos',
+                        message: 'Erro ao processar dados dos tipos'
+                    }));
+                }
+            });
+        });
+
+        proxyReq.on('error', (err) => {
+            console.log('💥 TIPOS-INSPECAO: Erro na requisição:', err);
+            res.writeHead(500, { 'Content-Type': 'application/json' });
+            res.end(JSON.stringify({ 
+                msg: 'erro',
+                error: 'Erro de conexão com a API',
+                message: 'Erro de conexão com a API'
+            }));
+        });
+
+        proxyReq.end();
+        return;
+    }
+
+    // API para buscar histórico de inspeções
+    if (req.url === '/api/inspecoes-historico' && req.method === 'POST') {
+        const sessionId = req.headers['x-session-id'] || req.headers['authorization'];
+        
+        if (!sessionId || !sessions.has(sessionId)) {
+            res.writeHead(401, { 'Content-Type': 'application/json' });
+            res.end(JSON.stringify({
+                success: false,
+                message: 'Sessão inválida'
+            }));
+            return;
+        }
+
+        const session = sessions.get(sessionId);
+        const userId = session.user.id;
+
+        console.log('📋 INSPECOES-HISTORICO: Buscando histórico de inspeções para fiscal ID:', userId);
+
+        const postData = `iduser=${userId}`;
+
+        const options = {
+            hostname: 'farmasis.crfrs.org.br',
+            port: 443,
+            path: '/ws/fem/inspecoes-json.php',
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded',
+                'Content-Length': Buffer.byteLength(postData)
+            }
+        };
+
+        const proxyReq = https.request(options, (proxyRes) => {
+            let data = '';
+            proxyRes.on('data', (chunk) => {
+                data += chunk;
+            });
+            
+            proxyRes.on('end', () => {
+                try {
+                    const responseData = JSON.parse(data);
+                    console.log('📋 INSPECOES-HISTORICO: Resposta da API CRF:', responseData.msg);
+                    
+                    if (responseData.msg === 'sucesso') {
+                        // Contar quantos registros foram encontrados
+                        const registros = Object.keys(responseData).filter(key => !isNaN(key)).length;
+                        console.log('📋 INSPECOES-HISTORICO: Registros encontrados:', registros);
+                    } else {
+                        console.log('📋 INSPECOES-HISTORICO: Nenhum registro encontrado');
+                    }
+                    
+                    res.writeHead(200, { 'Content-Type': 'application/json' });
+                    res.end(data);
+                } catch (error) {
+                    console.log('💥 INSPECOES-HISTORICO: Erro ao processar resposta:', error);
+                    res.writeHead(500, { 'Content-Type': 'application/json' });
+                    res.end(JSON.stringify({ error: 'Erro ao processar dados do histórico' }));
+                }
+            });
+        });
+
+        proxyReq.on('error', (err) => {
+            console.log('💥 INSPECOES-HISTORICO: Erro na requisição:', err);
+            res.writeHead(500, { 'Content-Type': 'application/json' });
+            res.end(JSON.stringify({ error: 'Erro de conexão com a API' }));
+        });
+
+        proxyReq.write(postData);
+        proxyReq.end();
+        return;
+    }
+
+    // API para buscar protocolos
+    if (req.url === '/api/protocolos' && req.method === 'POST') {
+        const sessionId = req.headers['x-session-id'] || req.headers['authorization'];
+        
+        if (!sessionId || !sessions.has(sessionId)) {
+            res.writeHead(401, { 'Content-Type': 'application/json' });
+            res.end(JSON.stringify({
+                success: false,
+                message: 'Sessão inválida'
+            }));
+            return;
+        }
+
+        const session = sessions.get(sessionId);
+        const userId = session.user.id;
+
+        console.log('📋 PROTOCOLOS: Buscando protocolos para fiscal ID:', userId);
+
+        const postData = `iduser=${userId}`;
+
+        const options = {
+            hostname: 'farmasis.crfrs.org.br',
+            port: 443,
+            path: '/ws/fem/protocolos-json.php',
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded',
+                'Content-Length': Buffer.byteLength(postData)
+            }
+        };
+
+        const proxyReq = https.request(options, (proxyRes) => {
+            let data = '';
+            proxyRes.on('data', (chunk) => {
+                data += chunk;
+            });
+            
+            proxyRes.on('end', () => {
+                try {
+                    const responseData = JSON.parse(data);
+                    console.log('📋 PROTOCOLOS: Resposta da API CRF:', responseData.msg);
+                    
+                    if (responseData.msg === 'sucesso') {
+                        // Contar quantos registros foram encontrados
+                        const registros = Object.keys(responseData).filter(key => !isNaN(key)).length;
+                        console.log('📋 PROTOCOLOS: Registros encontrados:', registros);
+                    } else {
+                        console.log('📋 PROTOCOLOS: Nenhum registro encontrado');
+                    }
+                    
+                    res.writeHead(200, { 'Content-Type': 'application/json' });
+                    res.end(data);
+                } catch (error) {
+                    console.log('💥 PROTOCOLOS: Erro ao processar resposta:', error);
+                    res.writeHead(500, { 'Content-Type': 'application/json' });
+                    res.end(JSON.stringify({ error: 'Erro ao processar dados dos protocolos' }));
+                }
+            });
+        });
+
+        proxyReq.on('error', (err) => {
+            console.log('💥 PROTOCOLOS: Erro na requisição:', err);
+            res.writeHead(500, { 'Content-Type': 'application/json' });
+            res.end(JSON.stringify({ error: 'Erro de conexão com a API' }));
+        });
+
+        proxyReq.write(postData);
+        proxyReq.end();
+        return;
+    }
+
+    // API para buscar afastamentos
+    if (req.url === '/api/afastamentos' && req.method === 'POST') {
+        const sessionId = req.headers['x-session-id'] || req.headers['authorization'];
+        
+        if (!sessionId || !sessions.has(sessionId)) {
+            res.writeHead(401, { 'Content-Type': 'application/json' });
+            res.end(JSON.stringify({
+                success: false,
+                message: 'Sessão inválida'
+            }));
+            return;
+        }
+
+        const session = sessions.get(sessionId);
+        const userId = session.user.id;
+
+        console.log('📋 AFASTAMENTOS: Buscando afastamentos para fiscal ID:', userId);
+
+        const postData = `iduser=${userId}`;
+
+        const options = {
+            hostname: 'farmasis.crfrs.org.br',
+            port: 443,
+            path: '/ws/fem/afastamentos-json.php',
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded',
+                'Content-Length': Buffer.byteLength(postData)
+            }
+        };
+
+        const proxyReq = https.request(options, (proxyRes) => {
+            let data = '';
+            proxyRes.on('data', (chunk) => {
+                data += chunk;
+            });
+            
+            proxyRes.on('end', () => {
+                try {
+                    const responseData = JSON.parse(data);
+                    console.log('📋 AFASTAMENTOS: Resposta da API CRF:', responseData.msg);
+                    
+                    if (responseData.msg === 'sucesso') {
+                        // Contar quantos registros foram encontrados
+                        const registros = Object.keys(responseData).filter(key => !isNaN(key)).length;
+                        console.log('📋 AFASTAMENTOS: Registros encontrados:', registros);
+                    } else {
+                        console.log('📋 AFASTAMENTOS: Nenhum registro encontrado');
+                    }
+                    
+                    res.writeHead(200, { 'Content-Type': 'application/json' });
+                    res.end(data);
+                } catch (error) {
+                    console.log('💥 AFASTAMENTOS: Erro ao processar resposta:', error);
+                    res.writeHead(500, { 'Content-Type': 'application/json' });
+                    res.end(JSON.stringify({ error: 'Erro ao processar dados dos afastamentos' }));
+                }
+            });
+        });
+
+        proxyReq.on('error', (err) => {
+            console.log('💥 AFASTAMENTOS: Erro na requisição:', err);
+            res.writeHead(500, { 'Content-Type': 'application/json' });
+            res.end(JSON.stringify({ error: 'Erro de conexão com a API' }));
+        });
+
+        proxyReq.write(postData);
+        proxyReq.end();
+        return;
+    }
+
+    // API para buscar denúncias
+    if (req.url === '/api/denuncias' && req.method === 'POST') {
+        const sessionId = req.headers['x-session-id'] || req.headers['authorization'];
+        
+        if (!sessionId || !sessions.has(sessionId)) {
+            res.writeHead(401, { 'Content-Type': 'application/json' });
+            res.end(JSON.stringify({
+                success: false,
+                message: 'Sessão inválida'
+            }));
+            return;
+        }
+
+        const session = sessions.get(sessionId);
+        const userId = session.user.id;
+
+        console.log('📋 DENUNCIAS: Buscando denúncias para fiscal ID:', userId);
+
+        const postData = `iduser=${userId}`;
+
+        const options = {
+            hostname: 'farmasis.crfrs.org.br',
+            port: 443,
+            path: '/ws/fem/denuncias-json.php',
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded',
+                'Content-Length': Buffer.byteLength(postData)
+            }
+        };
+
+        const proxyReq = https.request(options, (proxyRes) => {
+            let data = '';
+            proxyRes.on('data', (chunk) => {
+                data += chunk;
+            });
+            
+            proxyRes.on('end', () => {
+                try {
+                    const responseData = JSON.parse(data);
+                    console.log('📋 DENUNCIAS: Resposta da API CRF:', responseData.msg);
+                    
+                    if (responseData.msg === 'sucesso') {
+                        // Contar quantos registros foram encontrados
+                        const registros = Object.keys(responseData).filter(key => !isNaN(key)).length;
+                        console.log('📋 DENUNCIAS: Registros encontrados:', registros);
+                    } else {
+                        console.log('📋 DENUNCIAS: Nenhum registro encontrado');
+                    }
+                    
+                    res.writeHead(200, { 'Content-Type': 'application/json' });
+                    res.end(data);
+                } catch (error) {
+                    console.log('💥 DENUNCIAS: Erro ao processar resposta:', error);
+                    res.writeHead(500, { 'Content-Type': 'application/json' });
+                    res.end(JSON.stringify({ error: 'Erro ao processar dados das denúncias' }));
+                }
+            });
+        });
+
+        proxyReq.on('error', (err) => {
+            console.log('💥 DENUNCIAS: Erro na requisição:', err);
+            res.writeHead(500, { 'Content-Type': 'application/json' });
+            res.end(JSON.stringify({ error: 'Erro de conexão com a API' }));
+        });
+
+        proxyReq.write(postData);
+        proxyReq.end();
+        return;
+    }
+
+    // API para buscar outros profissionais
+    if (req.url === '/api/outros-profissionais' && req.method === 'POST') {
+        const sessionId = req.headers['x-session-id'] || req.headers['authorization'];
+        
+        if (!sessionId || !sessions.has(sessionId)) {
+            res.writeHead(401, { 'Content-Type': 'application/json' });
+            res.end(JSON.stringify({
+                success: false,
+                message: 'Sessão inválida'
+            }));
+            return;
+        }
+
+        const session = sessions.get(sessionId);
+        const userId = session.user.id;
+
+        console.log('📋 OUTROS-PROFISSIONAIS: Buscando outros profissionais para fiscal ID:', userId);
+
+        const postData = `iduser=${userId}`;
+
+        const options = {
+            hostname: 'farmasis.crfrs.org.br',
+            port: 443,
+            path: '/ws/fem/outro-job-json.php',
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded',
+                'Content-Length': Buffer.byteLength(postData)
+            }
+        };
+
+        const proxyReq = https.request(options, (proxyRes) => {
+            let data = '';
+            proxyRes.on('data', (chunk) => {
+                data += chunk;
+            });
+            
+            proxyRes.on('end', () => {
+                try {
+                    const responseData = JSON.parse(data);
+                    console.log('📋 OUTROS-PROFISSIONAIS: Resposta da API CRF:', responseData.msg);
+                    
+                    if (responseData.msg === 'sucesso') {
+                        // Contar quantos registros foram encontrados
+                        const registros = Object.keys(responseData).filter(key => !isNaN(key)).length;
+                        console.log('📋 OUTROS-PROFISSIONAIS: Registros encontrados:', registros);
+                    } else {
+                        console.log('📋 OUTROS-PROFISSIONAIS: Nenhum registro encontrado');
+                    }
+                    
+                    res.writeHead(200, { 'Content-Type': 'application/json' });
+                    res.end(data);
+                } catch (error) {
+                    console.log('💥 OUTROS-PROFISSIONAIS: Erro ao processar resposta:', error);
+                    res.writeHead(500, { 'Content-Type': 'application/json' });
+                    res.end(JSON.stringify({ error: 'Erro ao processar dados dos outros profissionais' }));
+                }
+            });
+        });
+
+        proxyReq.on('error', (err) => {
+            console.log('💥 OUTROS-PROFISSIONAIS: Erro na requisição:', err);
+            res.writeHead(500, { 'Content-Type': 'application/json' });
+            res.end(JSON.stringify({ error: 'Erro de conexão com a API' }));
+        });
+
+        proxyReq.write(postData);
+        proxyReq.end();
+        return;
+    }
+
+    // API para buscar outros vínculos profissionais
+    if (req.url === '/api/outros-vinculos' && req.method === 'POST') {
+        const sessionId = req.headers['x-session-id'] || req.headers['authorization'];
+        
+        if (!sessionId || !sessions.has(sessionId)) {
+            res.writeHead(401, { 'Content-Type': 'application/json' });
+            res.end(JSON.stringify({
+                success: false,
+                message: 'Sessão inválida'
+            }));
+            return;
+        }
+
+        const session = sessions.get(sessionId);
+        const userId = session.user.id;
+
+        console.log('📋 OUTROS-VINCULOS: Buscando outros vínculos para fiscal ID:', userId);
+
+        const postData = `iduser=${userId}`;
+
+        const options = {
+            hostname: 'farmasis.crfrs.org.br',
+            port: 443,
+            path: '/ws/fem/outro-job-prof-json.php',
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded',
+                'Content-Length': Buffer.byteLength(postData)
+            }
+        };
+
+        const proxyReq = https.request(options, (proxyRes) => {
+            let data = '';
+            proxyRes.on('data', (chunk) => {
+                data += chunk;
+            });
+            
+            proxyRes.on('end', () => {
+                try {
+                    const responseData = JSON.parse(data);
+                    console.log('📋 OUTROS-VINCULOS: Resposta da API CRF:', responseData.msg);
+                    
+                    if (responseData.msg === 'sucesso') {
+                        // Contar quantos registros foram encontrados
+                        const registros = Object.keys(responseData).filter(key => !isNaN(key)).length;
+                        console.log('📋 OUTROS-VINCULOS: Registros encontrados:', registros);
+                    } else {
+                        console.log('📋 OUTROS-VINCULOS: Nenhum registro encontrado');
+                    }
+                    
+                    res.writeHead(200, { 'Content-Type': 'application/json' });
+                    res.end(data);
+                } catch (error) {
+                    console.log('💥 OUTROS-VINCULOS: Erro ao processar resposta:', error);
+                    res.writeHead(500, { 'Content-Type': 'application/json' });
+                    res.end(JSON.stringify({ error: 'Erro ao processar dados dos outros vínculos' }));
+                }
+            });
+        });
+
+        proxyReq.on('error', (err) => {
+            console.log('💥 OUTROS-VINCULOS: Erro na requisição:', err);
+            res.writeHead(500, { 'Content-Type': 'application/json' });
+            res.end(JSON.stringify({ error: 'Erro de conexão com a API' }));
+        });
+
+        proxyReq.write(postData);
+        proxyReq.end();
+        return;
+    }
+
+    // API para buscar processos éticos
+    if (req.url === '/api/processos-eticos' && req.method === 'POST') {
+        const sessionId = req.headers['x-session-id'] || req.headers['authorization'];
+        
+        if (!sessionId || !sessions.has(sessionId)) {
+            res.writeHead(401, { 'Content-Type': 'application/json' });
+            res.end(JSON.stringify({
+                success: false,
+                message: 'Sessão inválida'
+            }));
+            return;
+        }
+
+        const session = sessions.get(sessionId);
+        const userId = session.user.id;
+
+        console.log('📋 PROCESSOS-ETICOS: Buscando processos éticos para fiscal ID:', userId);
+
+        const postData = `iduser=${userId}`;
+
+        const options = {
+            hostname: 'farmasis.crfrs.org.br',
+            port: 443,
+            path: '/ws/fem/etica-pf-json.php',
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded',
+                'Content-Length': Buffer.byteLength(postData)
+            }
+        };
+
+        const proxyReq = https.request(options, (proxyRes) => {
+            let data = '';
+            proxyRes.on('data', (chunk) => {
+                data += chunk;
+            });
+            
+            proxyRes.on('end', () => {
+                try {
+                    const responseData = JSON.parse(data);
+                    console.log('📋 PROCESSOS-ETICOS: Resposta da API CRF:', responseData.msg);
+                    
+                    if (responseData.msg === 'sucesso') {
+                        // Contar quantos registros foram encontrados
+                        const registros = Object.keys(responseData).filter(key => !isNaN(key)).length;
+                        console.log('📋 PROCESSOS-ETICOS: Registros encontrados:', registros);
+                    } else {
+                        console.log('📋 PROCESSOS-ETICOS: Nenhum registro encontrado');
+                    }
+                    
+                    res.writeHead(200, { 'Content-Type': 'application/json' });
+                    res.end(data);
+                } catch (error) {
+                    console.log('💥 PROCESSOS-ETICOS: Erro ao processar resposta:', error);
+                    res.writeHead(500, { 'Content-Type': 'application/json' });
+                    res.end(JSON.stringify({ error: 'Erro ao processar dados dos processos éticos' }));
+                }
+            });
+        });
+
+        proxyReq.on('error', (err) => {
+            console.log('💥 PROCESSOS-ETICOS: Erro na requisição:', err);
+            res.writeHead(500, { 'Content-Type': 'application/json' });
+            res.end(JSON.stringify({ error: 'Erro de conexão com a API' }));
+        });
+
+        proxyReq.write(postData);
         proxyReq.end();
         return;
     }
