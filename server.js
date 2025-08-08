@@ -273,6 +273,401 @@ const htmlContent = `<!DOCTYPE html>
 </body>
 </html>`;
 
+// Página de listar empresas
+const empresasHtmlContent = `<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FEM App - Listar Empresas</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background-color: #f5f5f5;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #3CB3A7 0%, #5F8C82 100%);
+            color: white;
+            padding: 8px 20px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        .header-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            font-size: 18px;
+            font-weight: bold;
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .user-name {
+            font-weight: 600;
+            font-size: 14px;
+        }
+
+        .back-btn {
+            background: rgba(255,255,255,0.2);
+            border: 1px solid rgba(255,255,255,0.3);
+            color: white;
+            padding: 6px 12px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 13px;
+            text-decoration: none;
+        }
+
+        .back-btn:hover {
+            background: rgba(255,255,255,0.3);
+        }
+
+        .main-content {
+            max-width: 1200px;
+            margin: 15px auto;
+            padding: 0 20px;
+        }
+
+        .page-header {
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .page-title {
+            font-size: 24px;
+            color: #333;
+            margin-bottom: 8px;
+        }
+
+        .page-subtitle {
+            font-size: 14px;
+            color: #666;
+            margin-bottom: 15px;
+        }
+
+        .stats-bar {
+            display: flex;
+            justify-content: space-around;
+            margin-top: 15px;
+        }
+
+        .stat-item {
+            text-align: center;
+        }
+
+        .stat-number {
+            font-size: 24px;
+            font-weight: bold;
+            color: #2C4B8C;
+        }
+
+        .stat-label {
+            font-size: 12px;
+            color: #666;
+        }
+
+        .empresas-container {
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+        }
+
+        .empresa-item {
+            background: #f8f9fa;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 10px;
+            border-left: 4px solid #2C4B8C;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .empresa-item:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(44, 75, 140, 0.2);
+        }
+
+        .empresa-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+
+        .empresa-inscricao {
+            font-weight: bold;
+            color: #333;
+            font-size: 16px;
+        }
+
+        .empresa-status {
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .status-pendente {
+            background: #fff3cd;
+            color: #856404;
+        }
+
+        .status-realizada {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .empresa-razao {
+            color: #666;
+            font-size: 14px;
+            margin-bottom: 5px;
+        }
+
+        .empresa-details {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 10px;
+            margin-top: 10px;
+            font-size: 12px;
+            color: #666;
+        }
+
+        .detail-item {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .detail-icon {
+            font-size: 14px;
+        }
+
+        .no-empresas {
+            text-align: center;
+            padding: 40px;
+            color: #666;
+        }
+
+        .no-empresas-icon {
+            font-size: 48px;
+            margin-bottom: 10px;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #666;
+        }
+
+        .loading-icon {
+            font-size: 24px;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div class="header-content">
+            <div class="logo">FEM App</div>
+            <div class="user-info">
+                <span class="user-name" id="userName">Carregando...</span>
+                <a href="/app" class="back-btn">← Voltar</a>
+            </div>
+        </div>
+    </div>
+
+    <div class="main-content">
+        <div class="page-header">
+            <h1 class="page-title">📋 Lista de Empresas</h1>
+            <p class="page-subtitle">Empresas pendentes de fiscalização</p>
+            
+            <div class="stats-bar">
+                <div class="stat-item">
+                    <div class="stat-number" id="totalEmpresas">0</div>
+                    <div class="stat-label">Total</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-number" id="empresasPendentes">0</div>
+                    <div class="stat-label">Pendentes</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-number" id="empresasRealizadas">0</div>
+                    <div class="stat-label">Realizadas</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="empresas-container">
+            <div id="empresasList" class="loading">
+                <div class="loading-icon">🔄</div>
+                <p>Carregando empresas...</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Verificar sessão ao carregar a página
+        window.onload = function() {
+            checkSession();
+        };
+
+        function checkSession() {
+            const sessionId = localStorage.getItem('sessionId');
+            if (!sessionId) {
+                window.location.href = '/';
+                return;
+            }
+
+            // Buscar dados da sessão
+            fetch('/api/session', {
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': sessionId
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    document.getElementById('userName').textContent = data.user.nome;
+                    carregarEmpresas();
+                } else {
+                    localStorage.removeItem('sessionId');
+                    window.location.href = '/';
+                }
+            })
+            .catch(error => {
+                console.error('Erro ao verificar sessão:', error);
+                localStorage.removeItem('sessionId');
+                window.location.href = '/';
+            });
+        }
+
+        function carregarEmpresas() {
+            const empresasData = localStorage.getItem('empresas');
+            
+            if (!empresasData) {
+                mostrarSemEmpresas();
+                return;
+            }
+
+            try {
+                const empresas = JSON.parse(empresasData);
+                const empresasAtivas = empresas.filter(empresa => empresa.ativo);
+                
+                if (empresasAtivas.length === 0) {
+                    mostrarSemEmpresas();
+                    return;
+                }
+
+                // Atualizar estatísticas
+                const pendentes = empresasAtivas.filter(empresa => empresa.status === 0).length;
+                const realizadas = empresasAtivas.filter(empresa => empresa.status === 1).length;
+                const total = empresasAtivas.length;
+
+                document.getElementById('totalEmpresas').textContent = total;
+                document.getElementById('empresasPendentes').textContent = pendentes;
+                document.getElementById('empresasRealizadas').textContent = realizadas;
+
+                // Renderizar lista de empresas
+                renderizarEmpresas(empresasAtivas);
+            } catch (error) {
+                console.error('Erro ao carregar empresas:', error);
+                mostrarSemEmpresas();
+            }
+        }
+
+        function renderizarEmpresas(empresas) {
+            const container = document.getElementById('empresasList');
+            
+            if (empresas.length === 0) {
+                container.innerHTML = '<div class="no-empresas"><div class="no-empresas-icon">📋</div><p>Nenhuma empresa encontrada</p></div>';
+                return;
+            }
+
+            let html = '';
+            
+            empresas.forEach(empresa => {
+                const statusClass = empresa.status === 0 ? 'status-pendente' : 'status-realizada';
+                const statusText = empresa.status === 0 ? 'PENDENTE' : 'REALIZADA';
+                
+                html += \`
+                    <div class="empresa-item">
+                        <div class="empresa-header">
+                            <div class="empresa-inscricao">\${empresa.nome || 'N/A'}</div>
+                            <div class="empresa-status \${statusClass}">\${statusText}</div>
+                        </div>
+                        <div class="empresa-razao">\${empresa.razao || 'Razão social não informada'}</div>
+                        <div class="empresa-details">
+                            <div class="detail-item">
+                                <span class="detail-icon">📍</span>
+                                <span>\${empresa.endereco || 'Endereço não informado'}</span>
+                            </div>
+                            <div class="detail-item">
+                                <span class="detail-icon">📞</span>
+                                <span>\${empresa.telefone || 'Telefone não informado'}</span>
+                            </div>
+                            <div class="detail-item">
+                                <span class="detail-icon">📧</span>
+                                <span>\${empresa.email || 'Email não informado'}</span>
+                            </div>
+                            <div class="detail-item">
+                                <span class="detail-icon">🔍</span>
+                                <span>\${empresa.tipoInspecao || 'Tipo não informado'}</span>
+                            </div>
+                        </div>
+                    </div>
+                \`;
+            });
+
+            container.innerHTML = html;
+        }
+
+        function mostrarSemEmpresas() {
+            document.getElementById('totalEmpresas').textContent = '0';
+            document.getElementById('empresasPendentes').textContent = '0';
+            document.getElementById('empresasRealizadas').textContent = '0';
+
+            const container = document.getElementById('empresasList');
+            container.innerHTML = \`
+                <div class="no-empresas">
+                    <div class="no-empresas-icon">📋</div>
+                    <p>Nenhuma empresa encontrada no banco de dados local</p>
+                    <p style="font-size: 12px; margin-top: 10px; color: #999;">
+                        Sincronize os dados no dashboard principal para carregar as empresas
+                    </p>
+                </div>
+            \`;
+        }
+    </script>
+</body>
+</html>`;
+
 // Página inicial do app
 const appHtmlContent = `<!DOCTYPE html>
 <html lang="pt-BR">
@@ -631,13 +1026,21 @@ const appHtmlContent = `<!DOCTYPE html>
                     <div class="actions-grid">
                 <!-- Linha 1: Baixar Tudo -->
                 <div class="actions-row">
-                    <div class="action-card" onclick="baixarTudo()" style="background: linear-gradient(135deg, #28a745 0%, #20c997 100%); color: white;">
+                    <div class="action-card" onclick="baixarTudo()">
                         <div class="action-icon">🚀</div>
                         <div class="action-title">Baixar Tudo</div>
                     </div>
                 </div>
 
-                <!-- Linha 2: Sincronização e Visualização -->
+                <!-- Linha 2: Listar Empresas -->
+                <div class="actions-row">
+                    <div class="action-card" onclick="window.location.href='/empresas'">
+                        <div class="action-icon">📋</div>
+                        <div class="action-title">Listar Empresas</div>
+                    </div>
+                </div>
+
+                <!-- Linha 3: Sincronização e Visualização -->
                 <div class="actions-row">
                     <div class="action-card" onclick="sincronizarDados()">
                         <div class="action-icon">🔄</div>
@@ -649,7 +1052,7 @@ const appHtmlContent = `<!DOCTYPE html>
                     </div>
                 </div>
 
-                <!-- Linha 3: Configuração do Termo -->
+                <!-- Linha 4: Configuração do Termo -->
                 <div class="actions-row">
                     <div class="action-card" onclick="baixarConfigTermo()">
                         <div class="action-icon">📋</div>
@@ -661,7 +1064,7 @@ const appHtmlContent = `<!DOCTYPE html>
                     </div>
                 </div>
 
-                <!-- Linha 4: Histórico de RTS -->
+                <!-- Linha 5: Histórico de RTS -->
                 <div class="actions-row">
                     <div class="action-card" onclick="baixarRtsHistorico()">
                         <div class="action-icon">👥</div>
@@ -673,7 +1076,7 @@ const appHtmlContent = `<!DOCTYPE html>
                     </div>
                 </div>
 
-                <!-- Linha 5: Tipos de Inspeção -->
+                <!-- Linha 6: Tipos de Inspeção -->
                 <div class="actions-row">
                     <div class="action-card" onclick="baixarTiposInspecao()">
                         <div class="action-icon">🔍</div>
@@ -685,7 +1088,7 @@ const appHtmlContent = `<!DOCTYPE html>
                     </div>
                 </div>
 
-                <!-- Linha 6: Histórico de Inspeções -->
+                <!-- Linha 7: Histórico de Inspeções -->
                 <div class="actions-row">
                     <div class="action-card" onclick="baixarInspecoesHistorico()">
                         <div class="action-icon">📊</div>
@@ -697,7 +1100,7 @@ const appHtmlContent = `<!DOCTYPE html>
                     </div>
                 </div>
 
-                <!-- Linha 7: Protocolos -->
+                <!-- Linha 8: Protocolos -->
                 <div class="actions-row">
                     <div class="action-card" onclick="baixarProtocolos()">
                         <div class="action-icon">📄</div>
@@ -709,7 +1112,7 @@ const appHtmlContent = `<!DOCTYPE html>
                     </div>
                 </div>
 
-                <!-- Linha 8: Afastamentos -->
+                <!-- Linha 9: Afastamentos -->
                 <div class="actions-row">
                     <div class="action-card" onclick="baixarAfastamentos()">
                         <div class="action-icon">🏥</div>
@@ -721,7 +1124,7 @@ const appHtmlContent = `<!DOCTYPE html>
                     </div>
                 </div>
 
-                <!-- Linha 9: Denúncias -->
+                <!-- Linha 10: Denúncias -->
                 <div class="actions-row">
                     <div class="action-card" onclick="baixarDenuncias()">
                         <div class="action-icon">🚨</div>
@@ -733,7 +1136,7 @@ const appHtmlContent = `<!DOCTYPE html>
                     </div>
                 </div>
 
-                <!-- Linha 10: Outros Profissionais -->
+                <!-- Linha 11: Outros Profissionais -->
                 <div class="actions-row">
                     <div class="action-card" onclick="baixarOutrosProfissionais()">
                         <div class="action-icon">👨‍⚕️</div>
@@ -745,7 +1148,7 @@ const appHtmlContent = `<!DOCTYPE html>
                     </div>
                 </div>
 
-                <!-- Linha 11: Outros Vínculos -->
+                <!-- Linha 12: Outros Vínculos -->
                 <div class="actions-row">
                     <div class="action-card" onclick="baixarOutrosVinculos()">
                         <div class="action-icon">🔗</div>
@@ -757,7 +1160,7 @@ const appHtmlContent = `<!DOCTYPE html>
                     </div>
                 </div>
 
-                <!-- Linha 12: Processos Éticos -->
+                <!-- Linha 13: Processos Éticos -->
                 <div class="actions-row">
                     <div class="action-card" onclick="baixarProcessosEticos()">
                         <div class="action-icon">⚖️</div>
@@ -1742,11 +2145,21 @@ const appHtmlContent = `<!DOCTYPE html>
             });
         }
 
+
+
         function baixarTudo() {
+            // Evitar múltiplas execuções simultâneas
+            if (window.baixandoTudo) {
+                console.log('⚠️ Download já em andamento...');
+                return;
+            }
+            window.baixandoTudo = true;
+            
             const sessionId = localStorage.getItem('sessionId');
             if (!sessionId) {
                 alert('Sessão expirada. Faça login novamente.');
                 window.location.href = '/';
+                window.baixandoTudo = false;
                 return;
             }
 
@@ -1759,6 +2172,8 @@ const appHtmlContent = `<!DOCTYPE html>
 
             console.log('INICIANDO DOWNLOAD DE TODOS OS DADOS...');
 
+
+
             // Array com todas as funções de download
             const downloads = [
                 { name: 'Configuracao do Termo', func: baixarConfigTermo },
@@ -1770,7 +2185,8 @@ const appHtmlContent = `<!DOCTYPE html>
                 { name: 'Denuncias', func: baixarDenuncias },
                 { name: 'Outros Profissionais', func: baixarOutrosProfissionais },
                 { name: 'Outros Vinculos', func: baixarOutrosVinculos },
-                { name: 'Processos Eticos', func: baixarProcessosEticos }
+                { name: 'Processos Eticos', func: baixarProcessosEticos },
+                { name: 'Empresas (Metas)', func: null }
             ];
 
             let completed = 0;
@@ -1793,6 +2209,25 @@ const appHtmlContent = `<!DOCTYPE html>
                         baixarTudoButton.style.color = '#721c24';
                     }
                     
+                    // Atualizar estatísticas após download completo
+                    if (successCount > 0) {
+                        // Buscar dados atualizados das empresas
+                        const empresasData = localStorage.getItem('empresas');
+                        if (empresasData) {
+                            try {
+                                const empresas = JSON.parse(empresasData);
+                                const empresasAtivas = empresas.filter(empresa => empresa.ativo);
+                                
+                                // Atualizar estatísticas
+                                atualizarEstatisticas(empresasAtivas);
+                                
+                                console.log('📊 Estatísticas atualizadas após download completo');
+                            } catch (error) {
+                                console.error('Erro ao atualizar estatísticas:', error);
+                            }
+                        }
+                    }
+                    
                     // Restaurar após 5 segundos
                     setTimeout(() => {
                         baixarTudoButton.innerHTML = originalContent;
@@ -1800,6 +2235,8 @@ const appHtmlContent = `<!DOCTYPE html>
                         baixarTudoButton.style.cursor = 'pointer';
                         baixarTudoButton.style.background = '';
                         baixarTudoButton.style.color = '';
+                        // Limpar flag de download
+                        window.baixandoTudo = false;
                     }, 5000);
                     return;
                 }
@@ -1819,7 +2256,8 @@ const appHtmlContent = `<!DOCTYPE html>
                     '/api/denuncias',
                     '/api/outros-profissionais',
                     '/api/outros-vinculos',
-                    '/api/processos-eticos'
+                    '/api/processos-eticos',
+                    '/api/metas'
                 ];
 
                 const endpoint = endpoints[index];
@@ -1833,13 +2271,14 @@ const appHtmlContent = `<!DOCTYPE html>
                     'denuncias',
                     'outros_profissionais',
                     'outros_vinculos',
-                    'processos_eticos'
+                    'processos_eticos',
+                    'empresas'
                 ];
 
                 const storageKey = storageKeys[index];
 
                 // Determinar o método HTTP correto para cada endpoint
-                const method = (endpoint === '/api/config-termo' || endpoint === '/api/tipos-inspecao') ? 'GET' : 'POST';
+                const method = (endpoint === '/api/config-termo' || endpoint === '/api/tipos-inspecao' || endpoint === '/api/metas') ? 'GET' : 'POST';
                 
                 fetch(endpoint, {
                     method: method,
@@ -1858,9 +2297,18 @@ const appHtmlContent = `<!DOCTYPE html>
                 })
                 .then(data => {
                     if (data.msg === 'sucesso') {
-                        localStorage.setItem(storageKey, JSON.stringify(data));
-                        localStorage.setItem(storageKey + '_timestamp', Date.now().toString());
-                        console.log('✅ ' + download.name + ': Baixado com sucesso');
+                        // Tratamento especial para empresas (metas)
+                        if (endpoint === '/api/metas') {
+                            // Processar e salvar empresas com estrutura correta
+                            const empresas = processarEmpresas(data);
+                            localStorage.setItem('empresas', JSON.stringify(empresas));
+                            localStorage.setItem('empresas_timestamp', Date.now().toString());
+                            console.log('✅ ' + download.name + ': Baixado com sucesso - ' + empresas.length + ' empresas');
+                        } else {
+                            localStorage.setItem(storageKey, JSON.stringify(data));
+                            localStorage.setItem(storageKey + '_timestamp', Date.now().toString());
+                            console.log('✅ ' + download.name + ': Baixado com sucesso');
+                        }
                         successCount++;
                     } else {
                         console.log('ℹ️ ' + download.name + ': Nenhum dado encontrado');
@@ -3078,6 +3526,13 @@ const server = http.createServer((req, res) => {
     if (req.url === '/app') {
         res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' });
         res.end(appHtmlContent);
+        return;
+    }
+
+    // Rota para a tela de listar empresas
+    if (req.url === '/empresas') {
+        res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' });
+        res.end(empresasHtmlContent);
         return;
     }
 
