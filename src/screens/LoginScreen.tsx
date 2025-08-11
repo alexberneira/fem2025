@@ -6,11 +6,7 @@ import {
   TouchableOpacity,
   StyleSheet,
   Alert,
-  KeyboardAvoidingView,
-  Platform,
-  ScrollView,
 } from 'react-native';
-import { authService } from '../services/auth';
 
 const LoginScreen = ({navigation}: any) => {
   const [email, setEmail] = useState('');
@@ -28,29 +24,27 @@ const LoginScreen = ({navigation}: any) => {
     setError(null);
     
     try {
-      const response = await authService.login({ email, password });
-
-      if (response.success) {
-        Alert.alert(
-          'Sucesso!',
-          `Bem-vindo, ${response.user?.name || 'Usuário'}!`,
-          [
-            {
-              text: 'OK',
-              onPress: () => {
-                // Aqui você pode navegar para a tela principal
-                // navigation.navigate('Home');
-              },
+      // Simular chamada de API
+      await new Promise<void>(resolve => setTimeout(() => resolve(), 2000));
+      
+      // Simular login bem-sucedido
+      Alert.alert(
+        'Sucesso!',
+        `Bem-vindo, ${email}!`,
+        [
+          {
+            text: 'OK',
+            onPress: () => {
+              // Aqui você pode navegar para a tela principal
+              // navigation.navigate('Home');
             },
-          ]
-        );
-        
-        // Limpar campos após login bem-sucedido
-        setEmail('');
-        setPassword('');
-      } else {
-        setError(response.message || 'Erro no login');
-      }
+          },
+        ]
+      );
+      
+      // Limpar campos após login bem-sucedido
+      setEmail('');
+      setPassword('');
     } catch (error) {
       setError('Erro de conexão. Tente novamente.');
     } finally {
@@ -58,102 +52,66 @@ const LoginScreen = ({navigation}: any) => {
     }
   };
 
-  const handleForgotPassword = () => {
-    Alert.alert(
-      'Recuperar Senha',
-      'Entre em contato com o suporte do CRF para recuperar sua senha.',
-      [{ text: 'OK' }]
-    );
-  };
-
-  const handleSignUp = () => {
-    Alert.alert(
-      'Cadastro',
-      'Para se cadastrar, entre em contato com o CRF.',
-      [{ text: 'OK' }]
-    );
-  };
-
   return (
-    <KeyboardAvoidingView
-      style={styles.container}
-      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
-      <ScrollView contentContainerStyle={styles.scrollContainer}>
-        <View style={styles.content}>
-          <View style={styles.header}>
-            <Text style={styles.title}>CRF App</Text>
-            <Text style={styles.subtitle}>Faça login para continuar</Text>
+    <View style={styles.container}>
+      <View style={styles.content}>
+        <View style={styles.header}>
+          <Text style={styles.title}>CRF App</Text>
+          <Text style={styles.subtitle}>Faça login para continuar</Text>
+        </View>
+
+        <View style={styles.form}>
+          {error && (
+            <View style={styles.errorContainer}>
+              <Text style={styles.errorText}>{error}</Text>
+            </View>
+          )}
+
+          <View style={styles.inputContainer}>
+            <Text style={styles.label}>Email</Text>
+            <TextInput
+              style={styles.input}
+              placeholder="Digite seu email"
+              value={email}
+              onChangeText={setEmail}
+              keyboardType="email-address"
+              autoCapitalize="none"
+              autoCorrect={false}
+              editable={!isLoading}
+            />
           </View>
 
-          <View style={styles.form}>
-            {error && (
-              <View style={styles.errorContainer}>
-                <Text style={styles.errorText}>{error}</Text>
-              </View>
-            )}
+          <View style={styles.inputContainer}>
+            <Text style={styles.label}>Senha</Text>
+            <TextInput
+              style={styles.input}
+              placeholder="Digite sua senha"
+              value={password}
+              onChangeText={setPassword}
+              secureTextEntry
+              autoCapitalize="none"
+              autoCorrect={false}
+              editable={!isLoading}
+            />
+          </View>
 
-            <View style={styles.inputContainer}>
-              <Text style={styles.label}>Email</Text>
-              <TextInput
-                style={styles.input}
-                placeholder="Digite seu email"
-                value={email}
-                onChangeText={setEmail}
-                keyboardType="email-address"
-                autoCapitalize="none"
-                autoCorrect={false}
-                editable={!isLoading}
-              />
-            </View>
+          <TouchableOpacity
+            style={[styles.loginButton, isLoading && styles.loginButtonDisabled]}
+            onPress={handleLogin}
+            disabled={isLoading}>
+            <Text style={styles.loginButtonText}>
+              {isLoading ? 'Entrando...' : 'Entrar'}
+            </Text>
+          </TouchableOpacity>
 
-            <View style={styles.inputContainer}>
-              <Text style={styles.label}>Senha</Text>
-              <TextInput
-                style={styles.input}
-                placeholder="Digite sua senha"
-                value={password}
-                onChangeText={setPassword}
-                secureTextEntry
-                autoCapitalize="none"
-                autoCorrect={false}
-                editable={!isLoading}
-              />
-            </View>
-
-            <TouchableOpacity
-              style={styles.forgotPassword}
-              onPress={handleForgotPassword}
-              disabled={isLoading}>
-              <Text style={styles.forgotPasswordText}>
-                Esqueceu sua senha?
-              </Text>
-            </TouchableOpacity>
-
-            <TouchableOpacity
-              style={[styles.loginButton, isLoading && styles.loginButtonDisabled]}
-              onPress={handleLogin}
-              disabled={isLoading}>
-              <Text style={styles.loginButtonText}>
-                {isLoading ? 'Entrando...' : 'Entrar'}
-              </Text>
-            </TouchableOpacity>
-
-            <View style={styles.signUpContainer}>
-              <Text style={styles.signUpText}>Não tem uma conta? </Text>
-              <TouchableOpacity onPress={handleSignUp} disabled={isLoading}>
-                <Text style={styles.signUpLink}>Cadastre-se</Text>
-              </TouchableOpacity>
-            </View>
-
-            <View style={styles.testInfo}>
-              <Text style={styles.testInfoTitle}>🔐 API CRF Conectada:</Text>
-              <Text style={styles.testInfoText}>Apenas fiscais ativos podem acessar</Text>
-              <Text style={styles.testInfoText}>Use suas credenciais do CRF</Text>
-            </View>
+          <View style={styles.testInfo}>
+            <Text style={styles.testInfoTitle}>🔐 API CRF Conectada:</Text>
+            <Text style={styles.testInfoText}>Apenas fiscais ativos podem acessar</Text>
+            <Text style={styles.testInfoText}>Use suas credenciais do CRF</Text>
           </View>
         </View>
-      </ScrollView>
-    </KeyboardAvoidingView>
+      </View>
+    </View>
   );
 };
 
@@ -161,9 +119,6 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#f5f5f5',
-  },
-  scrollContainer: {
-    flexGrow: 1,
   },
   content: {
     flex: 1,
@@ -220,14 +175,6 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
     fontSize: 16,
   },
-  forgotPassword: {
-    alignSelf: 'flex-end',
-    marginBottom: 30,
-  },
-  forgotPasswordText: {
-    color: '#007AFF',
-    fontSize: 14,
-  },
   loginButton: {
     backgroundColor: '#007AFF',
     borderRadius: 8,
@@ -241,21 +188,6 @@ const styles = StyleSheet.create({
   loginButtonText: {
     color: '#fff',
     fontSize: 16,
-    fontWeight: '600',
-  },
-  signUpContainer: {
-    flexDirection: 'row',
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginBottom: 30,
-  },
-  signUpText: {
-    color: '#666',
-    fontSize: 14,
-  },
-  signUpLink: {
-    color: '#007AFF',
-    fontSize: 14,
     fontWeight: '600',
   },
   testInfo: {

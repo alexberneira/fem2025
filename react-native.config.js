@@ -3,7 +3,7 @@ module.exports = {
     ios: {},
     android: {},
   },
-  assets: ['./src/assets/'],
+  assets: ['./src/assets/fonts/'],
   dependencies: {
     'react-native-vector-icons': {
       platforms: {
@@ -11,9 +11,5 @@ module.exports = {
         android: null,
       },
     },
-  },
-  // Configurações de porta
-  metro: {
-    port: 8081,
   },
 }; 

@@ -1,0 +1,360 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FEM App - Login</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, rgba(90, 186, 163, 0.1) 0%, rgba(38, 57, 127, 0.1) 100%);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            background: white;
+            border-radius: 12px;
+            padding: 40px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+            width: 100%;
+            max-width: 400px;
+            border-top: 4px solid #5abaa3;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        .title {
+            font-size: 32px;
+            font-weight: bold;
+            color: #26397f;
+            margin-bottom: 8px;
+        }
+
+        .subtitle {
+            font-size: 16px;
+            color: #5abaa3;
+        }
+
+        .form {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .input-container {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .label {
+            font-size: 16px;
+            font-weight: 600;
+            color: #26397f;
+        }
+
+        .input {
+            padding: 12px 16px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            font-size: 16px;
+            background: white;
+        }
+
+        .input:focus {
+            outline: none;
+            border-color: #5abaa3;
+            box-shadow: 0 0 0 3px rgba(90, 186, 163, 0.1);
+        }
+
+        .login-button {
+            background: linear-gradient(135deg, #5abaa3 0%, #26397f 100%);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            padding: 16px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .login-button:hover {
+            background: linear-gradient(135deg, #4a9a8a 0%, #1e2d5f 100%);
+            transform: translateY(-1px);
+            box-shadow: 0 6px 20px rgba(90, 186, 163, 0.3);
+        }
+
+        .login-button:disabled {
+            background: #e0e0e0;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        .alert {
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            display: none;
+        }
+
+        .alert.error {
+            background: #FFE5E5;
+            color: #D32F2F;
+            border: 1px solid #FFCDD2;
+        }
+
+        .alert.success {
+            background: #E8F5E8;
+            color: #388E3C;
+            border: 1px solid #C8E6C9;
+        }
+
+        .status {
+            text-align: center;
+            margin-top: 20px;
+            padding: 10px;
+            background: #f0f0f0;
+            border-radius: 8px;
+            font-size: 14px;
+            color: #666;
+        }
+
+        .loading {
+            display: inline-block;
+            width: 16px;
+            height: 16px;
+            border: 2px solid #ffffff;
+            border-radius: 50%;
+            border-top-color: transparent;
+            animation: spin 1s ease-in-out infinite;
+            margin-right: 8px;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1 class="title">CRF App</h1>
+            <p class="subtitle">Faça login para continuar</p>
+        </div>
+
+        <div id="alert" class="alert"></div>
+
+        <form class="form" id="loginForm">
+            <div class="input-container">
+                <label class="label" for="email">Email</label>
+                <input 
+                    type="email" 
+                    id="email" 
+                    class="input" 
+                    placeholder="Digite seu email"
+                    required
+                >
+            </div>
+
+            <div class="input-container">
+                <label class="label" for="password">Senha</label>
+                <input 
+                    type="password" 
+                    id="password" 
+                    class="input" 
+                    placeholder="Digite sua senha"
+                    required
+                >
+            </div>
+
+            <button type="submit" class="login-button" id="loginButton">
+                Entrar
+            </button>
+        </form>
+
+        <div class="status">
+            ✅ App funcionando!<br>
+            📱 Conectado com API CRF
+        </div>
+    </div>
+
+    <script>
+        const form = document.getElementById('loginForm');
+        const emailInput = document.getElementById('email');
+        const passwordInput = document.getElementById('password');
+        const loginButton = document.getElementById('loginButton');
+        const alertDiv = document.getElementById('alert');
+
+        // Configuração da API (usando proxy local)
+        const API_BASE_URL = '/api';
+        const API_TIMEOUT = 10000;
+
+        function showAlert(message, type) {
+            alertDiv.textContent = message;
+            alertDiv.className = `alert ${type}`;
+            alertDiv.style.display = 'block';
+        }
+
+        function hideAlert() {
+            alertDiv.style.display = 'none';
+        }
+
+        function setLoading(isLoading) {
+            if (isLoading) {
+                loginButton.innerHTML = '<span class="loading"></span>Entrando...';
+                loginButton.disabled = true;
+            } else {
+                loginButton.textContent = 'Entrar';
+                loginButton.disabled = false;
+            }
+        }
+
+        async function makeApiRequest(endpoint, data) {
+            const controller = new AbortController();
+            const timeoutId = setTimeout(() => controller.abort(), API_TIMEOUT);
+
+            try {
+                const response = await fetch(`${API_BASE_URL}${endpoint}`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(data),
+                    signal: controller.signal
+                });
+
+                clearTimeout(timeoutId);
+
+                if (!response.ok) {
+                    throw new Error(`Erro HTTP: ${response.status}`);
+                }
+
+                return await response.json();
+            } catch (error) {
+                clearTimeout(timeoutId);
+                
+                if (error.name === 'AbortError') {
+                    throw new Error('Timeout: A requisição demorou muito para responder');
+                }
+                
+                throw error;
+            }
+        }
+
+        async function loginWithCRF(email, password) {
+            try {
+                const response = await makeApiRequest('/login.php', {
+                    username: email,
+                    password: password
+                });
+
+                console.log('Resposta da API:', response);
+
+                // Verificar se a resposta indica sucesso
+                if (response.msg === 'sucesso' && response.nome && response.email) {
+                    return {
+                        success: true,
+                        user: {
+                            id: response.iduser || '1',
+                            name: response.nome,
+                            email: response.email,
+                            role: 'fiscal',
+                            uf: response.uf
+                        },
+                        message: 'Login realizado com sucesso!'
+                    };
+                } else {
+                    return {
+                        success: false,
+                        message: response.msg || 'Credenciais inválidas'
+                    };
+                }
+            } catch (error) {
+                console.error('Erro na API:', error);
+                throw error;
+            }
+        }
+
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const email = emailInput.value.trim();
+            const password = passwordInput.value.trim();
+
+            if (!email || !password) {
+                showAlert('Por favor, preencha todos os campos', 'error');
+                return;
+            }
+
+            // Iniciar loading
+            setLoading(true);
+            hideAlert();
+
+            try {
+                const result = await loginWithCRF(email, password);
+
+                if (result.success) {
+                    showAlert(result.message, 'success');
+                    
+                    // Limpar campos
+                    emailInput.value = '';
+                    passwordInput.value = '';
+                    
+                    // Salvar dados do usuário (simular localStorage)
+                    if (result.user) {
+                        localStorage.setItem('user', JSON.stringify(result.user));
+                        localStorage.setItem('isAuthenticated', 'true');
+                    }
+                    
+                    // Redirecionar após 2 segundos para o dashboard
+                    setTimeout(() => {
+                        showAlert('Redirecionando para o dashboard...', 'success');
+                        setTimeout(() => {
+                            window.location.href = '/dashboard';
+                        }, 1000);
+                    }, 2000);
+                } else {
+                    showAlert(result.message, 'error');
+                }
+            } catch (error) {
+                console.error('Erro no login:', error);
+                showAlert(
+                    error.message || 'Erro ao conectar com o servidor. Tente novamente.',
+                    'error'
+                );
+            } finally {
+                setLoading(false);
+            }
+        });
+
+        // Verificar se já está logado
+        const isAuthenticated = localStorage.getItem('isAuthenticated');
+        const user = localStorage.getItem('user');
+
+        if (isAuthenticated === 'true' && user) {
+            try {
+                const userData = JSON.parse(user);
+                showAlert(`Bem-vindo de volta, ${userData.name}!`, 'success');
+            } catch (e) {
+                localStorage.removeItem('isAuthenticated');
+                localStorage.removeItem('user');
+            }
+        }
+    </script>
+</body>
+</html> 

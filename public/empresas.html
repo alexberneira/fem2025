@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FEM App - Lista de Empresas</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #5abaa3 0%, #26397f 100%);
+            color: white;
+            border-radius: 20px;
+            padding: 30px;
+            margin-bottom: 30px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            position: relative;
+        }
+
+        .header-content {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .header-left {
+            flex: 0 0 auto;
+        }
+
+        .header-center {
+            flex: 1;
+            text-align: center;
+        }
+
+        .header h1 {
+            color: white;
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            color: rgba(255, 255, 255, 0.9);
+            font-size: 1.1em;
+        }
+
+        .back-button {
+            background: #e9e674;
+            color: #26397f;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 1em;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-block;
+        }
+
+        .back-button:hover {
+            background: #d4d15f;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(233, 230, 116, 0.4);
+        }
+
+        .debug-panel {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 30px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+        }
+
+        .debug-panel h3 {
+            color: #333;
+            margin-bottom: 15px;
+        }
+
+        .debug-info {
+            background: #f8f9fa;
+            border: 1px solid #e9ecef;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 10px;
+            font-family: monospace;
+            font-size: 0.9em;
+            white-space: pre-wrap;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+
+        .empresas-container {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            padding: 20px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .empresa-item {
+            background: white;
+            border: 1px solid #e0e0e0;
+            border-left: 3px solid #5abaa3;
+            border-right: 3px solid #5abaa3;
+            border-radius: 8px;
+            padding: 18px 24px;
+            margin-bottom: 16px;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .empresa-item:hover {
+            background: #f8f9fa;
+            border-left-color: #4a9a8a;
+            border-right-color: #4a9a8a;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(90, 186, 163, 0.25);
+        }
+
+        .empresa-item:active {
+            transform: translateY(0);
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .empresa-razao {
+            font-size: 16px;
+            font-weight: 600;
+            color: #2c3e50;
+            text-align: left;
+            line-height: 1.4;
+            letter-spacing: 0.3px;
+            margin-bottom: 6px;
+        }
+
+        .empresa-atividade {
+            font-size: 14px;
+            font-weight: 400;
+            color: #7f8c8d;
+            text-align: left;
+            line-height: 1.3;
+            font-style: italic;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: #666;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 60px 20px;
+            color: #666;
+        }
+
+        .spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #667eea;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 20px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1em;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-block;
+            margin: 5px;
+        }
+
+        .btn-primary {
+            background: #667eea;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #5a6fd8;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="header-content">
+                <div class="header-left">
+                    <a href="/dashboard" class="back-button">← Voltar ao Dashboard</a>
+                </div>
+                <div class="header-center">
+                    <h1>📋 Lista de Empresas</h1>
+                    <p>Visualize todas as empresas cadastradas no banco local</p>
+                </div>
+            </div>
+        </div>
+
+        
+
+        <div class="empresas-container" id="empresas-container">
+            <div class="loading">
+                <div class="spinner"></div>
+                <p>Carregando empresas...</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+
+
+        // Função para carregar empresas do localStorage
+        function carregarEmpresas() {
+            console.log('🔍 Carregando empresas do localStorage...');
+            
+            try {
+                const empresas = JSON.parse(localStorage.getItem('empresas') || '[]');
+                const timestamp = localStorage.getItem('empresas_timestamp');
+                
+                console.log('📊 Dados encontrados:', empresas);
+                console.log('🕒 Timestamp:', timestamp);
+                console.log('📈 Total de empresas:', empresas.length);
+                
+                if (empresas.length === 0) {
+                    console.log('❌ Nenhuma empresa encontrada');
+                    document.getElementById('empresas-container').innerHTML = `
+                        <div class="empty-state">
+                            <h3>📭 Nenhuma empresa encontrada</h3>
+                            <p>Use o botão "BAIXAR EMPRESAS" no dashboard para carregar dados do servidor.</p>
+                            <a href="/dashboard" class="btn btn-primary">Ir para Dashboard</a>
+                        </div>
+                    `;
+                    return;
+                }
+                
+                console.log('✅ Empresas encontradas - renderizando...');
+                renderizarEmpresas(empresas);
+                
+            } catch (error) {
+                console.error('❌ Erro ao carregar empresas:', error);
+                document.getElementById('empresas-container').innerHTML = `
+                    <div class="empty-state">
+                        <h3>❌ Erro ao carregar dados</h3>
+                        <p>Erro: ${error.message}</p>
+                        <button class="btn btn-primary" onclick="carregarEmpresas()">🔄 Tentar Novamente</button>
+                    </div>
+                `;
+            }
+        }
+
+        // Função para renderizar empresas
+        function renderizarEmpresas(empresas) {
+            console.log('🎨 Renderizando empresas...');
+            
+            const container = document.getElementById('empresas-container');
+            
+            const empresasHTML = empresas.map((empresa, index) => {
+                console.log(`🏢 Processando empresa ${index + 1}:`, empresa);
+                
+                return `
+                    <div class="empresa-item" onclick="selecionarEmpresa(${index})">
+                        <div class="empresa-razao">${empresa.razao || 'Razão social não informada'}</div>
+                        <div class="empresa-atividade">${empresa.atividades && empresa.atividades.length > 0 ? empresa.atividades[0].nomeatividade : 'Atividade não informada'}</div>
+                    </div>
+                `;
+            }).join('');
+            
+            container.innerHTML = empresasHTML;
+            console.log('✅ Empresas renderizadas com sucesso');
+        }
+
+        // Função para selecionar empresa
+        function selecionarEmpresa(index) {
+            const empresas = JSON.parse(localStorage.getItem('empresas') || '[]');
+            const empresa = empresas[index];
+            
+            if (empresa) {
+                console.log('🏢 Empresa selecionada:', empresa);
+                const razao = empresa.razao || empresa.nome || 'Nome não informado';
+                const atividade = empresa.atividades && empresa.atividades.length > 0 ? empresa.atividades[0].nomeatividade : 'Atividade não informada';
+                alert(`Empresa: ${razao}\nAtividade: ${atividade}`);
+                // Aqui você pode adicionar mais funcionalidades quando uma empresa for clicada
+            }
+        }
+
+        // Inicializar quando a página carregar
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('🚀 Página carregada - iniciando...');
+            carregarEmpresas();
+        });
+    </script>
+</body>
+</html> 
