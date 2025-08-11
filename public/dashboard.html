@@ -611,44 +611,60 @@
             const empresas = JSON.parse(localStorage.getItem('empresas') || '[]');
             const timestamp = localStorage.getItem('empresas_timestamp');
             
-            // Log detalhado de tudo que está no banco local
-            console.log('📊 === DADOS COMPLETOS DO BANCO LOCAL ===');
-            console.log('🕒 Timestamp de download:', timestamp ? new Date(parseInt(timestamp)).toLocaleString() : 'N/A');
-            console.log('📈 Total de empresas:', empresas.length);
-            console.log('🗄️ Dados brutos do localStorage:', empresas);
-            
             if (empresas.length === 0) {
-                console.log('❌ Banco local vazio - nenhuma empresa encontrada');
                 showAlert('ℹ️ Nenhuma empresa encontrada no banco local', 'info');
                 return;
             }
             
-            // Log detalhado de cada empresa
-            console.log('\n🏢 === DETALHES DE CADA EMPRESA ===');
-            empresas.forEach((empresa, index) => {
-                console.log(`\n📋 Empresa ${index + 1}:`);
-                console.log('   🆔 ID Empresa:', empresa.idempresa || 'N/A');
-                console.log('   🏷️ Nome:', empresa.nome || 'N/A');
-                console.log('   📍 Latitude:', empresa.latitude || 'N/A');
-                console.log('   📍 Longitude:', empresa.longitude || 'N/A');
-                console.log('   🎯 ID Meta:', empresa.idmeta || 'N/A');
-                console.log('   🏙️ Cidade:', empresa.cidade || 'N/A');
-                console.log('   📊 Status:', empresa.status || 'N/A');
-                console.log('   ✅ Realizado:', empresa.realizado ? 'Sim' : 'Não');
-                console.log('   🔍 Dados completos:', empresa);
-            });
+            const data = new Date(parseInt(timestamp)).toLocaleString('pt-BR');
             
-            // Mostrar empresas em uma lista simples no console
-            console.log('\n📋 === LISTA DE EMPRESAS ===');
+            let html = `
+                <div style="background: white; padding: 20px; border-radius: 8px; margin: 20px; box-shadow: 0 2px 10px rgba(0,0,0,0.1);">
+                    <h3>🏢 Empresas Locais</h3>
+                    <p><strong>Baixado em:</strong> ${data}</p>
+                    <p><strong>Total de empresas:</strong> ${empresas.length}</p>
+                    
+                    <div style="margin-top: 20px;">
+                        <h4>📋 Lista de Empresas:</h4>
+            `;
+            
             empresas.forEach((empresa, index) => {
                 const status = empresa.status || 'Ativo';
                 const cidade = empresa.cidade || 'N/A';
-                const realizado = empresa.realizado ? '✅' : '⏳';
-                console.log(`${index + 1}. ${empresa.nome} (${cidade}) - ${status} ${realizado}`);
+                const realizado = empresa.realizado ? '✅ Realizada' : '⏳ Pendente';
+                const coordenadas = empresa.latitude && empresa.longitude ? 
+                    `📍 ${empresa.latitude}, ${empresa.longitude}` : '📍 Coordenadas não definidas';
+                
+                html += `
+                    <div style="background: #f8f9fa; padding: 15px; margin: 10px 0; border-radius: 8px; border-left: 4px solid #5abaa3;">
+                        <h5 style="margin: 0 0 10px 0; color: #26397f;">${index + 1}. ${empresa.nome || empresa.razao || 'Nome não informado'}</h5>
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; font-size: 14px;">
+                            <div><strong>🆔 ID:</strong> ${empresa.idempresa || 'N/A'}</div>
+                            <div><strong>🎯 Meta:</strong> ${empresa.idmeta || 'N/A'}</div>
+                            <div><strong>🏙️ Cidade:</strong> ${cidade}</div>
+                            <div><strong>📊 Status:</strong> ${status}</div>
+                            <div><strong>🔍 Inspeção:</strong> ${realizado}</div>
+                            <div><strong>${coordenadas}</strong></div>
+                        </div>
+                    </div>
+                `;
             });
             
-            // Não mostrar alerta - apenas logs no console
-            console.log('✅ Visualização concluída - verifique o console para detalhes');
+            html += `
+                    </div>
+                    <div style="margin-top: 20px; text-align: center;">
+                        <button onclick="limparConteudo()" style="background: #e9e674; color: #26397f; border: none; padding: 10px 20px; border-radius: 6px; cursor: pointer; font-weight: bold;">
+                            🗑️ Limpar Visualização
+                        </button>
+                    </div>
+                </div>
+            `;
+            
+            showAlert('🏢 Exibindo empresas locais', 'success');
+            document.getElementById('content').innerHTML = html;
+            
+            // Log no console para debug
+            console.log('✅ Conteúdo inserido na tela:', html);
         }
 
         function baixarConfigTermo() {
@@ -705,11 +721,25 @@
                 
                 console.log(`🌐 Acessando endpoint: ${endpoint}`);
                 
+                // Pegar o ID do usuário do localStorage ou usar um valor padrão
+                const user = localStorage.getItem('user');
+                let iduser = '1'; // valor padrão
+                
+                if (user) {
+                    try {
+                        const userData = JSON.parse(user);
+                        iduser = userData.id || '1';
+                    } catch (error) {
+                        console.log('Usando ID padrão para usuário');
+                    }
+                }
+
                 fetch(endpoint, {
                     method: 'POST',
                     headers: {
-                        'Content-Type': 'application/json'
-                    }
+                        'Content-Type': 'application/x-www-form-urlencoded'
+                    },
+                    body: `iduser=${iduser}`
                 })
                 .then(response => {
                     console.log(`📡 Status da resposta: ${response.status} ${response.statusText}`);
@@ -717,10 +747,19 @@
                 })
                 .then(data => {
                     console.log(`📥 Retorno do servidor:`, data);
-                    if (data.success) {
-                        // Salvar localmente
-                        localStorage.setItem('rts_historico', JSON.stringify(data.historico));
+                    
+                    // Verificar se há dados válidos (pode ser data.success, data.msg, ou diretamente data)
+                    if (data && (data.success || data.msg === 'sucesso' || data.length > 0 || Object.keys(data).length > 0)) {
+                        // Salvar localmente - tentar diferentes estruturas possíveis
+                        const rtsData = data.historico || data.data || data;
+                        console.log(`💾 Salvando RTS no localStorage:`, rtsData);
+                        localStorage.setItem('rts_historico', JSON.stringify(rtsData));
                         localStorage.setItem('rts_historico_timestamp', Date.now().toString());
+                        
+                        // Verificar se foi salvo
+                        const savedData = localStorage.getItem('rts_historico');
+                        console.log(`✅ RTS salvo no localStorage:`, savedData);
+                        
                         showAlert('✅ Histórico de RTS baixado com sucesso!', 'success');
                         resolve();
                     } else {
@@ -743,11 +782,25 @@
                 
                 console.log(`🌐 Acessando endpoint: ${endpoint}`);
                 
+                // Pegar o ID do usuário do localStorage ou usar um valor padrão
+                const user = localStorage.getItem('user');
+                let iduser = '1'; // valor padrão
+                
+                if (user) {
+                    try {
+                        const userData = JSON.parse(user);
+                        iduser = userData.id || '1';
+                    } catch (error) {
+                        console.log('Usando ID padrão para usuário');
+                    }
+                }
+
                 fetch(endpoint, {
                     method: 'POST',
                     headers: {
-                        'Content-Type': 'application/json'
-                    }
+                        'Content-Type': 'application/x-www-form-urlencoded'
+                    },
+                    body: `iduser=${iduser}`
                 })
                 .then(response => {
                     console.log(`📡 Status da resposta: ${response.status} ${response.statusText}`);
@@ -755,10 +808,19 @@
                 })
                 .then(data => {
                     console.log(`📥 Retorno do servidor:`, data);
-                    if (data.success) {
-                        // Salvar localmente
-                        localStorage.setItem('tipos_inspecao', JSON.stringify(data.tipos));
+                    
+                    // Verificar se há dados válidos (pode ser data.success, data.msg, ou diretamente data)
+                    if (data && (data.success || data.msg === 'sucesso' || data.length > 0 || Object.keys(data).length > 0)) {
+                        // Salvar localmente - tentar diferentes estruturas possíveis
+                        const tiposData = data.tipos || data.data || data;
+                        console.log(`💾 Salvando tipos de inspeção no localStorage:`, tiposData);
+                        localStorage.setItem('tipos_inspecao', JSON.stringify(tiposData));
                         localStorage.setItem('tipos_inspecao_timestamp', Date.now().toString());
+                        
+                        // Verificar se foi salvo
+                        const savedData = localStorage.getItem('tipos_inspecao');
+                        console.log(`✅ Tipos de inspeção salvos no localStorage:`, savedData);
+                        
                         showAlert('✅ Tipos de inspeção baixados com sucesso!', 'success');
                         resolve();
                     } else {
@@ -781,11 +843,25 @@
                 
                 console.log(`🌐 Acessando endpoint: ${endpoint}`);
                 
+                // Pegar o ID do usuário do localStorage ou usar um valor padrão
+                const user = localStorage.getItem('user');
+                let iduser = '1'; // valor padrão
+                
+                if (user) {
+                    try {
+                        const userData = JSON.parse(user);
+                        iduser = userData.id || '1';
+                    } catch (error) {
+                        console.log('Usando ID padrão para usuário');
+                    }
+                }
+
                 fetch(endpoint, {
                     method: 'POST',
                     headers: {
-                        'Content-Type': 'application/json'
-                    }
+                        'Content-Type': 'application/x-www-form-urlencoded'
+                    },
+                    body: `iduser=${iduser}`
                 })
                 .then(response => {
                     console.log(`📡 Status da resposta: ${response.status} ${response.statusText}`);
@@ -793,10 +869,19 @@
                 })
                 .then(data => {
                     console.log(`📥 Retorno do servidor:`, data);
-                    if (data.success) {
-                        // Salvar localmente
-                        localStorage.setItem('inspecoes_historico', JSON.stringify(data.inspecoes));
+                    
+                    // Verificar se há dados válidos (pode ser data.success, data.msg, ou diretamente data)
+                    if (data && (data.success || data.msg === 'sucesso' || data.length > 0 || Object.keys(data).length > 0)) {
+                        // Salvar localmente - tentar diferentes estruturas possíveis
+                        const inspecoesData = data.inspecoes || data.data || data;
+                        console.log(`💾 Salvando inspeções no localStorage:`, inspecoesData);
+                        localStorage.setItem('inspecoes_historico', JSON.stringify(inspecoesData));
                         localStorage.setItem('inspecoes_historico_timestamp', Date.now().toString());
+                        
+                        // Verificar se foi salvo
+                        const savedData = localStorage.getItem('inspecoes_historico');
+                        console.log(`✅ Inspeções salvas no localStorage:`, savedData);
+                        
                         showAlert('✅ Histórico de inspeções baixado com sucesso!', 'success');
                         resolve();
                     } else {
@@ -819,11 +904,25 @@
                 
                 console.log(`🌐 Acessando endpoint: ${endpoint}`);
                 
+                // Pegar o ID do usuário do localStorage ou usar um valor padrão
+                const user = localStorage.getItem('user');
+                let iduser = '1'; // valor padrão
+                
+                if (user) {
+                    try {
+                        const userData = JSON.parse(user);
+                        iduser = userData.id || '1';
+                    } catch (error) {
+                        console.log('Usando ID padrão para usuário');
+                    }
+                }
+
                 fetch(endpoint, {
                     method: 'POST',
                     headers: {
-                        'Content-Type': 'application/json'
-                    }
+                        'Content-Type': 'application/x-www-form-urlencoded'
+                    },
+                    body: `iduser=${iduser}`
                 })
                 .then(response => {
                     console.log(`📡 Status da resposta: ${response.status} ${response.statusText}`);
@@ -831,10 +930,19 @@
                 })
                 .then(data => {
                     console.log(`📥 Retorno do servidor:`, data);
-                    if (data.success) {
-                        // Salvar localmente
-                        localStorage.setItem('protocolos', JSON.stringify(data.protocolos));
+                    
+                    // Verificar se há dados válidos (pode ser data.success, data.msg, ou diretamente data)
+                    if (data && (data.success || data.msg === 'sucesso' || data.length > 0 || Object.keys(data).length > 0)) {
+                        // Salvar localmente - tentar diferentes estruturas possíveis
+                        const protocolosData = data.protocolos || data.data || data;
+                        console.log(`💾 Salvando protocolos no localStorage:`, protocolosData);
+                        localStorage.setItem('protocolos', JSON.stringify(protocolosData));
                         localStorage.setItem('protocolos_timestamp', Date.now().toString());
+                        
+                        // Verificar se foi salvo
+                        const savedData = localStorage.getItem('protocolos');
+                        console.log(`✅ Protocolos salvos no localStorage:`, savedData);
+                        
                         showAlert('✅ Protocolos baixados com sucesso!', 'success');
                         resolve();
                     } else {
@@ -857,11 +965,25 @@
                 
                 console.log(`🌐 Acessando endpoint: ${endpoint}`);
                 
+                // Pegar o ID do usuário do localStorage ou usar um valor padrão
+                const user = localStorage.getItem('user');
+                let iduser = '1'; // valor padrão
+                
+                if (user) {
+                    try {
+                        const userData = JSON.parse(user);
+                        iduser = userData.id || '1';
+                    } catch (error) {
+                        console.log('Usando ID padrão para usuário');
+                    }
+                }
+
                 fetch(endpoint, {
                     method: 'POST',
                     headers: {
-                        'Content-Type': 'application/json'
-                    }
+                        'Content-Type': 'application/x-www-form-urlencoded'
+                    },
+                    body: `iduser=${iduser}`
                 })
                 .then(response => {
                     console.log(`📡 Status da resposta: ${response.status} ${response.statusText}`);
@@ -869,10 +991,19 @@
                 })
                 .then(data => {
                     console.log(`📥 Retorno do servidor:`, data);
-                    if (data.success) {
-                        // Salvar localmente
-                        localStorage.setItem('afastamentos', JSON.stringify(data.afastamentos));
+                    
+                    // Verificar se há dados válidos (pode ser data.success, data.msg, ou diretamente data)
+                    if (data && (data.success || data.msg === 'sucesso' || data.length > 0 || Object.keys(data).length > 0)) {
+                        // Salvar localmente - tentar diferentes estruturas possíveis
+                        const afastamentosData = data.afastamentos || data.data || data;
+                        console.log(`💾 Salvando afastamentos no localStorage:`, afastamentosData);
+                        localStorage.setItem('afastamentos', JSON.stringify(afastamentosData));
                         localStorage.setItem('afastamentos_timestamp', Date.now().toString());
+                        
+                        // Verificar se foi salvo
+                        const savedData = localStorage.getItem('afastamentos');
+                        console.log(`✅ Afastamentos salvos no localStorage:`, savedData);
+                        
                         showAlert('✅ Afastamentos baixados com sucesso!', 'success');
                         resolve();
                     } else {
@@ -895,11 +1026,25 @@
                 
                 console.log(`🌐 Acessando endpoint: ${endpoint}`);
                 
+                // Pegar o ID do usuário do localStorage ou usar um valor padrão
+                const user = localStorage.getItem('user');
+                let iduser = '1'; // valor padrão
+                
+                if (user) {
+                    try {
+                        const userData = JSON.parse(user);
+                        iduser = userData.id || '1';
+                    } catch (error) {
+                        console.log('Usando ID padrão para usuário');
+                    }
+                }
+
                 fetch(endpoint, {
                     method: 'POST',
                     headers: {
-                        'Content-Type': 'application/json'
-                    }
+                        'Content-Type': 'application/x-www-form-urlencoded'
+                    },
+                    body: `iduser=${iduser}`
                 })
                 .then(response => {
                     console.log(`📡 Status da resposta: ${response.status} ${response.statusText}`);
@@ -907,10 +1052,19 @@
                 })
                 .then(data => {
                     console.log(`📥 Retorno do servidor:`, data);
-                    if (data.success) {
-                        // Salvar localmente
-                        localStorage.setItem('denuncias', JSON.stringify(data.denuncias));
+                    
+                    // Verificar se há dados válidos (pode ser data.success, data.msg, ou diretamente data)
+                    if (data && (data.success || data.msg === 'sucesso' || data.length > 0 || Object.keys(data).length > 0)) {
+                        // Salvar localmente - tentar diferentes estruturas possíveis
+                        const denunciasData = data.denuncias || data.data || data;
+                        console.log(`💾 Salvando denúncias no localStorage:`, denunciasData);
+                        localStorage.setItem('denuncias', JSON.stringify(denunciasData));
                         localStorage.setItem('denuncias_timestamp', Date.now().toString());
+                        
+                        // Verificar se foi salvo
+                        const savedData = localStorage.getItem('denuncias');
+                        console.log(`✅ Denúncias salvas no localStorage:`, savedData);
+                        
                         showAlert('✅ Denúncias baixadas com sucesso!', 'success');
                         resolve();
                     } else {
@@ -933,11 +1087,25 @@
                 
                 console.log(`🌐 Acessando endpoint: ${endpoint}`);
                 
+                // Pegar o ID do usuário do localStorage ou usar um valor padrão
+                const user = localStorage.getItem('user');
+                let iduser = '1'; // valor padrão
+                
+                if (user) {
+                    try {
+                        const userData = JSON.parse(user);
+                        iduser = userData.id || '1';
+                    } catch (error) {
+                        console.log('Usando ID padrão para usuário');
+                    }
+                }
+
                 fetch(endpoint, {
                     method: 'POST',
                     headers: {
-                        'Content-Type': 'application/json'
-                    }
+                        'Content-Type': 'application/x-www-form-urlencoded'
+                    },
+                    body: `iduser=${iduser}`
                 })
                 .then(response => {
                     console.log(`📡 Status da resposta: ${response.status} ${response.statusText}`);
@@ -945,10 +1113,19 @@
                 })
                 .then(data => {
                     console.log(`📥 Retorno do servidor:`, data);
-                    if (data.success) {
-                        // Salvar localmente
-                        localStorage.setItem('outros_profissionais', JSON.stringify(data.profissionais));
+                    
+                    // Verificar se há dados válidos (pode ser data.success, data.msg, ou diretamente data)
+                    if (data && (data.success || data.msg === 'sucesso' || data.length > 0 || Object.keys(data).length > 0)) {
+                        // Salvar localmente - tentar diferentes estruturas possíveis
+                        const profissionaisData = data.profissionais || data.data || data;
+                        console.log(`💾 Salvando outros profissionais no localStorage:`, profissionaisData);
+                        localStorage.setItem('outros_profissionais', JSON.stringify(profissionaisData));
                         localStorage.setItem('outros_profissionais_timestamp', Date.now().toString());
+                        
+                        // Verificar se foi salvo
+                        const savedData = localStorage.getItem('outros_profissionais');
+                        console.log(`✅ Outros profissionais salvos no localStorage:`, savedData);
+                        
                         showAlert('✅ Outros profissionais baixados com sucesso!', 'success');
                         resolve();
                     } else {
@@ -971,11 +1148,25 @@
                 
                 console.log(`🌐 Acessando endpoint: ${endpoint}`);
                 
+                // Pegar o ID do usuário do localStorage ou usar um valor padrão
+                const user = localStorage.getItem('user');
+                let iduser = '1'; // valor padrão
+                
+                if (user) {
+                    try {
+                        const userData = JSON.parse(user);
+                        iduser = userData.id || '1';
+                    } catch (error) {
+                        console.log('Usando ID padrão para usuário');
+                    }
+                }
+
                 fetch(endpoint, {
                     method: 'POST',
                     headers: {
-                        'Content-Type': 'application/json'
-                    }
+                        'Content-Type': 'application/x-www-form-urlencoded'
+                    },
+                    body: `iduser=${iduser}`
                 })
                 .then(response => {
                     console.log(`📡 Status da resposta: ${response.status} ${response.statusText}`);
@@ -983,10 +1174,19 @@
                 })
                 .then(data => {
                     console.log(`📥 Retorno do servidor:`, data);
-                    if (data.success) {
-                        // Salvar localmente
-                        localStorage.setItem('outros_vinculos', JSON.stringify(data.vinculos));
+                    
+                    // Verificar se há dados válidos (pode ser data.success, data.msg, ou diretamente data)
+                    if (data && (data.success || data.msg === 'sucesso' || data.length > 0 || Object.keys(data).length > 0)) {
+                        // Salvar localmente - tentar diferentes estruturas possíveis
+                        const vinculosData = data.vinculos || data.data || data;
+                        console.log(`💾 Salvando outros vínculos no localStorage:`, vinculosData);
+                        localStorage.setItem('outros_vinculos', JSON.stringify(vinculosData));
                         localStorage.setItem('outros_vinculos_timestamp', Date.now().toString());
+                        
+                        // Verificar se foi salvo
+                        const savedData = localStorage.getItem('outros_vinculos');
+                        console.log(`✅ Outros vínculos salvos no localStorage:`, savedData);
+                        
                         showAlert('✅ Outros vínculos baixados com sucesso!', 'success');
                         resolve();
                     } else {
@@ -1009,11 +1209,25 @@
                 
                 console.log(`🌐 Acessando endpoint: ${endpoint}`);
                 
+                // Pegar o ID do usuário do localStorage ou usar um valor padrão
+                const user = localStorage.getItem('user');
+                let iduser = '1'; // valor padrão
+                
+                if (user) {
+                    try {
+                        const userData = JSON.parse(user);
+                        iduser = userData.id || '1';
+                    } catch (error) {
+                        console.log('Usando ID padrão para usuário');
+                    }
+                }
+
                 fetch(endpoint, {
                     method: 'POST',
                     headers: {
-                        'Content-Type': 'application/json'
-                    }
+                        'Content-Type': 'application/x-www-form-urlencoded'
+                    },
+                    body: `iduser=${iduser}`
                 })
                 .then(response => {
                     console.log(`📡 Status da resposta: ${response.status} ${response.statusText}`);
@@ -1021,10 +1235,19 @@
                 })
                 .then(data => {
                     console.log(`📥 Retorno do servidor:`, data);
-                    if (data.success) {
-                        // Salvar localmente
-                        localStorage.setItem('processos_eticos', JSON.stringify(data.processos));
+                    
+                    // Verificar se há dados válidos (pode ser data.success, data.msg, ou diretamente data)
+                    if (data && (data.success || data.msg === 'sucesso' || data.length > 0 || Object.keys(data).length > 0)) {
+                        // Salvar localmente - tentar diferentes estruturas possíveis
+                        const processosData = data.processos || data.data || data;
+                        console.log(`💾 Salvando processos éticos no localStorage:`, processosData);
+                        localStorage.setItem('processos_eticos', JSON.stringify(processosData));
                         localStorage.setItem('processos_eticos_timestamp', Date.now().toString());
+                        
+                        // Verificar se foi salvo
+                        const savedData = localStorage.getItem('processos_eticos');
+                        console.log(`✅ Processos éticos salvos no localStorage:`, savedData);
+                        
                         showAlert('✅ Processos éticos baixados com sucesso!', 'success');
                         resolve();
                     } else {
@@ -1042,19 +1265,16 @@
 
         // Funções de Visualização (dados locais)
         function visualizarConfigTermo() {
-            console.log('🔍 Função visualizarConfigTermo chamada');
             const configData = localStorage.getItem('config_termo');
-            console.log('📋 Dados do localStorage:', configData);
             
             if (configData) {
                 try {
                     const config = JSON.parse(configData);
-                    console.log('📋 Configuração parseada:', config);
                     const timestamp = localStorage.getItem('config_termo_timestamp');
                     const data = new Date(parseInt(timestamp)).toLocaleString('pt-BR');
                     
                     let html = `
-                        <div style="background: white; padding: 20px; border-radius: 8px; margin: 20px;">
+                        <div style="background: white; padding: 20px; border-radius: 8px; margin: 20px; box-shadow: 0 2px 10px rgba(0,0,0,0.1);">
                             <h3>📋 Configuração do Termo</h3>
                             <p><strong>Baixado em:</strong> ${data}</p>
                     `;
@@ -1062,43 +1282,65 @@
                     // Verificar se é um array ou objeto e exibir adequadamente
                     if (Array.isArray(config)) {
                         html += `<p><strong>Total de campos:</strong> ${config.length}</p>`;
-                        html += `<p><strong>Estrutura dos dados:</strong></p>`;
-                        html += `<pre style="background: #f5f5f5; padding: 10px; border-radius: 4px; overflow-x: auto;">${JSON.stringify(config, null, 2)}</pre>`;
-                    } else if (typeof config === 'object') {
-                        // Tentar campos específicos se existirem
-                        if (config.termo) html += `<p><strong>Termo:</strong> ${config.termo}</p>`;
-                        if (config.versao) html += `<p><strong>Versão:</strong> ${config.versao}</p>`;
-                        if (config.dataAtualizacao) html += `<p><strong>Data de Atualização:</strong> ${config.dataAtualizacao}</p>`;
-                        if (config.campos && Array.isArray(config.campos)) {
-                            html += `<p><strong>Campos:</strong> ${config.campos.join(', ')}</p>`;
+                        
+                        // Mostrar apenas os dados principais, sem JSON completo
+                        if (config.length > 0) {
+                            html += `<p><strong>Primeiros campos:</strong></p>`;
+                            config.slice(0, 5).forEach((campo, index) => {
+                                html += `<div style="background: #f8f9fa; padding: 12px; margin: 8px 0; border-radius: 6px; border-left: 4px solid #5abaa3;">`;
+                                if (typeof campo === 'object') {
+                                    Object.entries(campo).forEach(([chave, valor]) => {
+                                        if (valor && valor !== 'null' && valor !== '') {
+                                            html += `<strong>${chave}:</strong> ${valor}<br>`;
+                                        }
+                                    });
+                                } else {
+                                    html += `<strong>Campo ${index + 1}:</strong> ${campo}`;
+                                }
+                                html += `</div>`;
+                            });
+                            
+                            if (config.length > 5) {
+                                html += `<p><em>... e mais ${config.length - 5} campos</em></p>`;
+                            }
                         }
-                        html += `<p><strong>Estrutura completa:</strong></p>`;
-                        html += `<pre style="background: #f5f5f5; padding: 10px; border-radius: 4px; overflow-x: auto;">${JSON.stringify(config, null, 2)}</pre>`;
+                    } else if (typeof config === 'object') {
+                        // Para objetos, mostrar campos principais
+                        html += `<p><strong>Campos disponíveis:</strong></p>`;
+                        Object.entries(config).forEach(([chave, valor]) => {
+                            if (valor && valor !== 'null' && valor !== '') {
+                                html += `<div style="background: #f8f9fa; padding: 8px; margin: 3px 0; border-radius: 4px;">`;
+                                html += `<strong>${chave}:</strong> ${valor}`;
+                                html += `</div>`;
+                            }
+                        });
                     } else {
                         html += `<p><strong>Valor:</strong> ${config}</p>`;
                     }
                     
-                    html += `</div>`;
-                    
-                    console.log('📋 HTML gerado:', html);
-                    console.log('🎯 Elemento content encontrado:', document.getElementById('content'));
+                    html += `
+                        <div style="margin-top: 20px; text-align: center;">
+                            <button onclick="limparConteudo()" style="background: #e9e674; color: #26397f; border: none; padding: 10px 20px; border-radius: 6px; cursor: pointer; font-weight: bold;">
+                                🗑️ Limpar Visualização
+                            </button>
+                        </div>
+                    </div>
+                    `;
                     
                     showAlert('📋 Exibindo configuração do termo', 'success');
                     document.getElementById('content').innerHTML = html;
-                    
-                    console.log('✅ Conteúdo inserido com sucesso');
                 } catch (error) {
                     console.error('❌ Erro ao carregar configuração:', error);
                     showAlert('❌ Erro ao carregar configuração', 'error');
                 }
             } else {
-                console.log('❌ Nenhuma configuração encontrada no localStorage');
                 showAlert('❌ Nenhuma configuração encontrada. Baixe primeiro!', 'error');
             }
         }
 
         function visualizarRtsHistorico() {
             const rtsData = localStorage.getItem('rts_historico');
+            
             if (rtsData) {
                 try {
                     const historico = JSON.parse(rtsData);
@@ -1106,42 +1348,59 @@
                     const data = new Date(parseInt(timestamp)).toLocaleString('pt-BR');
                     
                     let html = `
-                        <div style="background: white; padding: 20px; border-radius: 8px; margin: 20px;">
+                        <div style="background: white; padding: 20px; border-radius: 8px; margin: 20px; box-shadow: 0 2px 10px rgba(0,0,0,0.1);">
                             <h3>👥 Histórico de RTS</h3>
                             <p><strong>Baixado em:</strong> ${data}</p>
-                            <p><strong>Total de registros:</strong> ${historico.length}</p>
-                            <table style="width: 100%; border-collapse: collapse; margin-top: 15px;">
-                                <thead>
-                                    <tr style="background: #f5f5f5;">
-                                        <th style="padding: 10px; border: 1px solid #ddd;">ID</th>
-                                        <th style="padding: 10px; border: 1px solid #ddd;">Profissional</th>
-                                        <th style="padding: 10px; border: 1px solid #ddd;">Especialidade</th>
-                                        <th style="padding: 10px; border: 1px solid #ddd;">Data</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
                     `;
                     
-                    historico.forEach(registro => {
-                        html += `
-                            <tr>
-                                <td style="padding: 10px; border: 1px solid #ddd;">${registro.id}</td>
-                                <td style="padding: 10px; border: 1px solid #ddd;">${registro.profissional}</td>
-                                <td style="padding: 10px; border: 1px solid #ddd;">${registro.especialidade}</td>
-                                <td style="padding: 10px; border: 1px solid #ddd;">${registro.data}</td>
-                            </tr>
-                        `;
-                    });
+                    // Verificar se é um array ou objeto e exibir adequadamente
+                    if (Array.isArray(historico)) {
+                        html += `<p><strong>Total de registros:</strong> ${historico.length}</p>`;
+                        
+                        // Mostrar apenas os dados principais, sem JSON completo
+                        if (historico.length > 0) {
+                            html += `<p><strong>Primeiros registros:</strong></p>`;
+                            historico.slice(0, 5).forEach((item, index) => {
+                                html += `<div style="background: #f8f9fa; padding: 12px; margin: 8px 0; border-radius: 6px; border-left: 4px solid #5abaa3;">`;
+                                Object.entries(item).forEach(([chave, valor]) => {
+                                    if (valor && valor !== 'null' && valor !== '') {
+                                        html += `<strong>${chave}:</strong> ${valor}<br>`;
+                                    }
+                                });
+                                html += `</div>`;
+                            });
+                            
+                            if (historico.length > 5) {
+                                html += `<p><em>... e mais ${historico.length - 5} registros</em></p>`;
+                            }
+                        }
+                    } else if (typeof historico === 'object') {
+                        // Para objetos, mostrar campos principais
+                        html += `<p><strong>Campos disponíveis:</strong></p>`;
+                        Object.entries(historico).forEach(([chave, valor]) => {
+                            if (valor && valor !== 'null' && valor !== '') {
+                                html += `<div style="background: #f8f9fa; padding: 8px; margin: 3px 0; border-radius: 4px;">`;
+                                html += `<strong>${chave}:</strong> ${valor}`;
+                                html += `</div>`;
+                            }
+                        });
+                    } else {
+                        html += `<p><strong>Valor:</strong> ${historico}</p>`;
+                    }
                     
                     html += `
-                                </tbody>
-                            </table>
+                        <div style="margin-top: 20px; text-align: center;">
+                            <button onclick="limparConteudo()" style="background: #e9e674; color: #26397f; border: none; padding: 10px 20px; border-radius: 6px; cursor: pointer; font-weight: bold;">
+                                🗑️ Limpar Visualização
+                            </button>
                         </div>
+                    </div>
                     `;
                     
                     showAlert('👥 Exibindo histórico de RTS', 'success');
                     document.getElementById('content').innerHTML = html;
                 } catch (error) {
+                    console.error('❌ Erro ao carregar histórico RTS:', error);
                     showAlert('❌ Erro ao carregar histórico RTS', 'error');
                 }
             } else {
@@ -1151,6 +1410,7 @@
 
         function visualizarTiposInspecao() {
             const tiposData = localStorage.getItem('tipos_inspecao');
+            
             if (tiposData) {
                 try {
                     const tipos = JSON.parse(tiposData);
@@ -1158,40 +1418,59 @@
                     const data = new Date(parseInt(timestamp)).toLocaleString('pt-BR');
                     
                     let html = `
-                        <div style="background: white; padding: 20px; border-radius: 8px; margin: 20px;">
+                        <div style="background: white; padding: 20px; border-radius: 8px; margin: 20px; box-shadow: 0 2px 10px rgba(0,0,0,0.1);">
                             <h3>🔍 Tipos de Inspeção</h3>
                             <p><strong>Baixado em:</strong> ${data}</p>
-                            <p><strong>Total de tipos:</strong> ${tipos.length}</p>
-                            <table style="width: 100%; border-collapse: collapse; margin-top: 15px;">
-                                <thead>
-                                    <tr style="background: #f5f5f5;">
-                                        <th style="padding: 10px; border: 1px solid #ddd;">ID</th>
-                                        <th style="padding: 10px; border: 1px solid #ddd;">Nome</th>
-                                        <th style="padding: 10px; border: 1px solid #ddd;">Descrição</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
                     `;
                     
-                    tipos.forEach(tipo => {
-                        html += `
-                            <tr>
-                                <td style="padding: 10px; border: 1px solid #ddd;">${tipo.id}</td>
-                                <td style="padding: 10px; border: 1px solid #ddd;">${tipo.nome}</td>
-                                <td style="padding: 10px; border: 1px solid #ddd;">${tipo.descricao}</td>
-                            </tr>
-                        `;
-                    });
+                    // Verificar se é um array ou objeto e exibir adequadamente
+                    if (Array.isArray(tipos)) {
+                        html += `<p><strong>Total de tipos:</strong> ${tipos.length}</p>`;
+                        
+                        // Mostrar apenas os dados principais, sem tabela complexa
+                        if (tipos.length > 0) {
+                            html += `<p><strong>Tipos disponíveis:</strong></p>`;
+                            tipos.slice(0, 5).forEach((tipo, index) => {
+                                html += `<div style="background: #f8f9fa; padding: 12px; margin: 8px 0; border-radius: 6px; border-left: 4px solid #5abaa3;">`;
+                                Object.entries(tipo).forEach(([chave, valor]) => {
+                                    if (valor && valor !== 'null' && valor !== '') {
+                                        html += `<strong>${chave}:</strong> ${valor}<br>`;
+                                    }
+                                });
+                                html += `</div>`;
+                            });
+                            
+                            if (tipos.length > 5) {
+                                html += `<p><em>... e mais ${tipos.length - 5} tipos</em></p>`;
+                            }
+                        }
+                    } else if (typeof tipos === 'object') {
+                        // Para objetos, mostrar campos principais
+                        html += `<p><strong>Campos disponíveis:</strong></p>`;
+                        Object.entries(tipos).forEach(([chave, valor]) => {
+                            if (valor && valor !== 'null' && valor !== '') {
+                                html += `<div style="background: #f8f9fa; padding: 8px; margin: 3px 0; border-radius: 4px;">`;
+                                html += `<strong>${chave}:</strong> ${valor}`;
+                                html += `</div>`;
+                            }
+                        });
+                    } else {
+                        html += `<p><strong>Valor:</strong> ${tipos}</p>`;
+                    }
                     
                     html += `
-                                </tbody>
-                            </table>
+                        <div style="margin-top: 20px; text-align: center;">
+                            <button onclick="limparConteudo()" style="background: #e9e674; color: #26397f; border: none; padding: 10px 20px; border-radius: 6px; cursor: pointer; font-weight: bold;">
+                                🗑️ Limpar Visualização
+                            </button>
                         </div>
+                    </div>
                     `;
                     
                     showAlert('🔍 Exibindo tipos de inspeção', 'success');
                     document.getElementById('content').innerHTML = html;
                 } catch (error) {
+                    console.error('❌ Erro ao carregar tipos de inspeção:', error);
                     showAlert('❌ Erro ao carregar tipos de inspeção', 'error');
                 }
             } else {
@@ -1201,6 +1480,7 @@
 
         function visualizarInspecoesHistorico() {
             const inspecoesData = localStorage.getItem('inspecoes_historico');
+            
             if (inspecoesData) {
                 try {
                     const inspecoes = JSON.parse(inspecoesData);
@@ -1208,44 +1488,59 @@
                     const data = new Date(parseInt(timestamp)).toLocaleString('pt-BR');
                     
                     let html = `
-                        <div style="background: white; padding: 20px; border-radius: 8px; margin: 20px;">
+                        <div style="background: white; padding: 20px; border-radius: 8px; margin: 20px; box-shadow: 0 2px 10px rgba(0,0,0,0.1);">
                             <h3>📊 Histórico de Inspeções</h3>
                             <p><strong>Baixado em:</strong> ${data}</p>
-                            <p><strong>Total de inspeções:</strong> ${inspecoes.length}</p>
-                            <table style="width: 100%; border-collapse: collapse; margin-top: 15px;">
-                                <thead>
-                                    <tr style="background: #f5f5f5;">
-                                        <th style="padding: 10px; border: 1px solid #ddd;">ID</th>
-                                        <th style="padding: 10px; border: 1px solid #ddd;">Estabelecimento</th>
-                                        <th style="padding: 10px; border: 1px solid #ddd;">Tipo</th>
-                                        <th style="padding: 10px; border: 1px solid #ddd;">Status</th>
-                                        <th style="padding: 10px; border: 1px solid #ddd;">Data</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
                     `;
                     
-                    inspecoes.forEach(inspecao => {
-                        html += `
-                            <tr>
-                                <td style="padding: 10px; border: 1px solid #ddd;">${inspecao.id}</td>
-                                <td style="padding: 10px; border: 1px solid #ddd;">${inspecao.estabelecimento}</td>
-                                <td style="padding: 10px; border: 1px solid #ddd;">${inspecao.tipo}</td>
-                                <td style="padding: 10px; border: 1px solid #ddd;">${inspecao.status}</td>
-                                <td style="padding: 10px; border: 1px solid #ddd;">${inspecao.data}</td>
-                            </tr>
-                        `;
-                    });
+                    // Verificar se é um array ou objeto e exibir adequadamente
+                    if (Array.isArray(inspecoes)) {
+                        html += `<p><strong>Total de inspeções:</strong> ${inspecoes.length}</p>`;
+                        
+                        // Mostrar apenas os dados principais, sem tabela complexa
+                        if (inspecoes.length > 0) {
+                            html += `<p><strong>Primeiras inspeções:</strong></p>`;
+                            inspecoes.slice(0, 5).forEach((inspecao, index) => {
+                                html += `<div style="background: #f8f9fa; padding: 12px; margin: 8px 0; border-radius: 6px; border-left: 4px solid #5abaa3;">`;
+                                Object.entries(inspecao).forEach(([chave, valor]) => {
+                                    if (valor && valor !== 'null' && valor !== '') {
+                                        html += `<strong>${chave}:</strong> ${valor}<br>`;
+                                    }
+                                });
+                                html += `</div>`;
+                            });
+                            
+                            if (inspecoes.length > 5) {
+                                html += `<p><em>... e mais ${inspecoes.length - 5} inspeções</em></p>`;
+                            }
+                        }
+                    } else if (typeof inspecoes === 'object') {
+                        // Para objetos, mostrar campos principais
+                        html += `<p><strong>Campos disponíveis:</strong></p>`;
+                        Object.entries(inspecoes).forEach(([chave, valor]) => {
+                            if (valor && valor !== 'null' && valor !== '') {
+                                html += `<div style="background: #f8f9fa; padding: 8px; margin: 3px 0; border-radius: 4px;">`;
+                                html += `<strong>${chave}:</strong> ${valor}`;
+                                html += `</div>`;
+                            }
+                        });
+                    } else {
+                        html += `<p><strong>Valor:</strong> ${inspecoes}</p>`;
+                    }
                     
                     html += `
-                                </tbody>
-                            </table>
+                        <div style="margin-top: 20px; text-align: center;">
+                            <button onclick="limparConteudo()" style="background: #e9e674; color: #26397f; border: none; padding: 10px 20px; border-radius: 6px; cursor: pointer; font-weight: bold;">
+                                🗑️ Limpar Visualização
+                            </button>
                         </div>
+                    </div>
                     `;
                     
                     showAlert('📊 Exibindo histórico de inspeções', 'success');
                     document.getElementById('content').innerHTML = html;
                 } catch (error) {
+                    console.error('❌ Erro ao carregar histórico de inspeções:', error);
                     showAlert('❌ Erro ao carregar histórico de inspeções', 'error');
                 }
             } else {
@@ -1255,6 +1550,7 @@
 
         function visualizarProtocolos() {
             const protocolosData = localStorage.getItem('protocolos');
+            
             if (protocolosData) {
                 try {
                     const protocolos = JSON.parse(protocolosData);
@@ -1262,42 +1558,59 @@
                     const data = new Date(parseInt(timestamp)).toLocaleString('pt-BR');
                     
                     let html = `
-                        <div style="background: white; padding: 20px; border-radius: 8px; margin: 20px;">
+                        <div style="background: white; padding: 20px; border-radius: 8px; margin: 20px; box-shadow: 0 2px 10px rgba(0,0,0,0.1);">
                             <h3>📄 Protocolos</h3>
                             <p><strong>Baixado em:</strong> ${data}</p>
-                            <p><strong>Total de protocolos:</strong> ${protocolos.length}</p>
-                            <table style="width: 100%; border-collapse: collapse; margin-top: 15px;">
-                                <thead>
-                                    <tr style="background: #f5f5f5;">
-                                        <th style="padding: 10px; border: 1px solid #ddd;">ID</th>
-                                        <th style="padding: 10px; border: 1px solid #ddd;">Nome</th>
-                                        <th style="padding: 10px; border: 1px solid #ddd;">Versão</th>
-                                        <th style="padding: 10px; border: 1px solid #ddd;">Data</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
                     `;
                     
-                    protocolos.forEach(protocolo => {
-                        html += `
-                            <tr>
-                                <td style="padding: 10px; border: 1px solid #ddd;">${protocolo.id}</td>
-                                <td style="padding: 10px; border: 1px solid #ddd;">${protocolo.nome}</td>
-                                <td style="padding: 10px; border: 1px solid #ddd;">${protocolo.versao}</td>
-                                <td style="padding: 10px; border: 1px solid #ddd;">${protocolo.data}</td>
-                            </tr>
-                        `;
-                    });
+                    // Verificar se é um array ou objeto e exibir adequadamente
+                    if (Array.isArray(protocolos)) {
+                        html += `<p><strong>Total de protocolos:</strong> ${protocolos.length}</p>`;
+                        
+                        // Mostrar apenas os dados principais, sem tabela complexa
+                        if (protocolos.length > 0) {
+                            html += `<p><strong>Primeiros protocolos:</strong></p>`;
+                            protocolos.slice(0, 5).forEach((protocolo, index) => {
+                                html += `<div style="background: #f8f9fa; padding: 12px; margin: 8px 0; border-radius: 6px; border-left: 4px solid #5abaa3;">`;
+                                Object.entries(protocolo).forEach(([chave, valor]) => {
+                                    if (valor && valor !== 'null' && valor !== '') {
+                                        html += `<strong>${chave}:</strong> ${valor}<br>`;
+                                    }
+                                });
+                                html += `</div>`;
+                            });
+                            
+                            if (protocolos.length > 5) {
+                                html += `<p><em>... e mais ${protocolos.length - 5} protocolos</em></p>`;
+                            }
+                        }
+                    } else if (typeof protocolos === 'object') {
+                        // Para objetos, mostrar campos principais
+                        html += `<p><strong>Campos disponíveis:</strong></p>`;
+                        Object.entries(protocolos).forEach(([chave, valor]) => {
+                            if (valor && valor !== 'null' && valor !== '') {
+                                html += `<div style="background: #f8f9fa; padding: 8px; margin: 3px 0; border-radius: 4px;">`;
+                                html += `<strong>${chave}:</strong> ${valor}`;
+                                html += `</div>`;
+                            }
+                        });
+                    } else {
+                        html += `<p><strong>Valor:</strong> ${protocolos}</p>`;
+                    }
                     
                     html += `
-                                </tbody>
-                            </table>
+                        <div style="margin-top: 20px; text-align: center;">
+                            <button onclick="limparConteudo()" style="background: #e9e674; color: #26397f; border: none; padding: 10px 20px; border-radius: 6px; cursor: pointer; font-weight: bold;">
+                                🗑️ Limpar Visualização
+                            </button>
                         </div>
+                    </div>
                     `;
                     
                     showAlert('📄 Exibindo protocolos', 'success');
                     document.getElementById('content').innerHTML = html;
                 } catch (error) {
+                    console.error('❌ Erro ao carregar protocolos:', error);
                     showAlert('❌ Erro ao carregar protocolos', 'error');
                 }
             } else {
@@ -1307,6 +1620,7 @@
 
         function visualizarAfastamentos() {
             const afastamentosData = localStorage.getItem('afastamentos');
+            
             if (afastamentosData) {
                 try {
                     const afastamentos = JSON.parse(afastamentosData);
@@ -1314,42 +1628,59 @@
                     const data = new Date(parseInt(timestamp)).toLocaleString('pt-BR');
                     
                     let html = `
-                        <div style="background: white; padding: 20px; border-radius: 8px; margin: 20px;">
-                            <h3>🏥 Afastamentos</h3>
+                        <div style="background: white; padding: 20px; border-radius: 8px; margin: 20px; box-shadow: 0 2px 10px rgba(0,0,0,0.1);">
+                            <h3>🚫 Afastamentos</h3>
                             <p><strong>Baixado em:</strong> ${data}</p>
-                            <p><strong>Total de afastamentos:</strong> ${afastamentos.length}</p>
-                            <table style="width: 100%; border-collapse: collapse; margin-top: 15px;">
-                                <thead>
-                                    <tr style="background: #f5f5f5;">
-                                        <th style="padding: 10px; border: 1px solid #ddd;">ID</th>
-                                        <th style="padding: 10px; border: 1px solid #ddd;">Profissional</th>
-                                        <th style="padding: 10px; border: 1px solid #ddd;">Motivo</th>
-                                        <th style="padding: 10px; border: 1px solid #ddd;">Período</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
                     `;
                     
-                    afastamentos.forEach(afastamento => {
-                        html += `
-                            <tr>
-                                <td style="padding: 10px; border: 1px solid #ddd;">${afastamento.id}</td>
-                                <td style="padding: 10px; border: 1px solid #ddd;">${afastamento.profissional}</td>
-                                <td style="padding: 10px; border: 1px solid #ddd;">${afastamento.motivo}</td>
-                                <td style="padding: 10px; border: 1px solid #ddd;">${afastamento.periodo}</td>
-                            </tr>
-                        `;
-                    });
+                    // Verificar se é um array ou objeto e exibir adequadamente
+                    if (Array.isArray(afastamentos)) {
+                        html += `<p><strong>Total de afastamentos:</strong> ${afastamentos.length}</p>`;
+                        
+                        // Mostrar apenas os dados principais, sem tabela complexa
+                        if (afastamentos.length > 0) {
+                            html += `<p><strong>Primeiros afastamentos:</strong></p>`;
+                            afastamentos.slice(0, 5).forEach((afastamento, index) => {
+                                html += `<div style="background: #f8f9fa; padding: 12px; margin: 8px 0; border-radius: 6px; border-left: 4px solid #5abaa3;">`;
+                                Object.entries(afastamento).forEach(([chave, valor]) => {
+                                    if (valor && valor !== 'null' && valor !== '') {
+                                        html += `<strong>${chave}:</strong> ${valor}<br>`;
+                                    }
+                                });
+                                html += `</div>`;
+                            });
+                            
+                            if (afastamentos.length > 5) {
+                                html += `<p><em>... e mais ${afastamentos.length - 5} afastamentos</em></p>`;
+                            }
+                        }
+                    } else if (typeof afastamentos === 'object') {
+                        // Para objetos, mostrar campos principais
+                        html += `<p><strong>Campos disponíveis:</strong></p>`;
+                        Object.entries(afastamentos).forEach(([chave, valor]) => {
+                            if (valor && valor !== 'null' && valor !== '') {
+                                html += `<div style="background: #f8f9fa; padding: 8px; margin: 3px 0; border-radius: 4px;">`;
+                                html += `<strong>${chave}:</strong> ${valor}`;
+                                html += `</div>`;
+                            }
+                        });
+                    } else {
+                        html += `<p><strong>Valor:</strong> ${afastamentos}</p>`;
+                    }
                     
                     html += `
-                                </tbody>
-                            </table>
+                        <div style="margin-top: 20px; text-align: center;">
+                            <button onclick="limparConteudo()" style="background: #e9e674; color: #26397f; border: none; padding: 10px 20px; border-radius: 6px; cursor: pointer; font-weight: bold;">
+                                🗑️ Limpar Visualização
+                            </button>
                         </div>
+                    </div>
                     `;
                     
-                    showAlert('🏥 Exibindo afastamentos', 'success');
+                    showAlert('🚫 Exibindo afastamentos', 'success');
                     document.getElementById('content').innerHTML = html;
                 } catch (error) {
+                    console.error('❌ Erro ao carregar afastamentos:', error);
                     showAlert('❌ Erro ao carregar afastamentos', 'error');
                 }
             } else {
@@ -1359,6 +1690,7 @@
 
         function visualizarDenuncias() {
             const denunciasData = localStorage.getItem('denuncias');
+            
             if (denunciasData) {
                 try {
                     const denuncias = JSON.parse(denunciasData);
@@ -1369,41 +1701,49 @@
                         <div style="background: white; padding: 20px; border-radius: 8px; margin: 20px;">
                             <h3>🚨 Denúncias</h3>
                             <p><strong>Baixado em:</strong> ${data}</p>
-                            <p><strong>Total de denúncias:</strong> ${denuncias.length}</p>
-                            <table style="width: 100%; border-collapse: collapse; margin-top: 15px;">
-                                <thead>
-                                    <tr style="background: #f5f5f5;">
-                                        <th style="padding: 10px; border: 1px solid #ddd;">ID</th>
-                                        <th style="padding: 10px; border: 1px solid #ddd;">Estabelecimento</th>
-                                        <th style="padding: 10px; border: 1px solid #ddd;">Denunciante</th>
-                                        <th style="padding: 10px; border: 1px solid #ddd;">Status</th>
-                                        <th style="padding: 10px; border: 1px solid #ddd;">Data</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
                     `;
                     
-                    denuncias.forEach(denuncia => {
-                        html += `
-                            <tr>
-                                <td style="padding: 10px; border: 1px solid #ddd;">${denuncia.id}</td>
-                                <td style="padding: 10px; border: 1px solid #ddd;">${denuncia.estabelecimento}</td>
-                                <td style="padding: 10px; border: 1px solid #ddd;">${denuncia.denunciante}</td>
-                                <td style="padding: 10px; border: 1px solid #ddd;">${denuncia.status}</td>
-                                <td style="padding: 10px; border: 1px solid #ddd;">${denuncia.data}</td>
-                            </tr>
-                        `;
-                    });
+                    // Verificar se é um array ou objeto e exibir adequadamente
+                    if (Array.isArray(denuncias)) {
+                        html += `<p><strong>Total de denúncias:</strong> ${denuncias.length}</p>`;
+                        
+                        // Mostrar apenas os dados principais, sem tabela complexa
+                        if (denuncias.length > 0) {
+                            html += `<p><strong>Primeiras denúncias:</strong></p>`;
+                            denuncias.slice(0, 5).forEach((denuncia, index) => {
+                                html += `<div style="background: #f8f9fa; padding: 12px; margin: 8px 0; border-radius: 6px; border-left: 4px solid #5abaa3;">`;
+                                Object.entries(denuncia).forEach(([chave, valor]) => {
+                                    if (valor && valor !== 'null' && valor !== '') {
+                                        html += `<strong>${chave}:</strong> ${valor}<br>`;
+                                    }
+                                });
+                                html += `</div>`;
+                            });
+                            
+                            if (denuncias.length > 5) {
+                                html += `<p><em>... e mais ${denuncias.length - 5} denúncias</em></p>`;
+                            }
+                        }
+                    } else if (typeof denuncias === 'object') {
+                        // Para objetos, mostrar campos principais
+                        html += `<p><strong>Campos disponíveis:</strong></p>`;
+                        Object.entries(denuncias).forEach(([chave, valor]) => {
+                            if (valor && valor !== 'null' && valor !== '') {
+                                html += `<div style="background: #f8f9fa; padding: 8px; margin: 3px 0; border-radius: 4px;">`;
+                                html += `<strong>${chave}:</strong> ${valor}`;
+                                html += `</div>`;
+                            }
+                        });
+                    } else {
+                        html += `<p><strong>Valor:</strong> ${denuncias}</p>`;
+                    }
                     
-                    html += `
-                                </tbody>
-                            </table>
-                        </div>
-                    `;
+                    html += `</div>`;
                     
                     showAlert('🚨 Exibindo denúncias', 'success');
                     document.getElementById('content').innerHTML = html;
                 } catch (error) {
+                    console.error('❌ Erro ao carregar denúncias:', error);
                     showAlert('❌ Erro ao carregar denúncias', 'error');
                 }
             } else {
@@ -1413,6 +1753,7 @@
 
         function visualizarOutrosProfissionais() {
             const profissionaisData = localStorage.getItem('outros_profissionais');
+            
             if (profissionaisData) {
                 try {
                     const profissionais = JSON.parse(profissionaisData);
@@ -1423,39 +1764,49 @@
                         <div style="background: white; padding: 20px; border-radius: 8px; margin: 20px;">
                             <h3>👨‍⚕️ Outros Profissionais</h3>
                             <p><strong>Baixado em:</strong> ${data}</p>
-                            <p><strong>Total de profissionais:</strong> ${profissionais.length}</p>
-                            <table style="width: 100%; border-collapse: collapse; margin-top: 15px;">
-                                <thead>
-                                    <tr style="background: #f5f5f5;">
-                                        <th style="padding: 10px; border: 1px solid #ddd;">ID</th>
-                                        <th style="padding: 10px; border: 1px solid #ddd;">Nome</th>
-                                        <th style="padding: 10px; border: 1px solid #ddd;">Especialidade</th>
-                                        <th style="padding: 10px; border: 1px solid #ddd;">Registro</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
                     `;
                     
-                    profissionais.forEach(profissional => {
-                        html += `
-                            <tr>
-                                <td style="padding: 10px; border: 1px solid #ddd;">${profissional.id}</td>
-                                <td style="padding: 10px; border: 1px solid #ddd;">${profissional.nome}</td>
-                                <td style="padding: 10px; border: 1px solid #ddd;">${profissional.especialidade}</td>
-                                <td style="padding: 10px; border: 1px solid #ddd;">${profissional.registro}</td>
-                            </tr>
-                        `;
-                    });
+                    // Verificar se é um array ou objeto e exibir adequadamente
+                    if (Array.isArray(profissionais)) {
+                        html += `<p><strong>Total de profissionais:</strong> ${profissionais.length}</p>`;
+                        
+                        // Mostrar apenas os dados principais, sem tabela complexa
+                        if (profissionais.length > 0) {
+                            html += `<p><strong>Primeiros profissionais:</strong></p>`;
+                            profissionais.slice(0, 5).forEach((profissional, index) => {
+                                html += `<div style="background: #f8f9fa; padding: 12px; margin: 8px 0; border-radius: 6px; border-left: 4px solid #5abaa3;">`;
+                                Object.entries(profissional).forEach(([chave, valor]) => {
+                                    if (valor && valor !== 'null' && valor !== '') {
+                                        html += `<strong>${chave}:</strong> ${valor}<br>`;
+                                    }
+                                });
+                                html += `</div>`;
+                            });
+                            
+                            if (profissionais.length > 5) {
+                                html += `<p><em>... e mais ${profissionais.length - 5} profissionais</em></p>`;
+                            }
+                        }
+                    } else if (typeof profissionais === 'object') {
+                        // Para objetos, mostrar campos principais
+                        html += `<p><strong>Campos disponíveis:</strong></p>`;
+                        Object.entries(profissionais).forEach(([chave, valor]) => {
+                            if (valor && valor !== 'null' && valor !== '') {
+                                html += `<div style="background: #f8f9fa; padding: 8px; margin: 3px 0; border-radius: 4px;">`;
+                                html += `<strong>${chave}:</strong> ${valor}`;
+                                html += `</div>`;
+                            }
+                        });
+                    } else {
+                        html += `<p><strong>Valor:</strong> ${profissionais}</p>`;
+                    }
                     
-                    html += `
-                                </tbody>
-                            </table>
-                        </div>
-                    `;
+                    html += `</div>`;
                     
                     showAlert('👨‍⚕️ Exibindo outros profissionais', 'success');
                     document.getElementById('content').innerHTML = html;
                 } catch (error) {
+                    console.error('❌ Erro ao carregar outros profissionais:', error);
                     showAlert('❌ Erro ao carregar outros profissionais', 'error');
                 }
             } else {
@@ -1465,6 +1816,7 @@
 
         function visualizarOutrosVinculos() {
             const vinculosData = localStorage.getItem('outros_vinculos');
+            
             if (vinculosData) {
                 try {
                     const vinculos = JSON.parse(vinculosData);
@@ -1475,39 +1827,49 @@
                         <div style="background: white; padding: 20px; border-radius: 8px; margin: 20px;">
                             <h3>🔗 Outros Vínculos</h3>
                             <p><strong>Baixado em:</strong> ${data}</p>
-                            <p><strong>Total de vínculos:</strong> ${vinculos.length}</p>
-                            <table style="width: 100%; border-collapse: collapse; margin-top: 15px;">
-                                <thead>
-                                    <tr style="background: #f5f5f5;">
-                                        <th style="padding: 10px; border: 1px solid #ddd;">ID</th>
-                                        <th style="padding: 10px; border: 1px solid #ddd;">Profissional</th>
-                                        <th style="padding: 10px; border: 1px solid #ddd;">Estabelecimento</th>
-                                        <th style="padding: 10px; border: 1px solid #ddd;">Tipo</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
                     `;
                     
-                    vinculos.forEach(vinculo => {
-                        html += `
-                            <tr>
-                                <td style="padding: 10px; border: 1px solid #ddd;">${vinculo.id}</td>
-                                <td style="padding: 10px; border: 1px solid #ddd;">${vinculo.profissional}</td>
-                                <td style="padding: 10px; border: 1px solid #ddd;">${vinculo.estabelecimento}</td>
-                                <td style="padding: 10px; border: 1px solid #ddd;">${vinculo.tipo}</td>
-                            </tr>
-                        `;
-                    });
+                    // Verificar se é um array ou objeto e exibir adequadamente
+                    if (Array.isArray(vinculos)) {
+                        html += `<p><strong>Total de vínculos:</strong> ${vinculos.length}</p>`;
+                        
+                        // Mostrar apenas os dados principais, sem tabela complexa
+                        if (vinculos.length > 0) {
+                            html += `<p><strong>Primeiros vínculos:</strong></p>`;
+                            vinculos.slice(0, 5).forEach((vinculo, index) => {
+                                html += `<div style="background: #f8f9fa; padding: 12px; margin: 8px 0; border-radius: 6px; border-left: 4px solid #5abaa3;">`;
+                                Object.entries(vinculo).forEach(([chave, valor]) => {
+                                    if (valor && valor !== 'null' && valor !== '') {
+                                        html += `<strong>${chave}:</strong> ${valor}<br>`;
+                                    }
+                                });
+                                html += `</div>`;
+                            });
+                            
+                            if (vinculos.length > 5) {
+                                html += `<p><em>... e mais ${vinculos.length - 5} vínculos</em></p>`;
+                            }
+                        }
+                    } else if (typeof vinculos === 'object') {
+                        // Para objetos, mostrar campos principais
+                        html += `<p><strong>Campos disponíveis:</strong></p>`;
+                        Object.entries(vinculos).forEach(([chave, valor]) => {
+                            if (valor && valor !== 'null' && valor !== '') {
+                                html += `<div style="background: #f8f9fa; padding: 8px; margin: 3px 0; border-radius: 4px;">`;
+                                html += `<strong>${chave}:</strong> ${valor}`;
+                                html += `</div>`;
+                            }
+                        });
+                    } else {
+                        html += `<p><strong>Valor:</strong> ${vinculos}</p>`;
+                    }
                     
-                    html += `
-                                </tbody>
-                            </table>
-                        </div>
-                    `;
+                    html += `</div>`;
                     
                     showAlert('🔗 Exibindo outros vínculos', 'success');
                     document.getElementById('content').innerHTML = html;
                 } catch (error) {
+                    console.error('❌ Erro ao carregar outros vínculos:', error);
                     showAlert('❌ Erro ao carregar outros vínculos', 'error');
                 }
             } else {
@@ -1517,6 +1879,7 @@
 
         function visualizarProcessosEticos() {
             const processosData = localStorage.getItem('processos_eticos');
+            
             if (processosData) {
                 try {
                     const processos = JSON.parse(processosData);
@@ -1527,41 +1890,49 @@
                         <div style="background: white; padding: 20px; border-radius: 8px; margin: 20px;">
                             <h3>⚖️ Processos Éticos</h3>
                             <p><strong>Baixado em:</strong> ${data}</p>
-                            <p><strong>Total de processos:</strong> ${processos.length}</p>
-                            <table style="width: 100%; border-collapse: collapse; margin-top: 15px;">
-                                <thead>
-                                    <tr style="background: #f5f5f5;">
-                                        <th style="padding: 10px; border: 1px solid #ddd;">ID</th>
-                                        <th style="padding: 10px; border: 1px solid #ddd;">Profissional</th>
-                                        <th style="padding: 10px; border: 1px solid #ddd;">Processo</th>
-                                        <th style="padding: 10px; border: 1px solid #ddd;">Status</th>
-                                        <th style="padding: 10px; border: 1px solid #ddd;">Data</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
                     `;
                     
-                    processos.forEach(processo => {
-                        html += `
-                            <tr>
-                                <td style="padding: 10px; border: 1px solid #ddd;">${processo.id}</td>
-                                <td style="padding: 10px; border: 1px solid #ddd;">${processo.profissional}</td>
-                                <td style="padding: 10px; border: 1px solid #ddd;">${processo.processo}</td>
-                                <td style="padding: 10px; border: 1px solid #ddd;">${processo.status}</td>
-                                <td style="padding: 10px; border: 1px solid #ddd;">${processo.data}</td>
-                            </tr>
-                        `;
-                    });
+                    // Verificar se é um array ou objeto e exibir adequadamente
+                    if (Array.isArray(processos)) {
+                        html += `<p><strong>Total de processos:</strong> ${processos.length}</p>`;
+                        
+                        // Mostrar apenas os dados principais, sem tabela complexa
+                        if (processos.length > 0) {
+                            html += `<p><strong>Primeiros processos:</strong></p>`;
+                            processos.slice(0, 5).forEach((processo, index) => {
+                                html += `<div style="background: #f8f9fa; padding: 12px; margin: 8px 0; border-radius: 6px; border-left: 4px solid #5abaa3;">`;
+                                Object.entries(processo).forEach(([chave, valor]) => {
+                                    if (valor && valor !== 'null' && valor !== '') {
+                                        html += `<strong>${chave}:</strong> ${valor}<br>`;
+                                    }
+                                });
+                                html += `</div>`;
+                            });
+                            
+                            if (processos.length > 5) {
+                                html += `<p><em>... e mais ${processos.length - 5} processos</em></p>`;
+                            }
+                        }
+                    } else if (typeof processos === 'object') {
+                        // Para objetos, mostrar campos principais
+                        html += `<p><strong>Campos disponíveis:</strong></p>`;
+                        Object.entries(processos).forEach(([chave, valor]) => {
+                            if (valor && valor !== 'null' && valor !== '') {
+                                html += `<div style="background: #f8f9fa; padding: 8px; margin: 3px 0; border-radius: 4px;">`;
+                                html += `<strong>${chave}:</strong> ${valor}`;
+                                html += `</div>`;
+                            }
+                        });
+                    } else {
+                        html += `<p><strong>Valor:</strong> ${processos}</p>`;
+                    }
                     
-                    html += `
-                                </tbody>
-                            </table>
-                        </div>
-                    `;
+                    html += `</div>`;
                     
                     showAlert('⚖️ Exibindo processos éticos', 'success');
                     document.getElementById('content').innerHTML = html;
                 } catch (error) {
+                    console.error('❌ Erro ao carregar processos éticos:', error);
                     showAlert('❌ Erro ao carregar processos éticos', 'error');
                 }
             } else {
@@ -1600,6 +1971,13 @@
                 logout();
             }
         }, 300000); // 5 minutos
+        
+        // Função para limpar o conteúdo da área de visualização
+        function limparConteudo() {
+            document.getElementById('content').innerHTML = '';
+            showAlert('🗑️ Visualização limpa', 'success');
+        }
+
     </script>
 </body>
 </html> 

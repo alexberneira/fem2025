@@ -65,55 +65,55 @@ const server = http.createServer((req, res) => {
 
     if (req.url === '/api/rts-historico') {
         console.log(`   👥 Rota processada: /api/rts-historico (proxy API CRF)`);
-        handleRealApiProxy(req, res, '/api/rts-historico');
+        handleRealApiProxy(req, res, '/rts-hist-json.php');
         return;
     }
 
     if (req.url === '/api/tipos-inspecao') {
         console.log(`   🔍 Rota processada: /api/tipos-inspecao (proxy API CRF)`);
-        handleRealApiProxy(req, res, '/api/tipos-inspecao');
+        handleRealApiProxy(req, res, '/tiposinspecao-json.php');
         return;
     }
 
     if (req.url === '/api/inspecoes-historico') {
         console.log(`   📊 Rota processada: /api/inspecoes-historico (proxy API CRF)`);
-        handleRealApiProxy(req, res, '/api/inspecoes-historico');
+        handleRealApiProxy(req, res, '/inspecoes-json.php');
         return;
     }
 
     if (req.url === '/api/protocolos') {
         console.log(`   📄 Rota processada: /api/protocolos (proxy API CRF)`);
-        handleRealApiProxy(req, res, '/api/protocolos');
+        handleRealApiProxy(req, res, '/protocolos-json.php');
         return;
     }
 
     if (req.url === '/api/afastamentos') {
         console.log(`   🏥 Rota processada: /api/afastamentos (proxy API CRF)`);
-        handleRealApiProxy(req, res, '/api/afastamentos');
+        handleRealApiProxy(req, res, '/afastamentos-json.php');
         return;
     }
 
     if (req.url === '/api/denuncias') {
         console.log(`   🚨 Rota processada: /api/denuncias (proxy API CRF)`);
-        handleRealApiProxy(req, res, '/api/denuncias');
+        handleRealApiProxy(req, res, '/denuncias-json.php');
         return;
     }
 
     if (req.url === '/api/outros-profissionais') {
         console.log(`   👨‍⚕️ Rota processada: /api/outros-profissionais (proxy API CRF)`);
-        handleRealApiProxy(req, res, '/api/outros-profissionais');
+        handleRealApiProxy(req, res, '/outro-job-prof-json.php');
         return;
     }
 
     if (req.url === '/api/outros-vinculos') {
         console.log(`   🔗 Rota processada: /api/outros-vinculos (proxy API CRF)`);
-        handleRealApiProxy(req, res, '/api/outros-vinculos');
+        handleRealApiProxy(req, res, '/outro-job-json.php');
         return;
     }
 
     if (req.url === '/api/processos-eticos') {
         console.log(`   ⚖️ Rota processada: /api/processos-eticos (proxy API CRF)`);
-        handleRealApiProxy(req, res, '/api/processos-eticos');
+        handleRealApiProxy(req, res, '/etica-pf-json.php');
         return;
     }
 
