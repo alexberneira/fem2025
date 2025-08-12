@@ -200,6 +200,14 @@
             box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
         }
 
+        .empresa-razao-inscricao {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 6px;
+            gap: 20px;
+        }
+
         .empresa-razao {
             font-size: 16px;
             font-weight: 600;
@@ -207,7 +215,20 @@
             text-align: left;
             line-height: 1.4;
             letter-spacing: 0.3px;
-            margin-bottom: 6px;
+            flex: 1;
+            margin-bottom: 0;
+        }
+
+        .empresa-inscricao-numero {
+            font-size: 12px;
+            color: #8e44ad;
+            font-weight: 500;
+            background: #f8f9fa;
+            padding: 4px 8px;
+            border-radius: 4px;
+            border: 1px solid #e9ecef;
+            white-space: nowrap;
+            flex: 0 0 auto;
         }
 
         .empresa-atividade {
@@ -255,6 +276,18 @@
             background: #f8f9fa;
             padding: 4px 8px;
             border-radius: 4px;
+            display: inline-block;
+            margin-bottom: 8px;
+        }
+
+        .empresa-inspecao {
+            font-size: 12px;
+            color: #27ae60;
+            font-weight: 500;
+            background: #e8f5e8;
+            padding: 4px 8px;
+            border-radius: 4px;
+            border: 1px solid #c8e6c9;
             display: inline-block;
             margin-bottom: 8px;
         }
@@ -659,14 +692,18 @@
                 // Buscar informações de farmacêuticos da empresa
                 const farmaceuticosInfo = buscarFarmaceuticosEmpresa(empresa);
                 
-                return `
+                                return `
                     <div class="empresa-item" onclick="selecionarEmpresa(${index})">
                         <div class="empresa-content-left">
-                            <div class="empresa-razao">${razao}</div>
+                            <div class="empresa-inspecao">🔍 Inspeção: ${empresa.idmeta || 'Não informado'}</div>
+                            <div class="empresa-razao-inscricao">
+                                <div class="empresa-inscricao-numero">📋 Inscrição: ${empresa.inscricao || empresa.inscricaonova || 'Não informado'}</div>
+                                <div class="empresa-razao">${razao}</div>
+                            </div>
                             <div class="empresa-atividade">${atividade}</div>
                             <div class="empresa-localizacao">📍 ${cidade}${estado ? ', ' + estado : ''}</div>
                             <div class="empresa-endereco">🏠 ${obterEnderecoCompleto(empresa)}</div>
-                                                                            <div class="empresa-cnpj">🆔 ${cnpj}</div>
+                            <div class="empresa-cnpj">🆔 ${cnpj}</div>
                         <div class="empresa-farmaceuticos">
                             <span class="farmaceutico-tag diretor">👨‍⚕️ ${farmaceuticosInfo.diretores} Diretor</span>
                             <span class="farmaceutico-tag assistente">👨‍⚕️ ${farmaceuticosInfo.assistentes} Assistente</span>

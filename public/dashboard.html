@@ -137,22 +137,84 @@
         }
 
         .alert {
-            padding: 15px;
-            border-radius: 8px;
-            margin-bottom: 20px;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            padding: 20px 30px;
+            border-radius: 12px;
             display: none;
+            z-index: 1000;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            min-width: 300px;
+            text-align: center;
+            font-weight: 500;
+            animation: slideIn 0.3s ease-out;
         }
 
         .alert.error {
-            background: #FFE5E5;
-            color: #D32F2F;
-            border: 1px solid #FFCDD2;
+            background: linear-gradient(135deg, #ff6b6b, #ee5a52);
+            color: white;
+            border: 1px solid #ff5252;
         }
 
         .alert.success {
-            background: rgba(90, 186, 163, 0.1);
-            color: #2E7D32;
-            border: 1px solid #5abaa3;
+            background: linear-gradient(135deg, #5abaa3, #4caf50);
+            color: white;
+            border: 1px solid #4caf50;
+        }
+
+        .alert.info {
+            background: linear-gradient(135deg, #2196f3, #1976d2);
+            color: white;
+            border: 1px solid #1976d2;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translate(-50%, -50%) scale(0.8);
+            }
+            to {
+                opacity: 1;
+                transform: translate(-50%, -50%) scale(1);
+            }
+        }
+
+        @keyframes slideOut {
+            from {
+                opacity: 1;
+                transform: translate(-50%, -50%) scale(1);
+            }
+            to {
+                opacity: 0;
+                transform: translate(-50%, -50%) scale(0.8);
+            }
+        }
+
+        .alert-close {
+            position: absolute;
+            top: 8px;
+            right: 12px;
+            background: none;
+            border: none;
+            color: white;
+            font-size: 20px;
+            cursor: pointer;
+            padding: 0;
+            width: 24px;
+            height: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            transition: background-color 0.2s;
+        }
+
+        .alert-close:hover {
+            background: rgba(255, 255, 255, 0.2);
         }
 
         .loading {
@@ -212,7 +274,10 @@
     </div>
 
     <div class="container">
-        <div id="alert" class="alert"></div>
+        <div id="alert" class="alert">
+            <span id="alertMessage"></span>
+            <button class="alert-close" onclick="hideAlert()">×</button>
+        </div>
 
         <div class="welcome-section">
             <h1 class="welcome-title">Bem-vindo ao CRF App</h1>
@@ -411,13 +476,32 @@
         const userNameElement = document.getElementById('userName');
 
         function showAlert(message, type) {
-            alertDiv.textContent = message;
+            const alertMessage = document.getElementById('alertMessage');
+            alertMessage.textContent = message;
             alertDiv.className = `alert ${type}`;
             alertDiv.style.display = 'block';
+            
+            // Auto-hide após 3 segundos para mensagens de sucesso e info
+            if (type === 'success' || type === 'info') {
+                setTimeout(() => {
+                    hideAlert();
+                }, 3000);
+            }
+            
+            // Auto-hide após 5 segundos para mensagens de erro
+            if (type === 'error') {
+                setTimeout(() => {
+                    hideAlert();
+                }, 5000);
+            }
         }
 
         function hideAlert() {
+            alertDiv.style.animation = 'slideOut 0.3s ease-in';
+            setTimeout(() => {
             alertDiv.style.display = 'none';
+                alertDiv.style.animation = '';
+            }, 300);
         }
 
         function logout() {

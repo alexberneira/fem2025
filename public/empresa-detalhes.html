@@ -200,6 +200,90 @@
             word-wrap: break-word;
         }
 
+        .horarios-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 8px;
+            margin-top: 8px;
+        }
+
+        .horario-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 6px 10px;
+            background: #f8f9fa;
+            border-radius: 6px;
+            border: 1px solid #e9ecef;
+        }
+
+        .horario-dia {
+            font-weight: 600;
+            color: #495057;
+            font-size: 13px;
+        }
+
+        .horario-valor {
+            font-weight: 500;
+            color: #28a745;
+            font-size: 13px;
+            text-align: right;
+        }
+
+        .horarios-card {
+            grid-column: 1 / -1;
+            width: 100%;
+        }
+
+        .horarios-card .horarios-grid {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .horarios-card .horario-item {
+            padding: 12px 20px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            border: 1px solid #e9ecef;
+            transition: all 0.2s ease;
+            width: 100%;
+        }
+
+        .horarios-card .horario-item:hover {
+            background: #e9ecef;
+            transform: translateY(-1px);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .accordion-header {
+            cursor: pointer;
+            user-select: none;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: all 0.3s ease;
+            color: #26397f;
+        }
+
+        .accordion-icon {
+            font-size: 14px;
+            color: #6c757d;
+            transition: transform 0.3s ease;
+        }
+
+        .accordion-content {
+            overflow: hidden;
+            transition: all 0.3s ease;
+        }
+
+        .accordion-content.collapsed {
+            max-height: 0;
+            opacity: 0;
+            padding-top: 0;
+            padding-bottom: 0;
+        }
+
         .atividades-list {
             list-style: none;
         }
@@ -596,7 +680,7 @@
 
         // Função para atualizar o card de farmacêuticos
         function atualizarCardFarmaceuticos(data, tipo) {
-            const cardContent = document.querySelector('.farmaceuticos-content');
+            const cardContent = document.getElementById('farmaceuticos-content');
             
             if (tipo === 'success' && Array.isArray(data)) {
                 // Renderizar lista de farmacêuticos
@@ -688,42 +772,95 @@
                         </div>
                     </div>
 
-                    <div class="detalhe-card">
-                        <h3>📞 Contato</h3>
-                        <div class="detalhe-item">
-                            <span class="detalhe-label">Telefone:</span>
-                            <span class="detalhe-value">${empresa.telefone || 'Não informado'}</span>
-                        </div>
-                        <div class="detalhe-item">
-                            <span class="detalhe-label">Email:</span>
-                            <span class="detalhe-value">${empresa.email1 || 'Não informado'}</span>
+
+
+                    <div class="detalhe-card horarios-card">
+                        <h3 class="accordion-header" onclick="toggleHorarios()">
+                            🕐 Horários de Funcionamento
+                            <span class="accordion-icon">▼</span>
+                        </h3>
+                        <div class="horarios-grid accordion-content" id="horarios-content">
+                            <div class="horario-item">
+                                <span class="horario-dia">Domingo:</span>
+                                <span class="horario-valor">${empresa.hr_dom || 'Fechado'}</span>
+                            </div>
+                            <div class="horario-item">
+                                <span class="horario-dia">Segunda:</span>
+                                <span class="horario-valor">${empresa.hr_seg || 'Fechado'}</span>
+                            </div>
+                            <div class="horario-item">
+                                <span class="horario-dia">Terça:</span>
+                                <span class="horario-valor">${empresa.hr_ter || 'Fechado'}</span>
+                            </div>
+                            <div class="horario-item">
+                                <span class="horario-dia">Quarta:</span>
+                                <span class="horario-valor">${empresa.hr_qua || 'Fechado'}</span>
+                            </div>
+                            <div class="horario-item">
+                                <span class="horario-dia">Quinta:</span>
+                                <span class="horario-valor">${empresa.hr_qui || 'Fechado'}</span>
+                            </div>
+                            <div class="horario-item">
+                                <span class="horario-dia">Sexta:</span>
+                                <span class="horario-valor">${empresa.hr_sex || 'Fechado'}</span>
+                            </div>
+                            <div class="horario-item">
+                                <span class="horario-dia">Sábado:</span>
+                                <span class="horario-valor">${empresa.hr_sab || 'Fechado'}</span>
+                            </div>
                         </div>
                     </div>
-
-                    <div class="detalhe-card">
-                        <h3>🏭 Tipo Empresa</h3>
-                        ${empresa.atividades && empresa.atividades.length > 0 ? 
-                            `<ul class="atividades-list">
-                                ${empresa.atividades.map(atividade => 
-                                    `<li>${atividade.nomeatividade || 'Atividade sem nome'}</li>`
-                                ).join('')}
-                            </ul>` : 
-                            '<p style="color: #6c757d; font-style: italic;">Nenhuma atividade cadastrada</p>'
-                        }
-                    </div>
-
 
                 </div>
 
                 <div class="farmaceuticos-card">
-                    <h3>👨‍⚕️ Farmacêuticos Vinculados</h3>
-                    <div class="farmaceuticos-content">
+                    <h3 class="accordion-header" onclick="toggleFarmaceuticos()">
+                        👨‍⚕️ Farmacêuticos Vinculados
+                        <span class="accordion-icon">▼</span>
+                    </h3>
+                    <div class="farmaceuticos-content accordion-content" id="farmaceuticos-content">
                         <p style="color: #6c757d; font-style: italic;">Lista de farmacêuticos vinculados será exibida aqui</p>
                     </div>
                 </div>
             `;
             
             container.innerHTML = detalhesHTML;
+        }
+
+        // Função para controlar a sanfona dos horários
+        function toggleHorarios() {
+            const content = document.getElementById('horarios-content');
+            const icon = document.querySelector('.accordion-icon');
+            
+            if (content.classList.contains('collapsed')) {
+                // Abrir
+                content.classList.remove('collapsed');
+                icon.textContent = '▼';
+                icon.style.transform = 'rotate(0deg)';
+            } else {
+                // Fechar
+                content.classList.add('collapsed');
+                icon.textContent = '▶';
+                icon.style.transform = 'rotate(0deg)';
+            }
+        }
+
+        // Função para controlar a sanfona dos farmacêuticos
+        function toggleFarmaceuticos() {
+            const content = document.getElementById('farmaceuticos-content');
+            const icon = content.previousElementSibling.querySelector('.accordion-icon');
+            
+            if (content.classList.contains('collapsed')) {
+                // Abrir
+                content.classList.remove('collapsed');
+                icon.textContent = '▼';
+                icon.style.transform = 'rotate(0deg)';
+            } else {
+                // Fechar
+                content.classList.add('collapsed');
+                icon.textContent = '▶';
+                icon.style.transform = 'rotate(0deg)';
+            }
         }
 
         // Função para mostrar erro

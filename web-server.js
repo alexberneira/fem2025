@@ -37,6 +37,35 @@ const server = http.createServer((req, res) => {
         return;
     }
 
+    if (req.url.startsWith('/empresa-detalhes.html')) {
+        console.log(`   🏢 Rota processada: /empresa-detalhes.html (detalhes da empresa)`);
+        const empresaFilePath = path.join(__dirname, 'public', 'empresa-detalhes.html');
+        // Verificar se o arquivo existe e servi-lo
+        fs.access(empresaFilePath, fs.constants.F_OK, (err) => {
+            if (err) {
+                console.log(`   ❌ Arquivo não encontrado: ${empresaFilePath}`);
+                res.writeHead(404, { 'Content-Type': 'text/html' });
+                res.end('<h1>404 - Página não encontrada</h1>');
+                return;
+            }
+            
+            // Ler e servir o arquivo
+            fs.readFile(empresaFilePath, (err, data) => {
+                if (err) {
+                    console.log(`   ❌ Erro ao ler arquivo: ${empresaFilePath}`);
+                    res.writeHead(500, { 'Content-Type': 'text/html' });
+                    res.end('<h1>500 - Erro interno do servidor</h1>');
+                    return;
+                }
+                
+                console.log(`   ✅ Arquivo servido com sucesso: ${empresaFilePath}`);
+                res.writeHead(200, { 'Content-Type': 'text/html' });
+                res.end(data);
+            });
+        });
+        return;
+    }
+
     if (req.url === '/api/sincronizar') {
         console.log(`   🔄 Rota processada: /api/sincronizar (sincronização)`);
         handleSincronizacao(req, res);
@@ -65,7 +94,7 @@ const server = http.createServer((req, res) => {
 
     if (req.url === '/api/rts-historico') {
         console.log(`   👥 Rota processada: /api/rts-historico (proxy API CRF)`);
-        handleRealApiProxy(req, res, '/rts-hist-json.php');
+        handleRealApiProxy(req, res, '/resp-tec-json.php');
         return;
     }
 
