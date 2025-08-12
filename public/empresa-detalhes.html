@@ -214,6 +214,83 @@
             color: #495057;
         }
 
+        .farmaceuticos-card {
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+            border: 1px solid #e9ecef;
+            margin-top: 20px;
+            width: 100%;
+        }
+
+        .farmaceuticos-card h3 {
+            color: #26397f;
+            font-size: 18px;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .farmaceuticos-content {
+            min-height: 100px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .farmaceuticos-list {
+            width: 100%;
+        }
+
+        .farmaceuticos-list p {
+            margin-bottom: 15px;
+            color: #495057;
+            font-weight: 600;
+        }
+
+        .farmaceutico-item {
+            background: #f8f9fa;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 10px;
+            border-left: 4px solid #5abaa3;
+        }
+
+        .farmaceutico-nome {
+            font-weight: 600;
+            color: #26397f;
+            font-size: 16px;
+            margin-bottom: 8px;
+        }
+
+        .farmaceutico-detalhes {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+
+        .farmaceutico-detalhes span {
+            background: white;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            color: #6c757d;
+            border: 1px solid #e9ecef;
+        }
+
+        .farmaceutico-obs {
+            margin-top: 8px;
+            padding: 8px;
+            background: #fff3cd;
+            border-radius: 4px;
+            font-size: 12px;
+            color: #856404;
+            border-left: 3px solid #ffc107;
+            font-style: italic;
+        }
+
         .loading {
             text-align: center;
             padding: 60px 20px;
@@ -326,9 +403,228 @@
 
                 renderizarDetalhesEmpresa(empresa);
                 
+                // Carregar farmacêuticos vinculados
+                carregarFarmaceuticosVinculados(empresa);
+                
             } catch (error) {
                 console.error('❌ Erro ao carregar detalhes da empresa:', error);
                 mostrarErro(`Erro ao carregar dados: ${error.message}`);
+            }
+        }
+
+        // Função para carregar farmacêuticos vinculados
+        function carregarFarmaceuticosVinculados(empresa) {
+            try {
+                const rtsData = localStorage.getItem('rts_historico');
+                
+                if (!rtsData) {
+                    atualizarCardFarmaceuticos('❌ Dados de RTS não encontrados. Use "BAIXAR RTS" no dashboard primeiro.', 'error');
+                    return;
+                }
+
+                const historico = JSON.parse(rtsData);
+                console.log('📊 Dados RTS carregados:', historico);
+
+                // Debug: Listar todos os campos disponíveis
+                if (historico.length > 0) {
+                    const camposDisponiveis = Object.keys(historico[0]);
+                    console.log('🔍 Campos disponíveis na tabela RTS:', camposDisponiveis);
+                    
+                    // Mostrar campos no card para debug
+                    atualizarCardFarmaceuticos(`🔍 Debug: Campos disponíveis na tabela RTS:\n${camposDisponiveis.join(', ')}`, 'info');
+                }
+
+                // Filtrar farmacêuticos vinculados à empresa atual
+                const farmaceuticosVinculados = filtrarFarmaceuticosPorEmpresa(historico, empresa);
+                
+                if (farmaceuticosVinculados.length > 0) {
+                    atualizarCardFarmaceuticos(farmaceuticosVinculados, 'success');
+                } else {
+                    // Manter a informação dos campos disponíveis
+                    if (historico.length > 0) {
+                        const camposDisponiveis = Object.keys(historico[0]);
+                        atualizarCardFarmaceuticos(`ℹ️ Nenhum farmacêutico vinculado encontrado para esta empresa.\n\n🔍 Campos disponíveis na tabela RTS:\n${camposDisponiveis.join(', ')}`, 'info');
+                    } else {
+                        atualizarCardFarmaceuticos('ℹ️ Nenhum farmacêutico vinculado encontrado para esta empresa.', 'info');
+                    }
+                }
+                
+            } catch (error) {
+                console.error('❌ Erro ao carregar farmacêuticos vinculados:', error);
+                atualizarCardFarmaceuticos('❌ Erro ao carregar farmacêuticos vinculados', 'error');
+            }
+        }
+
+        // Função para converter data do formato brasileiro (dd/mm/aaaa) para Date
+        function converterDataBRParaDate(dataBR) {
+            if (!dataBR || dataBR === '00/00/0000') {
+                return null; // Data inválida
+            }
+            
+            try {
+                const partes = dataBR.split('/');
+                if (partes.length !== 3) {
+                    return null;
+                }
+                
+                const dia = parseInt(partes[0]);
+                const mes = parseInt(partes[1]) - 1; // Mês começa em 0 no JavaScript
+                const ano = parseInt(partes[2]);
+                
+                // Verificar se os valores são válidos
+                if (isNaN(dia) || isNaN(mes) || isNaN(ano) || ano < 1900) {
+                    return null;
+                }
+                
+                return new Date(ano, mes, dia);
+            } catch (error) {
+                console.error('❌ Erro ao converter data:', dataBR, error);
+                return null;
+            }
+        }
+
+        // Função para processar array RTS
+        function processarArrayRTS(historico, empresa, farmaceuticos) {
+            historico.forEach((item, index) => {
+                processarItemRTS(item, empresa, farmaceuticos);
+            });
+        }
+
+        // Função para processar item individual RTS
+        function processarItemRTS(item, empresa, farmaceuticos) {
+            console.log(`🔍 Campo inscrpj do item:`, item.inscrpj);
+            console.log(`🔍 Tipo do inscrpj:`, typeof item.inscrpj);
+            
+            // Verificar se o item está vinculado à empresa atual
+            // Campo 'inscrpj' da tabela RTS corresponde ao 'idempresa' da tabela empresa
+            
+            // Tentar diferentes tipos de comparação
+            const inscrpj = item.inscrpj;
+            const idempresa = empresa.idempresa;
+            
+            console.log('🔍 Comparando:', { inscrpj, idempresa });
+            console.log('🔍 Tipos:', { inscrpjType: typeof inscrpj, idempresaType: typeof idempresa });
+            
+            // Comparar como string e como número
+            const matchString = String(inscrpj) === String(idempresa);
+            const matchNumber = Number(inscrpj) === Number(idempresa);
+            
+            console.log('🔍 Match como string:', matchString);
+            console.log('🔍 Match como número:', matchNumber);
+            
+            if (matchString || matchNumber) {
+                console.log('✅ Empresa RTS encontrada:', item);
+                
+                // Extrair farmacêuticos do array resptec (responsável técnico)
+                if (item.resptec && Array.isArray(item.resptec)) {
+                    console.log('🔍 Farmacêuticos encontrados na empresa:', item.resptec.length);
+                    
+                    item.resptec.forEach((farmaceutico, idx) => {
+                        console.log(`👨‍⚕️ Farmacêutico ${idx}:`, farmaceutico);
+                        
+                        // Verificar se a datafim é >= hoje
+                        const dataFim = farmaceutico.datafim;
+                        const hoje = new Date();
+                        const dataFimDate = converterDataBRParaDate(dataFim);
+                        
+                        console.log(`🔍 Data fim do farmacêutico: ${dataFim}`);
+                        console.log(`🔍 Data fim convertida: ${dataFimDate}`);
+                        console.log(`🔍 Hoje: ${hoje}`);
+                        console.log(`🔍 Data fim >= hoje: ${dataFimDate >= hoje}`);
+                        
+                        // Só incluir se datafim >= hoje ou se datafim for inválida (00/00/0000)
+                        if (dataFimDate >= hoje || dataFim === '00/00/0000' || !dataFimDate) {
+                            console.log('✅ Farmacêutico ativo incluído:', farmaceutico.nomepf);
+                            
+                            // Criar objeto padronizado para o farmacêutico
+                            const farmaceuticoPadronizado = {
+                                nome: farmaceutico.nomepf,
+                                cpf: farmaceutico.cpf,
+                                crf: farmaceutico.inscrpf,
+                                funcao: farmaceutico.hierarquia,
+                                email: farmaceutico.emailpf,
+                                rg: farmaceutico.rg,
+                                dataInicio: farmaceutico.datainicio,
+                                dataFim: farmaceutico.datafim,
+                                observacoes: farmaceutico.obs
+                            };
+                            
+                            farmaceuticos.push(farmaceuticoPadronizado);
+                        } else {
+                            console.log('❌ Farmacêutico inativo (data fim < hoje):', farmaceutico.nomepf);
+                        }
+                    });
+                } else {
+                    console.log('⚠️ Nenhum farmacêutico (resptec) encontrado para esta empresa');
+                }
+            } else {
+                console.log('❌ Empresa não corresponde:', { inscrpj, idempresa });
+            }
+        }
+
+        // Função para filtrar farmacêuticos por empresa
+        function filtrarFarmaceuticosPorEmpresa(historico, empresa) {
+            const farmaceuticos = [];
+            
+            console.log('🔍 Filtrando farmacêuticos para empresa:', empresa);
+            console.log('🔍 ID da empresa (idempresa):', empresa.idempresa);
+            console.log('🔍 Tipo do ID da empresa:', typeof empresa.idempresa);
+            
+            // Verificar se é um array ou objeto com chaves numéricas
+            if (Array.isArray(historico)) {
+                console.log('🔍 Total de registros RTS (array):', historico.length);
+                processarArrayRTS(historico, empresa, farmaceuticos);
+            } else if (typeof historico === 'object' && historico !== null) {
+                console.log('🔍 Processando objeto RTS com chaves numéricas');
+                
+                // Filtrar apenas as chaves numéricas (0, 1, 2, etc.) e ignorar 'msg'
+                const chavesNumericas = Object.keys(historico).filter(key => !isNaN(key) && key !== 'msg');
+                console.log('🔍 Chaves numéricas encontradas:', chavesNumericas);
+                console.log('🔍 Total de registros RTS:', chavesNumericas.length);
+                
+                chavesNumericas.forEach(key => {
+                    const item = historico[key];
+                    console.log(`🔍 Item RTS ${key}:`, item);
+                    processarItemRTS(item, empresa, farmaceuticos);
+                });
+                
+                console.log('🔍 Total de farmacêuticos vinculados encontrados:', farmaceuticos.length);
+            }
+            
+            return farmaceuticos;
+        }
+
+        // Função para atualizar o card de farmacêuticos
+        function atualizarCardFarmaceuticos(data, tipo) {
+            const cardContent = document.querySelector('.farmaceuticos-content');
+            
+            if (tipo === 'success' && Array.isArray(data)) {
+                // Renderizar lista de farmacêuticos
+                let html = `<div class="farmaceuticos-list">`;
+                html += `<p><strong>Total de farmacêuticos vinculados:</strong> ${data.length}</p>`;
+                
+                data.forEach((farmaceutico, index) => {
+                    html += `<div class="farmaceutico-item">`;
+                    html += `<div class="farmaceutico-nome">👨‍⚕️ ${farmaceutico.nome || 'Nome não informado'}</div>`;
+                    html += `<div class="farmaceutico-detalhes">`;
+                    if (farmaceutico.crf) html += `<span>CRF: ${farmaceutico.crf}</span>`;
+                    if (farmaceutico.cpf) html += `<span>CPF: ${farmaceutico.cpf}</span>`;
+                    if (farmaceutico.funcao) html += `<span>Função: ${farmaceutico.funcao}</span>`;
+                    if (farmaceutico.email) html += `<span>Email: ${farmaceutico.email}</span>`;
+                    if (farmaceutico.dataInicio) html += `<span>Início: ${farmaceutico.dataInicio}</span>`;
+                    html += `</div>`;
+                    if (farmaceutico.observacoes) {
+                        html += `<div class="farmaceutico-obs">📝 ${farmaceutico.observacoes}</div>`;
+                    }
+                    html += `</div>`;
+                });
+                
+                html += `</div>`;
+                cardContent.innerHTML = html;
+            } else {
+                // Mensagem de erro ou informação
+                const cor = tipo === 'error' ? '#dc3545' : tipo === 'info' ? '#17a2b8' : '#28a745';
+                cardContent.innerHTML = `<p style="color: ${cor}; font-style: italic;">${data}</p>`;
             }
         }
 
@@ -417,6 +713,13 @@
                     </div>
 
 
+                </div>
+
+                <div class="farmaceuticos-card">
+                    <h3>👨‍⚕️ Farmacêuticos Vinculados</h3>
+                    <div class="farmaceuticos-content">
+                        <p style="color: #6c757d; font-style: italic;">Lista de farmacêuticos vinculados será exibida aqui</p>
+                    </div>
                 </div>
             `;
             
