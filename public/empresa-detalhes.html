@@ -1,0 +1,444 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FEM App - Detalhes da Empresa</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #5abaa3 0%, #26397f 100%);
+            color: white;
+            border-radius: 20px;
+            padding: 30px;
+            margin-bottom: 30px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            position: relative;
+        }
+
+        .header-content {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+
+        .header-left {
+            flex: 0 0 auto;
+        }
+
+        .header-center {
+            flex: 1;
+            text-align: center;
+        }
+
+        .header h1 {
+            color: white;
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            color: rgba(255, 255, 255, 0.9);
+            font-size: 1.1em;
+        }
+
+        .back-button {
+            background: #e9e674;
+            color: #26397f;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 1em;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-block;
+        }
+
+        .back-button:hover {
+            background: #d4d15f;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(233, 230, 116, 0.4);
+        }
+
+        .empresa-detalhes-container {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+
+        .empresa-header {
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+            border-radius: 12px;
+            padding: 25px;
+            margin-bottom: 30px;
+            border-left: 5px solid #5abaa3;
+        }
+
+        .empresa-razao {
+            font-size: 28px;
+            font-weight: 700;
+            color: #2c3e50;
+            margin-bottom: 4px;
+            line-height: 1.3;
+        }
+
+        .empresa-cnpj {
+            font-size: 18px;
+            color: #7f8c8d;
+            font-family: monospace;
+            background: #f8f9fa;
+            padding: 8px 12px;
+            border-radius: 6px;
+            display: inline-block;
+            margin-bottom: 4px;
+        }
+
+        .empresa-perfil {
+            font-size: 18px;
+            color: #7f8c8d;
+            font-family: monospace;
+            background: #f8f9fa;
+            padding: 8px 12px;
+            border-radius: 6px;
+            display: inline-block;
+            margin-bottom: 4px;
+        }
+
+        .empresa-inscricao {
+            font-size: 18px;
+            color: #7f8c8d;
+            font-family: monospace;
+            background: #f8f9fa;
+            padding: 8px 12px;
+            border-radius: 6px;
+            display: inline-block;
+            margin-bottom: 4px;
+        }
+
+        .empresa-atividade {
+            font-size: 16px;
+            color: #5abaa3;
+            font-weight: 600;
+            background: rgba(90, 186, 163, 0.1);
+            padding: 8px 16px;
+            border-radius: 20px;
+            display: inline-block;
+        }
+
+        .detalhes-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .detalhe-card {
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+            border: 1px solid #e9ecef;
+        }
+
+        .detalhe-card h3 {
+            color: #26397f;
+            font-size: 18px;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .detalhe-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 0;
+            border-bottom: 1px solid #f1f3f4;
+        }
+
+        .detalhe-item:last-child {
+            border-bottom: none;
+        }
+
+        .detalhe-label {
+            font-weight: 600;
+            color: #495057;
+            font-size: 14px;
+        }
+
+        .detalhe-value {
+            color: #6c757d;
+            font-size: 14px;
+            text-align: right;
+            max-width: 200px;
+            word-wrap: break-word;
+        }
+
+        .atividades-list {
+            list-style: none;
+        }
+
+        .atividades-list li {
+            background: #f8f9fa;
+            padding: 8px 12px;
+            margin: 5px 0;
+            border-radius: 6px;
+            border-left: 3px solid #5abaa3;
+            font-size: 14px;
+            color: #495057;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 60px 20px;
+            color: #666;
+        }
+
+        .spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #667eea;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 20px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: #666;
+        }
+
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1em;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-block;
+            margin: 5px;
+        }
+
+        .btn-primary {
+            background: #667eea;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #5a6fd8;
+        }
+
+        @media (max-width: 768px) {
+            .detalhes-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .header h1 {
+                font-size: 2em;
+            }
+            
+            .empresa-razao {
+                font-size: 24px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="header-content">
+                <div class="header-left">
+                    <a href="/empresas" class="back-button">← Voltar às Empresas</a>
+                </div>
+                <div class="header-center">
+                    <h1>🏢 Detalhes da Empresa</h1>
+                    <p>Informações completas da empresa selecionada</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="empresa-detalhes-container" id="empresa-detalhes-container">
+            <div class="loading">
+                <div class="spinner"></div>
+                <p>Carregando detalhes da empresa...</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Função para obter parâmetros da URL
+        function getUrlParameter(name) {
+            const urlParams = new URLSearchParams(window.location.search);
+            return urlParams.get(name);
+        }
+
+        // Função para carregar detalhes da empresa
+        function carregarDetalhesEmpresa() {
+            const empresaIndex = getUrlParameter('index');
+            
+            if (!empresaIndex) {
+                mostrarErro('Índice da empresa não fornecido');
+                return;
+            }
+
+            try {
+                const empresas = JSON.parse(localStorage.getItem('empresas') || '[]');
+                const empresa = empresas[parseInt(empresaIndex)];
+                
+                if (!empresa) {
+                    mostrarErro('Empresa não encontrada');
+                    return;
+                }
+
+                renderizarDetalhesEmpresa(empresa);
+                
+            } catch (error) {
+                console.error('❌ Erro ao carregar detalhes da empresa:', error);
+                mostrarErro(`Erro ao carregar dados: ${error.message}`);
+            }
+        }
+
+        // Função para renderizar detalhes da empresa
+        function renderizarDetalhesEmpresa(empresa) {
+            const container = document.getElementById('empresa-detalhes-container');
+            
+            const detalhesHTML = `
+                <div class="empresa-header">
+                    <div class="empresa-razao">${empresa.razao || empresa.nome || 'Nome não informado'}</div>
+                    <div class="empresa-cnpj">${empresa.cnpj || 'CNPJ não informado'}</div>
+                    <div class="empresa-atividade">
+                        ${empresa.atividades && empresa.atividades.length > 0 ? empresa.atividades[0].nomeatividade : 'Atividade não informada'}
+                    </div>
+                    <div class="empresa-perfil">
+                        Perfil Empresa: ${empresa.perfil || 'Não informado'}
+                    </div>
+                    <div class="empresa-inscricao">
+                        Inscrição: ${empresa.inscricao || empresa.inscricaonova || 'Não informado'}
+                    </div>
+                </div>
+
+                <div class="detalhes-grid">
+                    <div class="detalhe-card">
+                        <h3>📋 Informações Básicas</h3>
+                        <div class="detalhe-item">
+                            <span class="detalhe-label">Razão Social:</span>
+                            <span class="detalhe-value">${empresa.razao || 'Não informado'}</span>
+                        </div>
+                        <div class="detalhe-item">
+                            <span class="detalhe-label">Nome Fantasia:</span>
+                            <span class="detalhe-value">${empresa.nomeempresa || 'Não informado'}</span>
+                        </div>
+                        <div class="detalhe-item">
+                            <span class="detalhe-label">CNPJ:</span>
+                            <span class="detalhe-value">${empresa.cnpj || 'Não informado'}</span>
+                        </div>
+                    </div>
+
+                    <div class="detalhe-card">
+                        <h3>📍 Endereço</h3>
+                        <div class="detalhe-item">
+                            <span class="detalhe-label">Logradouro:</span>
+                            <span class="detalhe-value">${empresa.logradouro || 'Não informado'}</span>
+                        </div>
+                        <div class="detalhe-item">
+                            <span class="detalhe-label">Número:</span>
+                            <span class="detalhe-value">${empresa.numero || 'Não informado'}</span>
+                        </div>
+                        <div class="detalhe-item">
+                            <span class="detalhe-label">Complemento:</span>
+                            <span class="detalhe-value">${empresa.complemento || 'Não informado'}</span>
+                        </div>
+                        <div class="detalhe-item">
+                            <span class="detalhe-label">Bairro:</span>
+                            <span class="detalhe-value">${empresa.bairro || 'Não informado'}</span>
+                        </div>
+                        <div class="detalhe-item">
+                            <span class="detalhe-label">Cidade:</span>
+                            <span class="detalhe-value">${empresa.cidade || 'Não informado'}</span>
+                        </div>
+                    </div>
+
+                    <div class="detalhe-card">
+                        <h3>📞 Contato</h3>
+                        <div class="detalhe-item">
+                            <span class="detalhe-label">Telefone:</span>
+                            <span class="detalhe-value">${empresa.telefone || 'Não informado'}</span>
+                        </div>
+                        <div class="detalhe-item">
+                            <span class="detalhe-label">Email:</span>
+                            <span class="detalhe-value">${empresa.email1 || 'Não informado'}</span>
+                        </div>
+                    </div>
+
+                    <div class="detalhe-card">
+                        <h3>🏭 Tipo Empresa</h3>
+                        ${empresa.atividades && empresa.atividades.length > 0 ? 
+                            `<ul class="atividades-list">
+                                ${empresa.atividades.map(atividade => 
+                                    `<li>${atividade.nomeatividade || 'Atividade sem nome'}</li>`
+                                ).join('')}
+                            </ul>` : 
+                            '<p style="color: #6c757d; font-style: italic;">Nenhuma atividade cadastrada</p>'
+                        }
+                    </div>
+
+
+                </div>
+            `;
+            
+            container.innerHTML = detalhesHTML;
+        }
+
+        // Função para mostrar erro
+        function mostrarErro(mensagem) {
+            const container = document.getElementById('empresa-detalhes-container');
+            container.innerHTML = `
+                <div class="empty-state">
+                    <h3>❌ Erro</h3>
+                    <p>${mensagem}</p>
+                    <a href="/empresas" class="btn btn-primary">Voltar às Empresas</a>
+                </div>
+            `;
+        }
+
+        // Inicializar quando a página carregar
+        document.addEventListener('DOMContentLoaded', function() {
+            carregarDetalhesEmpresa();
+        });
+    </script>
+</body>
+</html>
