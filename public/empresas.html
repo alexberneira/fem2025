@@ -118,17 +118,73 @@
             margin: 0 auto;
         }
 
+        .empresas-header {
+            text-align: center;
+            margin-bottom: 25px;
+            padding-bottom: 20px;
+            border-bottom: 2px solid #f1f3f4;
+        }
+
+        .empresas-header h3 {
+            color: #26397f;
+            font-size: 24px;
+            margin-bottom: 8px;
+        }
+
+        .empresas-header p {
+            color: #7f8c8d;
+            font-size: 14px;
+            font-style: italic;
+        }
+
         .empresa-item {
             background: white;
             border: 1px solid #e0e0e0;
             border-left: 3px solid #5abaa3;
-            border-right: 3px solid #5abaa3;
             border-radius: 8px;
-            padding: 18px 24px;
+            padding: 20px 24px;
             margin-bottom: 16px;
             box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
             transition: all 0.3s ease;
             cursor: pointer;
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+        }
+
+        .empresa-content-left {
+            flex: 1;
+            margin-right: 20px;
+        }
+
+        .empresa-content-right {
+            flex: 0 0 auto;
+            text-align: right;
+            min-width: 150px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            align-items: flex-end;
+            min-height: 100%;
+        }
+
+        .empresa-item::after {
+            content: '→';
+            position: absolute;
+            right: 20px;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 20px;
+            color: #5abaa3;
+            font-weight: bold;
+            transition: all 0.3s ease;
+        }
+
+        .empresa-item:hover::after {
+            right: 15px;
+            color: #4a9a8a;
         }
 
         .empresa-item:hover {
@@ -161,6 +217,109 @@
             text-align: left;
             line-height: 1.3;
             font-style: italic;
+            margin-bottom: 8px;
+        }
+
+        .empresa-perfil {
+            font-size: 13px;
+            color: #8e44ad;
+            font-weight: 500;
+            background: #f8f9fa;
+            padding: 6px 10px;
+            border-radius: 6px;
+            border: 1px solid #e9ecef;
+            text-align: center;
+            white-space: nowrap;
+            margin: 0;
+        }
+
+        .empresa-localizacao {
+            font-size: 13px;
+            color: #5abaa3;
+            font-weight: 500;
+            margin-bottom: 6px;
+        }
+
+        .empresa-endereco {
+            font-size: 12px;
+            color: #6c757d;
+            font-weight: 400;
+            margin-bottom: 6px;
+            line-height: 1.3;
+        }
+
+        .empresa-cnpj {
+            font-size: 12px;
+            color: #95a5a6;
+            font-family: monospace;
+            background: #f8f9fa;
+            padding: 4px 8px;
+            border-radius: 4px;
+            display: inline-block;
+            margin-bottom: 8px;
+        }
+
+        .empresa-afastamentos {
+            font-size: 12px;
+            color: #e67e22;
+            font-weight: 500;
+            margin: 0;
+            background: #fef9e7;
+            padding: 4px 8px;
+            border-radius: 4px;
+            border: 1px solid #fdeaa7;
+            display: inline-block;
+            text-align: center;
+            white-space: nowrap;
+        }
+
+        .empresa-farmaceuticos {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .farmaceutico-tag {
+            font-size: 11px;
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-weight: 500;
+            display: inline-block;
+        }
+
+        .farmaceutico-tag.diretor {
+            background: #e3f2fd;
+            color: #1976d2;
+            border: 1px solid #bbdefb;
+        }
+
+        .farmaceutico-tag.assistente {
+            background: #f3e5f5;
+            color: #7b1fa2;
+            border: 1px solid #e1bee7;
+        }
+
+        .empresa-info-bottom {
+            display: flex;
+            gap: 12px;
+            align-items: center;
+            flex-wrap: wrap;
+            margin-top: 8px;
+        }
+
+        .empresa-horario {
+            margin-top: 0;
+        }
+
+        .horario-tag {
+            font-size: 11px;
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-weight: 500;
+            display: inline-block;
+            background: #fff3e0;
+            color: #e65100;
+            border: 1px solid #ffcc02;
         }
 
         .empty-state {
@@ -229,6 +388,10 @@
         
 
         <div class="empresas-container" id="empresas-container">
+            <div class="empresas-header">
+                <h3>🏢 Empresas Cadastradas</h3>
+                <p>Clique em uma empresa para ver detalhes completos</p>
+            </div>
             <div class="loading">
                 <div class="spinner"></div>
                 <p>Carregando empresas...</p>
@@ -238,6 +401,206 @@
 
     <script>
 
+
+        // Função para buscar informações de farmacêuticos de uma empresa
+        function buscarFarmaceuticosEmpresa(empresa) {
+            try {
+                const rtsData = localStorage.getItem('rts_historico');
+                
+                if (!rtsData) {
+                    console.log('⚠️ Dados de RTS não encontrados para empresa:', empresa.idempresa);
+                    return { diretores: 0, assistentes: 0 };
+                }
+
+                const historico = JSON.parse(rtsData);
+                console.log('🔍 Buscando farmacêuticos para empresa:', empresa.idempresa);
+                
+                let diretores = 0;
+                let assistentes = 0;
+                
+                // Verificar se é um array ou objeto com chaves numéricas
+                if (Array.isArray(historico)) {
+                    historico.forEach(item => {
+                        if (String(item.inscrpj) === String(empresa.idempresa)) {
+                            const resultado = processarFarmaceuticosRTS(item, diretores, assistentes);
+                            diretores = resultado.diretores;
+                            assistentes = resultado.assistentes;
+                        }
+                    });
+                } else if (typeof historico === 'object' && historico !== null) {
+                    // Filtrar apenas as chaves numéricas (0, 1, 2, etc.) e ignorar 'msg'
+                    const chavesNumericas = Object.keys(historico).filter(key => !isNaN(key) && key !== 'msg');
+                    
+                    chavesNumericas.forEach(key => {
+                        const item = historico[key];
+                        if (String(item.inscrpj) === String(empresa.idempresa)) {
+                            const resultado = processarFarmaceuticosRTS(item, diretores, assistentes);
+                            diretores = resultado.diretores;
+                            assistentes = resultado.assistentes;
+                        }
+                    });
+                }
+                
+                console.log(`✅ Empresa ${empresa.idempresa}: ${diretores} diretores, ${assistentes} assistentes`);
+                return { diretores, assistentes };
+                
+            } catch (error) {
+                console.error('❌ Erro ao buscar farmacêuticos da empresa:', error);
+                return { diretores: 0, assistentes: 0 };
+            }
+        }
+
+        // Função para processar farmacêuticos de um item RTS
+        function processarFarmaceuticosRTS(item, diretores, assistentes) {
+            let diretoresCount = diretores;
+            let assistentesCount = assistentes;
+            
+            if (item.resptec && Array.isArray(item.resptec)) {
+                item.resptec.forEach(farmaceutico => {
+                    const hierarquia = (farmaceutico.hierarquia || '').toLowerCase();
+                    const dataFim = farmaceutico.datafim;
+                    
+                    // Verificar se a datafim é >= hoje ou se é inválida
+                    const hoje = new Date();
+                    const dataFimDate = converterDataBRParaDate(dataFim);
+                    const ativo = dataFimDate >= hoje || dataFim === '00/00/0000' || !dataFimDate;
+                    
+                    if (ativo) {
+                        if (hierarquia.includes('diretor') || hierarquia.includes('proprietario')) {
+                            diretoresCount++;
+                        } else if (hierarquia.includes('assistente') || hierarquia.includes('farmacêutico')) {
+                            assistentesCount++;
+                        }
+                    }
+                });
+            }
+            
+            return { diretores: diretoresCount, assistentes: assistentesCount };
+        }
+
+        // Função para obter o endereço completo da empresa
+        function obterEnderecoCompleto(empresa) {
+            const logradouro = empresa.logradouro || '';
+            const numero = empresa.numero || '';
+            const complemento = empresa.complemento || '';
+            const bairro = empresa.bairro || '';
+            const cidade = empresa.cidade || '';
+            const uf = empresa.uf || '';
+            const setor = empresa.setor || '';
+            
+            let endereco = '';
+            
+            // Construir endereço de forma inteligente
+            if (logradouro) {
+                endereco += logradouro;
+                if (numero) endereco += `, ${numero}`;
+                if (complemento) endereco += ` - ${complemento}`;
+                endereco += ', ';
+            }
+            
+            if (bairro) {
+                endereco += bairro;
+                endereco += ', ';
+            }
+            
+            if (cidade) {
+                endereco += cidade;
+                if (uf) endereco += ` - ${uf}`;
+            }
+            
+            // Adicionar setor se disponível
+            if (setor) {
+                if (endereco) endereco += ' | ';
+                endereco += `Setor: ${setor}`;
+            }
+            
+            // Remover vírgula e espaço extras no final
+            endereco = endereco.replace(/,\s*$/, '');
+            
+            // Se não há endereço definido
+            if (!endereco || endereco.trim() === '') {
+                return 'Endereço não informado';
+            }
+            
+            return endereco;
+        }
+
+        // Função para obter o horário do dia atual da empresa
+        function obterHorarioDiaAtual(empresa) {
+            const hoje = new Date();
+            const diaSemana = hoje.getDay(); // 0 = Domingo, 1 = Segunda, 2 = Terça, etc.
+            
+            let horario = '';
+            let nomeDia = '';
+            
+            // Mapear o dia da semana para o campo correspondente
+            switch (diaSemana) {
+                case 0: // Domingo
+                    horario = empresa.hr_dom;
+                    nomeDia = 'Domingo';
+                    break;
+                case 1: // Segunda
+                    horario = empresa.hr_seg;
+                    nomeDia = 'Segunda';
+                    break;
+                case 2: // Terça
+                    horario = empresa.hr_ter;
+                    nomeDia = 'Terça';
+                    break;
+                case 3: // Quarta
+                    horario = empresa.hr_qua;
+                    nomeDia = 'Quarta';
+                    break;
+                case 4: // Quinta
+                    horario = empresa.hr_qui;
+                    nomeDia = 'Quinta';
+                    break;
+                case 5: // Sexta
+                    horario = empresa.hr_sex;
+                    nomeDia = 'Sexta';
+                    break;
+                case 6: // Sábado
+                    horario = empresa.hr_sab;
+                    nomeDia = 'Sábado';
+                    break;
+            }
+            
+            // Se não há horário definido para o dia
+            if (!horario || horario === '' || horario === 'null') {
+                return `${nomeDia}: Fechado`;
+            }
+            
+            // Se há horário definido
+            return `${nomeDia}: ${horario}`;
+        }
+
+        // Função para converter data do formato brasileiro (dd/mm/aaaa) para Date
+        function converterDataBRParaDate(dataBR) {
+            if (!dataBR || dataBR === '00/00/0000') {
+                return null; // Data inválida
+            }
+            
+            try {
+                const partes = dataBR.split('/');
+                if (partes.length !== 3) {
+                    return null;
+                }
+                
+                const dia = parseInt(partes[0]);
+                const mes = parseInt(partes[1]) - 1; // Mês começa em 0 no JavaScript
+                const ano = parseInt(partes[2]);
+                
+                // Verificar se os valores são válidos
+                if (isNaN(dia) || isNaN(mes) || isNaN(ano) || ano < 1900) {
+                    return null;
+                }
+                
+                return new Date(ano, mes, dia);
+            } catch (error) {
+                console.error('❌ Erro ao converter data:', dataBR, error);
+                return null;
+            }
+        }
 
         // Função para carregar empresas do localStorage
         function carregarEmpresas() {
@@ -287,15 +650,49 @@
             const empresasHTML = empresas.map((empresa, index) => {
                 console.log(`🏢 Processando empresa ${index + 1}:`, empresa);
                 
+                const razao = empresa.razao || empresa.nome || 'Razão social não informada';
+                const atividade = empresa.atividades && empresa.atividades.length > 0 ? empresa.atividades[0].nomeatividade : 'Atividade não informada';
+                const cidade = empresa.cidade || 'Cidade não informada';
+                const estado = empresa.estado || '';
+                const cnpj = empresa.cnpj || 'CNPJ não informado';
+                
+                // Buscar informações de farmacêuticos da empresa
+                const farmaceuticosInfo = buscarFarmaceuticosEmpresa(empresa);
+                
                 return `
                     <div class="empresa-item" onclick="selecionarEmpresa(${index})">
-                        <div class="empresa-razao">${empresa.razao || 'Razão social não informada'}</div>
-                        <div class="empresa-atividade">${empresa.atividades && empresa.atividades.length > 0 ? empresa.atividades[0].nomeatividade : 'Atividade não informada'}</div>
+                        <div class="empresa-content-left">
+                            <div class="empresa-razao">${razao}</div>
+                            <div class="empresa-atividade">${atividade}</div>
+                            <div class="empresa-localizacao">📍 ${cidade}${estado ? ', ' + estado : ''}</div>
+                            <div class="empresa-endereco">🏠 ${obterEnderecoCompleto(empresa)}</div>
+                                                                            <div class="empresa-cnpj">🆔 ${cnpj}</div>
+                        <div class="empresa-farmaceuticos">
+                            <span class="farmaceutico-tag diretor">👨‍⚕️ ${farmaceuticosInfo.diretores} Diretor</span>
+                            <span class="farmaceutico-tag assistente">👨‍⚕️ ${farmaceuticosInfo.assistentes} Assistente</span>
+                        </div>
+                        <div class="empresa-info-bottom">
+                            <div class="empresa-horario">
+                                <span class="horario-tag">🕐 ${obterHorarioDiaAtual(empresa)}</span>
+                            </div>
+                            <div class="empresa-perfil">🏭 ${empresa.perfil || 'Perfil não informado'}</div>
+                            <div class="empresa-afastamentos">🏥 Afastamentos (1 ano): ${empresa.qtdeafas1ano || '0'}</div>
+                        </div>
+                    </div>
+                    <div class="empresa-content-right">
+                    </div>
                     </div>
                 `;
             }).join('');
             
-            container.innerHTML = empresasHTML;
+            // Manter o cabeçalho e adicionar as empresas
+            container.innerHTML = `
+                <div class="empresas-header">
+                    <h3>🏢 Empresas Cadastradas</h3>
+                    <p>Clique em uma empresa para ver detalhes completos</p>
+                </div>
+                ${empresasHTML}
+            `;
             console.log('✅ Empresas renderizadas com sucesso');
         }
 
@@ -306,10 +703,8 @@
             
             if (empresa) {
                 console.log('🏢 Empresa selecionada:', empresa);
-                const razao = empresa.razao || empresa.nome || 'Nome não informado';
-                const atividade = empresa.atividades && empresa.atividades.length > 0 ? empresa.atividades[0].nomeatividade : 'Atividade não informada';
-                alert(`Empresa: ${razao}\nAtividade: ${atividade}`);
-                // Aqui você pode adicionar mais funcionalidades quando uma empresa for clicada
+                // Navegar para a tela de detalhes da empresa
+                window.location.href = `/empresa-detalhes.html?index=${index}`;
             }
         }
 

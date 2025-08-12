@@ -522,7 +522,7 @@
                     item.resptec.forEach((farmaceutico, idx) => {
                         console.log(`👨‍⚕️ Farmacêutico ${idx}:`, farmaceutico);
                         
-                        // Verificar se a datafim é >= hoje
+                        // Verificar se a datafim é >= hoje (farmacêutico ativo) ou nula ou 0000-00-00
                         const dataFim = farmaceutico.datafim;
                         const hoje = new Date();
                         const dataFimDate = converterDataBRParaDate(dataFim);
@@ -532,8 +532,8 @@
                         console.log(`🔍 Hoje: ${hoje}`);
                         console.log(`🔍 Data fim >= hoje: ${dataFimDate >= hoje}`);
                         
-                        // Só incluir se datafim >= hoje ou se datafim for inválida (00/00/0000)
-                        if (dataFimDate >= hoje || dataFim === '00/00/0000' || !dataFimDate) {
+                        // Só incluir se datafim >= hoje (farmacêutico ativo) ou se datafim for inválida (00/00/0000) ou nula
+                        if (dataFimDate >= hoje || dataFim === '00/00/0000' || dataFim === '0000-00-00' || !dataFimDate) {
                             console.log('✅ Farmacêutico ativo incluído:', farmaceutico.nomepf);
                             
                             // Criar objeto padronizado para o farmacêutico
