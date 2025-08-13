@@ -298,7 +298,8 @@
             color: #495057;
         }
 
-        .farmaceuticos-card {
+        .farmaceuticos-card,
+        .outros-profissionais-card {
             background: white;
             border-radius: 12px;
             padding: 20px;
@@ -317,7 +318,8 @@
             gap: 8px;
         }
 
-        .farmaceuticos-content {
+        .farmaceuticos-content,
+        .outros-profissionais-content {
             min-height: 100px;
             display: flex;
             align-items: center;
@@ -372,6 +374,57 @@
             font-size: 12px;
             color: #856404;
             border-left: 3px solid #ffc107;
+            font-style: italic;
+        }
+
+        .outros-profissionais-list {
+            width: 100%;
+        }
+
+        .outros-profissionais-list p {
+            margin-bottom: 15px;
+            color: #495057;
+            font-weight: 600;
+        }
+
+        .outro-profissional-item {
+            background: #f8f9fa;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 10px;
+            border-left: 4px solid #6f42c1;
+        }
+
+        .outro-profissional-nome {
+            font-weight: 600;
+            color: #6f42c1;
+            font-size: 16px;
+            margin-bottom: 8px;
+        }
+
+        .outro-profissional-detalhes {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+
+        .outro-profissional-detalhes span {
+            background: white;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            color: #6c757d;
+            border: 1px solid #e9ecef;
+        }
+
+        .outro-profissional-obs {
+            margin-top: 8px;
+            padding: 8px;
+            background: #e2e3e5;
+            border-radius: 4px;
+            font-size: 12px;
+            color: #495057;
+            border-left: 3px solid #6c757d;
             font-style: italic;
         }
 
@@ -489,6 +542,9 @@
                 
                 // Carregar farmacêuticos vinculados
                 carregarFarmaceuticosVinculados(empresa);
+                
+                // Carregar outros profissionais vinculados
+                carregarOutrosProfissionaisVinculados(empresa);
                 
             } catch (error) {
                 console.error('❌ Erro ao carregar detalhes da empresa:', error);
@@ -822,6 +878,16 @@
                         <p style="color: #6c757d; font-style: italic;">Lista de farmacêuticos vinculados será exibida aqui</p>
                     </div>
                 </div>
+
+                <div class="outros-profissionais-card">
+                    <h3 class="accordion-header" onclick="toggleOutrosProfissionais()">
+                        👥 Outros Profissionais Vinculados
+                        <span class="accordion-icon">▼</span>
+                    </h3>
+                    <div class="outros-profissionais-content accordion-content" id="outros-profissionais-content">
+                        <p style="color: #6c757d; font-style: italic;">Lista de outros profissionais vinculados será exibida aqui</p>
+                    </div>
+                </div>
             `;
             
             container.innerHTML = detalhesHTML;
@@ -860,6 +926,209 @@
                 content.classList.add('collapsed');
                 icon.textContent = '▶';
                 icon.style.transform = 'rotate(0deg)';
+            }
+        }
+
+        // Função para controlar a sanfona dos outros profissionais
+        function toggleOutrosProfissionais() {
+            const content = document.getElementById('outros-profissionais-content');
+            const icon = content.previousElementSibling.querySelector('.accordion-icon');
+            
+            if (content.classList.contains('collapsed')) {
+                // Abrir
+                content.classList.remove('collapsed');
+                icon.textContent = '▼';
+                icon.style.transform = 'rotate(0deg)';
+            } else {
+                // Fechar
+                content.classList.add('collapsed');
+                icon.textContent = '▶';
+                icon.style.transform = 'rotate(0deg)';
+            }
+        }
+
+        // Função para filtrar outros profissionais por empresa
+        function filtrarOutrosProfissionaisPorEmpresa(outrosVinculos, empresa) {
+            const profissionaisVinculados = [];
+            
+            console.log('🔍 Filtrando outros profissionais para empresa:', empresa);
+            console.log('🔍 ID da empresa (idempresa):', empresa.idempresa);
+            
+            // Verificar se é um array ou objeto com chaves numéricas
+            if (Array.isArray(outrosVinculos)) {
+                console.log('🔍 Total de registros outros vínculos (array):', outrosVinculos.length);
+                processarArrayOutrosVinculos(outrosVinculos, empresa, profissionaisVinculados);
+            } else if (typeof outrosVinculos === 'object' && outrosVinculos !== null) {
+                console.log('🔍 Processando objeto outros vínculos com chaves numéricas');
+                
+                // Filtrar apenas as chaves numéricas (0, 1, 2, etc.) e ignorar 'msg'
+                const chavesNumericas = Object.keys(outrosVinculos).filter(key => !isNaN(key) && key !== 'msg');
+                console.log('🔍 Chaves numéricas encontradas:', chavesNumericas);
+                console.log('🔍 Total de registros outros vínculos:', chavesNumericas.length);
+                
+                chavesNumericas.forEach(key => {
+                    const item = outrosVinculos[key];
+                    console.log(`🔍 Item outros vínculos ${key}:`, item);
+                    processarItemOutrosVinculos(item, empresa, profissionaisVinculados);
+                });
+            }
+            
+            console.log('🔍 Total de outros profissionais vinculados encontrados:', profissionaisVinculados.length);
+            
+            return profissionaisVinculados;
+        }
+
+        // Função para processar array outros vínculos
+        function processarArrayOutrosVinculos(outrosVinculos, empresa, profissionaisVinculados) {
+            outrosVinculos.forEach((item, index) => {
+                processarItemOutrosVinculos(item, empresa, profissionaisVinculados);
+            });
+        }
+
+        // Função para processar item individual outros vínculos
+        function processarItemOutrosVinculos(item, empresa, profissionaisVinculados) {
+            console.log(`🔍 Campo inscrpj do item:`, item.inscrpj);
+            console.log(`🔍 Tipo do inscrpj:`, typeof item.inscrpj);
+
+            // Verificar se o item está vinculado à empresa atual
+            // Campo 'inscrpj' da tabela outros vínculos corresponde ao 'idempresa' da tabela empresa
+            const inscrpj = item.inscrpj;
+            const idempresa = empresa.idempresa;
+
+            console.log('🔍 Comparando:', { inscrpj, idempresa });
+            console.log('🔍 Tipos:', { inscrpjType: typeof inscrpj, idempresaType: typeof idempresa });
+
+            // Comparar como string e como número
+            const matchString = String(inscrpj) === String(idempresa);
+            const matchNumber = Number(inscrpj) === Number(idempresa);
+
+            console.log('🔍 Match como string:', matchString);
+            console.log('🔍 Match como número:', matchNumber);
+
+            if (matchString || matchNumber) {
+                console.log('✅ Empresa outros vínculos encontrada:', item);
+
+                // Verificar se existe outrojob (outros profissionais)
+                if (item.outrojob && Array.isArray(item.outrojob)) {
+                    console.log('✅ Campo outrojob encontrado:', item.outrojob);
+                    
+                    // Processar cada profissional em outrojob
+                    item.outrojob.forEach((profissional, index) => {
+                        console.log(`🔍 Processando profissional ${index}:`, profissional);
+
+                        // Verificar se a datafim é >= hoje (profissional ativo) ou nula ou 0000-00-00
+                        const dataFim = profissional.datafim;
+                        const hoje = new Date();
+                        const dataFimDate = converterDataBRParaDate(dataFim);
+
+                        console.log(`🔍 Data fim do profissional: ${dataFim}`);
+                        console.log(`🔍 Data fim convertida: ${dataFimDate}`);
+                        console.log(`🔍 Hoje: ${hoje}`);
+                        console.log(`🔍 Data fim >= hoje: ${dataFimDate >= hoje}`);
+
+                        // Só incluir se datafim >= hoje (profissional ativo) ou se datafim for inválida (00/00/0000) ou nula
+                        if (dataFimDate >= hoje || dataFim === '00/00/0000' || dataFim === '0000-00-00' || !dataFimDate) {
+                            console.log('✅ Profissional ativo incluído:', profissional.nomepf);
+
+                            // Criar objeto padronizado para o profissional
+                            const profissionalPadronizado = {
+                                nome: profissional.nomepf,
+                                cpf: profissional.cpf,
+                                registro: profissional.inscrpf,
+                                profissao: profissional.cargo,
+                                email: profissional.emailpf,
+                                telefone: null, // Não disponível na estrutura
+                                dataInicio: profissional.datainicio,
+                                dataFim: profissional.datafim,
+                                funcao: profissional.cargo,
+                                observacoes: null // Não disponível na estrutura
+                            };
+
+                            profissionaisVinculados.push(profissionalPadronizado);
+                        } else {
+                            console.log('❌ Profissional inativo (data fim < hoje):', profissional.nomepf);
+                        }
+                    });
+                } else {
+                    console.log('⚠️ Campo outrovin não encontrado ou inválido');
+                }
+            } else {
+                console.log('❌ Empresa não corresponde:', { inscrpj, idempresa });
+            }
+        }
+
+
+
+        // Função para atualizar o card dos outros profissionais
+        function atualizarCardOutrosProfissionais(data, tipo) {
+            const cardContent = document.getElementById('outros-profissionais-content');
+            
+            if (tipo === 'success' && Array.isArray(data)) {
+                // Renderizar lista de outros profissionais
+                let html = `<div class="outros-profissionais-list">`;
+                html += `<p><strong>Total de outros profissionais vinculados:</strong> ${data.length}</p>`;
+                
+                data.forEach((profissional, index) => {
+                    html += `<div class="outro-profissional-item">`;
+                    html += `<div class="outro-profissional-nome">👥 ${profissional.nome || 'Nome não informado'}</div>`;
+                    html += `<div class="outro-profissional-detalhes">`;
+                    if (profissional.profissao) html += `<span>Profissão: ${profissional.profissao}</span>`;
+                    if (profissional.registro) html += `<span>Registro: ${profissional.registro}</span>`;
+                    if (profissional.cpf) html += `<span>CPF: ${profissional.cpf}</span>`;
+                    if (profissional.funcao) html += `<span>Função: ${profissional.funcao}</span>`;
+                    if (profissional.email) html += `<span>Email: ${profissional.email}</span>`;
+                    if (profissional.telefone) html += `<span>Telefone: ${profissional.telefone}</span>`;
+                    if (profissional.dataInicio) html += `<span>Início: ${profissional.dataInicio}</span>`;
+                    html += `</div>`;
+                    if (profissional.observacoes) {
+                        html += `<div class="outro-profissional-obs">📝 ${profissional.observacoes}</div>`;
+                    }
+                    html += `</div>`;
+                });
+                
+                html += `</div>`;
+                cardContent.innerHTML = html;
+                
+            } else if (tipo === 'error') {
+                cardContent.innerHTML = `
+                    <div class="error-message">
+                        <p style="color: #dc3545; font-weight: 600;">❌ ${data}</p>
+                    </div>
+                `;
+            } else if (tipo === 'info') {
+                cardContent.innerHTML = `
+                    <div class="info-message">
+                        <p style="color: #6c757d; font-style: italic;">ℹ️ ${data}</p>
+                    </div>
+                `;
+            }
+        }
+
+        // Função para carregar outros profissionais vinculados
+        function carregarOutrosProfissionaisVinculados(empresa) {
+            try {
+                const outrosVinculosData = localStorage.getItem('outros_vinculos');
+                
+                if (!outrosVinculosData) {
+                    atualizarCardOutrosProfissionais('❌ Dados de outros profissionais não encontrados. Use "BAIXAR OUTROS VÍNCULOS" no dashboard primeiro.', 'error');
+                    return;
+                }
+
+                const outrosVinculos = JSON.parse(outrosVinculosData);
+                console.log('📊 Dados outros vínculos carregados:', outrosVinculos);
+
+                // Filtrar outros profissionais vinculados à empresa atual
+                const outrosProfissionaisVinculados = filtrarOutrosProfissionaisPorEmpresa(outrosVinculos, empresa);
+                
+                if (outrosProfissionaisVinculados.length > 0) {
+                    atualizarCardOutrosProfissionais(outrosProfissionaisVinculados, 'success');
+                } else {
+                    atualizarCardOutrosProfissionais('ℹ️ Nenhum outro profissional vinculado encontrado para esta empresa.', 'info');
+                }
+                
+            } catch (error) {
+                console.error('❌ Erro ao carregar outros profissionais vinculados:', error);
+                atualizarCardOutrosProfissionais('❌ Erro ao carregar outros profissionais vinculados', 'error');
             }
         }
 
