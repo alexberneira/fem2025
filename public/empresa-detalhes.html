@@ -280,8 +280,9 @@
         .accordion-content.collapsed {
             max-height: 0;
             opacity: 0;
-            padding-top: 0;
-            padding-bottom: 0;
+            padding: 0;
+            margin: 0;
+            border: none;
         }
 
         .atividades-list {
@@ -299,7 +300,8 @@
         }
 
         .farmaceuticos-card,
-        .outros-profissionais-card {
+        .outros-profissionais-card,
+        .inspecoes-card {
             background: white;
             border-radius: 12px;
             padding: 20px;
@@ -319,8 +321,9 @@
         }
 
         .farmaceuticos-content,
-        .outros-profissionais-content {
-            min-height: 100px;
+        .outros-profissionais-content,
+        .inspecoes-content {
+            min-height: 0;
             display: flex;
             align-items: center;
             justify-content: center;
@@ -377,6 +380,53 @@
             font-style: italic;
         }
 
+        .farmaceutico-horarios {
+            margin-top: 12px;
+            padding: 12px;
+            background: #f8f9fa;
+            border-radius: 6px;
+            border-left: 3px solid #17a2b8;
+        }
+
+        .farmaceutico-horarios-titulo {
+            font-weight: 600;
+            color: #17a2b8;
+            font-size: 14px;
+            margin-bottom: 8px;
+        }
+
+        .farmaceutico-horarios-grid {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .farmaceutico-horario-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 4px 0;
+            border-bottom: 1px solid #e9ecef;
+        }
+
+        .farmaceutico-horario-item:last-child {
+            border-bottom: none;
+        }
+
+        .farmaceutico-horario-dia {
+            font-weight: 500;
+            color: #495057;
+            font-size: 13px;
+            min-width: 80px;
+        }
+
+        .farmaceutico-horario-valor {
+            font-weight: 600;
+            color: #17a2b8;
+            font-size: 13px;
+            text-align: right;
+        }
+
         .outros-profissionais-list {
             width: 100%;
         }
@@ -426,6 +476,126 @@
             color: #495057;
             border-left: 3px solid #6c757d;
             font-style: italic;
+        }
+
+        .inspecoes-list {
+            width: 100%;
+        }
+
+        .inspecoes-list p {
+            margin-bottom: 15px;
+            color: #495057;
+            font-weight: 600;
+        }
+
+        .inspecao-item {
+            background: #f8f9fa;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 10px;
+            border-left: 4px solid #28a745;
+        }
+
+        .inspecao-numero {
+            font-weight: 600;
+            color: #28a745;
+            font-size: 16px;
+            margin-bottom: 8px;
+        }
+
+        .inspecao-detalhes {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+
+        .inspecao-detalhes span {
+            background: white;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            color: #6c757d;
+            border: 1px solid #e9ecef;
+        }
+
+        .inspecao-detalhes .inspecao-intimacao {
+            background: #fff3cd;
+            color: #856404;
+            border-color: #ffc107;
+            font-weight: 500;
+        }
+
+        .inspecao-obs {
+            margin-top: 8px;
+            background: #f8f9fa;
+            border-radius: 4px;
+            border-left: 3px solid #28a745;
+            overflow: hidden;
+        }
+
+        .inspecao-obs-texto {
+            padding: 8px;
+            font-size: 12px;
+            color: #495057;
+            font-style: italic;
+            line-height: 1.4;
+            transition: all 0.3s ease;
+        }
+
+        .inspecao-obs-texto.expandida {
+            max-height: none;
+        }
+
+        .inspecao-obs-botao {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            padding: 6px 8px;
+            background: #f8f9fa;
+            color: #6c757d;
+            cursor: pointer;
+            font-size: 11px;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            border-top: 1px solid #e9ecef;
+        }
+
+        .inspecao-obs-botao:hover {
+            background: #e9ecef;
+            color: #495057;
+        }
+
+        .obs-botao-texto {
+            font-size: 11px;
+        }
+
+        .obs-botao-icon {
+            font-size: 10px;
+            transition: transform 0.3s ease;
+        }
+
+        .inspecao-info-adicional {
+            margin-top: 8px;
+        }
+
+        .inspecao-irregularidade {
+            padding: 6px 8px;
+            background: #fff3cd;
+            border-radius: 4px;
+            font-size: 12px;
+            color: #856404;
+            border-left: 3px solid #ffc107;
+            margin-bottom: 4px;
+        }
+
+        .inspecao-autodeinfracao {
+            padding: 6px 8px;
+            background: #f8d7da;
+            border-radius: 4px;
+            font-size: 12px;
+            color: #721c24;
+            border-left: 3px solid #dc3545;
         }
 
         .loading {
@@ -545,6 +715,9 @@
                 
                 // Carregar outros profissionais vinculados
                 carregarOutrosProfissionaisVinculados(empresa);
+                
+                // Carregar histórico de inspeções
+                carregarHistoricoInspecoes(empresa);
                 
             } catch (error) {
                 console.error('❌ Erro ao carregar detalhes da empresa:', error);
@@ -686,7 +859,16 @@
                                 rg: farmaceutico.rg,
                                 dataInicio: farmaceutico.datainicio,
                                 dataFim: farmaceutico.datafim,
-                                observacoes: farmaceutico.obs
+                                observacoes: farmaceutico.obs,
+                                horarios: {
+                                    dom: farmaceutico.pro_hora_dom,
+                                    seg: farmaceutico.pro_hora_seg,
+                                    ter: farmaceutico.pro_hora_ter,
+                                    qua: farmaceutico.pro_hora_qua,
+                                    qui: farmaceutico.pro_hora_qui,
+                                    sex: farmaceutico.pro_hora_sex,
+                                    sab: farmaceutico.pro_hora_sab
+                                }
                             };
                             
                             farmaceuticos.push(farmaceuticoPadronizado);
@@ -753,6 +935,37 @@
                     if (farmaceutico.email) html += `<span>Email: ${farmaceutico.email}</span>`;
                     if (farmaceutico.dataInicio) html += `<span>Início: ${farmaceutico.dataInicio}</span>`;
                     html += `</div>`;
+                    
+                    // Adicionar horários se disponíveis
+                    if (farmaceutico.horarios) {
+                        const horarios = farmaceutico.horarios;
+                        const diasSemana = [
+                            { key: 'dom', nome: 'Domingo', valor: horarios.dom },
+                            { key: 'seg', nome: 'Segunda', valor: horarios.seg },
+                            { key: 'ter', nome: 'Terça', valor: horarios.ter },
+                            { key: 'qua', nome: 'Quarta', valor: horarios.qua },
+                            { key: 'qui', nome: 'Quinta', valor: horarios.qui },
+                            { key: 'sex', nome: 'Sexta', valor: horarios.sex },
+                            { key: 'sab', nome: 'Sábado', valor: horarios.sab }
+                        ];
+                        
+                        const horariosDisponiveis = diasSemana.filter(dia => dia.valor && dia.valor !== 'null');
+                        
+                        if (horariosDisponiveis.length > 0) {
+                            html += `<div class="farmaceutico-horarios">`;
+                            html += `<div class="farmaceutico-horarios-titulo">🕐 Horários de Trabalho:</div>`;
+                            html += `<div class="farmaceutico-horarios-grid">`;
+                            horariosDisponiveis.forEach(dia => {
+                                html += `<div class="farmaceutico-horario-item">`;
+                                html += `<span class="farmaceutico-horario-dia">${dia.nome}:</span>`;
+                                html += `<span class="farmaceutico-horario-valor">${dia.valor}</span>`;
+                                html += `</div>`;
+                            });
+                            html += `</div>`;
+                            html += `</div>`;
+                        }
+                    }
+                    
                     if (farmaceutico.observacoes) {
                         html += `<div class="farmaceutico-obs">📝 ${farmaceutico.observacoes}</div>`;
                     }
@@ -888,6 +1101,16 @@
                         <p style="color: #6c757d; font-style: italic;">Lista de outros profissionais vinculados será exibida aqui</p>
                     </div>
                 </div>
+
+                <div class="inspecoes-card">
+                    <h3 class="accordion-header" onclick="toggleInspecoes()">
+                        🔍 Histórico de Inspeções
+                        <span class="accordion-icon">▼</span>
+                    </h3>
+                    <div class="inspecoes-content accordion-content" id="inspecoes-content">
+                        <p style="color: #6c757d; font-style: italic;">Histórico de inspeções será exibido aqui</p>
+                    </div>
+                </div>
             `;
             
             container.innerHTML = detalhesHTML;
@@ -932,6 +1155,24 @@
         // Função para controlar a sanfona dos outros profissionais
         function toggleOutrosProfissionais() {
             const content = document.getElementById('outros-profissionais-content');
+            const icon = content.previousElementSibling.querySelector('.accordion-icon');
+            
+            if (content.classList.contains('collapsed')) {
+                // Abrir
+                content.classList.remove('collapsed');
+                icon.textContent = '▼';
+                icon.style.transform = 'rotate(0deg)';
+            } else {
+                // Fechar
+                content.classList.add('collapsed');
+                icon.textContent = '▶';
+                icon.style.transform = 'rotate(0deg)';
+            }
+        }
+
+        // Função para controlar a sanfona das inspeções
+        function toggleInspecoes() {
+            const content = document.getElementById('inspecoes-content');
             const icon = content.previousElementSibling.querySelector('.accordion-icon');
             
             if (content.classList.contains('collapsed')) {
@@ -1142,6 +1383,210 @@
                     <a href="/empresas" class="btn btn-primary">Voltar às Empresas</a>
                 </div>
             `;
+        }
+
+        // Função para atualizar o card das inspeções
+        function atualizarCardInspecoes(data, tipo) {
+            const cardContent = document.getElementById('inspecoes-content');
+            
+            if (tipo === 'success' && Array.isArray(data)) {
+                // Renderizar lista de inspeções
+                let html = `<div class="inspecoes-list">`;
+                html += `<p><strong>Total de inspeções encontradas:</strong> ${data.length}</p>`;
+                
+                data.forEach((inspecao, index) => {
+                    html += `<div class="inspecao-item">`;
+                    html += `<div class="inspecao-numero">🔍 Inspeção ${inspecao.numero || 'N/A'}</div>`;
+                    html += `<div class="inspecao-detalhes">`;
+                    if (inspecao.data) html += `<span>Data: ${inspecao.data}</span>`;
+                    if (inspecao.tipo) html += `<span>Tipo: ${inspecao.tipo}</span>`;
+                    if (inspecao.status) html += `<span>Status: ${inspecao.status}</span>`;
+                    if (inspecao.inspetor) html += `<span>Inspetor: ${inspecao.inspetor}</span>`;
+                    if (inspecao.horario) html += `<span>Horário: ${inspecao.horario}</span>`;
+                    if (inspecao.diaSemana) html += `<span>Dia: ${inspecao.diaSemana}</span>`;
+                    if (inspecao.intimacao) html += `<span class="inspecao-intimacao">Intimação: ${inspecao.intimacao}</span>`;
+                    html += `</div>`;
+                    
+                    // Adicionar informações adicionais se disponíveis
+                    if (inspecao.irregularidade || inspecao.autodeinfracao) {
+                        html += `<div class="inspecao-info-adicional">`;
+                        if (inspecao.irregularidade) {
+                            html += `<div class="inspecao-irregularidade">⚠️ Irregularidade: ${inspecao.irregularidade}</div>`;
+                        }
+                        if (inspecao.autodeinfracao) {
+                            html += `<div class="inspecao-autodeinfracao">📋 Auto de Infração: ${inspecao.autodeinfracao}</div>`;
+                        }
+                        html += `</div>`;
+                    }
+                    
+                    if (inspecao.observacoes) {
+                        const observacao = inspecao.observacoes;
+                        const observacaoResumida = observacao.length > 150 ? observacao.substring(0, 150) + '...' : observacao;
+                        const mostrarBotao = observacao.length > 150;
+                        
+                        html += `<div class="inspecao-obs">`;
+                        html += `<div class="inspecao-obs-texto" id="obs-${index}">📝 ${observacaoResumida}</div>`;
+                        if (mostrarBotao) {
+                            html += `<div class="inspecao-obs-botao" onclick="toggleObservacao(${index}, '${observacao.replace(/'/g, "\\'")}')">`;
+                            html += `<span class="obs-botao-texto">Ver mais</span>`;
+                            html += `<span class="obs-botao-icon">▼</span>`;
+                            html += `</div>`;
+                        }
+                        html += `</div>`;
+                    }
+                    html += `</div>`;
+                });
+                
+                html += `</div>`;
+                cardContent.innerHTML = html;
+                
+            } else if (tipo === 'error') {
+                cardContent.innerHTML = `
+                    <div class="error-message">
+                        <p style="color: #dc3545; font-weight: 600;">❌ ${data}</p>
+                    </div>
+                `;
+            } else if (tipo === 'info') {
+                cardContent.innerHTML = `
+                    <div class="info-message">
+                        <p style="color: #6c757d; font-style: italic;">ℹ️ ${data}</p>
+                    </div>
+                `;
+            }
+        }
+
+        // Função para carregar histórico de inspeções
+        function carregarHistoricoInspecoes(empresa) {
+            try {
+                const inspecoesData = localStorage.getItem('inspecoes_historico');
+                
+                if (!inspecoesData) {
+                    atualizarCardInspecoes('❌ Dados de inspeções não encontrados. Use "BAIXAR INSPEÇÕES" no dashboard primeiro.', 'error');
+                    return;
+                }
+
+                const inspecoes = JSON.parse(inspecoesData);
+                console.log('📊 Dados de inspeções carregados:', inspecoes);
+
+                // Filtrar inspeções da empresa atual
+                const inspecoesEmpresa = filtrarInspecoesPorEmpresa(inspecoes, empresa);
+                
+                if (inspecoesEmpresa.length > 0) {
+                    atualizarCardInspecoes(inspecoesEmpresa, 'success');
+                } else {
+                    atualizarCardInspecoes('ℹ️ Nenhuma inspeção encontrada para esta empresa.', 'info');
+                }
+                
+            } catch (error) {
+                console.error('❌ Erro ao carregar histórico de inspeções:', error);
+                atualizarCardInspecoes('❌ Erro ao carregar histórico de inspeções', 'error');
+            }
+        }
+
+        // Função para filtrar inspeções por empresa
+        function filtrarInspecoesPorEmpresa(inspecoes, empresa) {
+            const inspecoesEmpresa = [];
+            
+            console.log('🔍 Filtrando inspeções para empresa:', empresa);
+            console.log('🔍 ID da empresa (idempresa):', empresa.idempresa);
+            
+            // Verificar se é um array ou objeto com chaves numéricas
+            if (Array.isArray(inspecoes)) {
+                console.log('🔍 Total de registros de inspeções (array):', inspecoes.length);
+                processarArrayInspecoes(inspecoes, empresa, inspecoesEmpresa);
+            } else if (typeof inspecoes === 'object' && inspecoes !== null) {
+                console.log('🔍 Processando objeto de inspeções com chaves numéricas');
+                
+                // Filtrar apenas as chaves numéricas (0, 1, 2, etc.) e ignorar 'msg'
+                const chavesNumericas = Object.keys(inspecoes).filter(key => !isNaN(key) && key !== 'msg');
+                console.log('🔍 Chaves numéricas encontradas:', chavesNumericas);
+                console.log('🔍 Total de registros de inspeções:', chavesNumericas.length);
+                
+                chavesNumericas.forEach(key => {
+                    const item = inspecoes[key];
+                    console.log(`🔍 Item inspeção ${key}:`, item);
+                    processarItemInspecao(item, empresa, inspecoesEmpresa);
+                });
+            }
+            
+            console.log('🔍 Total de inspeções encontradas para a empresa:', inspecoesEmpresa.length);
+            
+            return inspecoesEmpresa;
+        }
+
+        // Função para processar array de inspeções
+        function processarArrayInspecoes(inspecoes, empresa, inspecoesEmpresa) {
+            inspecoes.forEach((item, index) => {
+                processarItemInspecao(item, empresa, inspecoesEmpresa);
+            });
+        }
+
+        // Função para controlar o expandir/recolher das observações
+        function toggleObservacao(index, observacaoCompleta) {
+            const elementoTexto = document.getElementById(`obs-${index}`);
+            const botao = elementoTexto.nextElementSibling;
+            const botaoTexto = botao.querySelector('.obs-botao-texto');
+            const botaoIcon = botao.querySelector('.obs-botao-icon');
+            
+            if (elementoTexto.classList.contains('expandida')) {
+                // Recolher
+                const observacaoResumida = observacaoCompleta.length > 150 ? observacaoCompleta.substring(0, 150) + '...' : observacaoCompleta;
+                elementoTexto.innerHTML = `📝 ${observacaoResumida}`;
+                elementoTexto.classList.remove('expandida');
+                botaoTexto.textContent = 'Ver mais';
+                botaoIcon.textContent = '▼';
+                botaoIcon.style.transform = 'rotate(0deg)';
+            } else {
+                // Expandir
+                elementoTexto.innerHTML = `📝 ${observacaoCompleta}`;
+                elementoTexto.classList.add('expandida');
+                botaoTexto.textContent = 'Ver menos';
+                botaoIcon.textContent = '▲';
+                botaoIcon.style.transform = 'rotate(180deg)';
+            }
+        }
+
+        // Função para processar item individual de inspeção
+        function processarItemInspecao(item, empresa, inspecoesEmpresa) {
+            console.log(`🔍 Processando inspeção:`, item);
+            
+            // Verificar se a inspeção está vinculada à empresa atual
+            // Campo 'idempresa' da tabela inspeções corresponde ao 'idempresa' da tabela empresa
+            const itemIdempresa = item.idempresa;
+            const empresaIdempresa = empresa.idempresa;
+
+            console.log('🔍 Comparando:', { itemIdempresa, empresaIdempresa });
+            console.log('🔍 Tipos:', { itemIdempresaType: typeof itemIdempresa, empresaIdempresaType: typeof empresaIdempresa });
+
+            // Comparar como string e como número
+            const matchString = String(itemIdempresa) === String(empresaIdempresa);
+            const matchNumber = Number(itemIdempresa) === Number(empresaIdempresa);
+
+            console.log('🔍 Match como string:', matchString);
+            console.log('🔍 Match como número:', matchNumber);
+
+            if (matchString || matchNumber) {
+                console.log('✅ Inspeção da empresa encontrada:', item);
+
+                // Criar objeto padronizado para a inspeção
+                const inspecaoPadronizada = {
+                    numero: item.num_inspecao || item.idmeta || item.numero || item.id,
+                    data: item.data_inspecao || item.data || item.datainspecao,
+                    tipo: item.tipoinspecao || item.tipo || item.tipoinspecao,
+                    status: item.perfil ? `Perfil ${item.perfil}` : (item.status || item.statusinspecao),
+                    inspetor: item.idfiscal || item.inspetor || item.nomeinspetor,
+                    intimacao: item.intimacao || null,
+                    observacoes: item.observacao || item.observacoes || item.obs || item.descricao,
+                    horario: item.horainicio || null,
+                    diaSemana: item.diasemana || null,
+                    irregularidade: item.irregularidade || null,
+                    autodeinfracao: item.autodeinfracao || null
+                };
+
+                inspecoesEmpresa.push(inspecaoPadronizada);
+            } else {
+                console.log('❌ Inspeção não corresponde à empresa:', { itemIdempresa, empresaIdempresa });
+            }
         }
 
         // Inicializar quando a página carregar
