@@ -301,7 +301,9 @@
 
         .farmaceuticos-card,
         .outros-profissionais-card,
-        .inspecoes-card {
+        .inspecoes-card,
+        .afastamentos-card,
+        .protocolos-card {
             background: white;
             border-radius: 12px;
             padding: 20px;
@@ -322,7 +324,9 @@
 
         .farmaceuticos-content,
         .outros-profissionais-content,
-        .inspecoes-content {
+        .inspecoes-content,
+        .afastamentos-content,
+        .protocolos-content {
             min-height: 0;
             display: flex;
             align-items: center;
@@ -575,6 +579,146 @@
             transition: transform 0.3s ease;
         }
 
+        .afastamentos-list {
+            width: 100%;
+        }
+
+        .afastamentos-list p {
+            margin-bottom: 15px;
+            color: #495057;
+            font-weight: 600;
+        }
+
+        .afastamento-item {
+            background: #f8f9fa;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 10px;
+            border-left: 4px solid #dc3545;
+        }
+
+        .afastamento-profissional {
+            font-weight: 600;
+            color: #dc3545;
+            font-size: 16px;
+            margin-bottom: 8px;
+        }
+
+        .afastamento-detalhes {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+
+        .afastamento-detalhes span {
+            background: white;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            color: #6c757d;
+            border: 1px solid #e9ecef;
+        }
+
+        .afastamento-motivo {
+            margin-top: 8px;
+            padding: 8px;
+            background: #f8f9fa;
+            border-radius: 4px;
+            font-size: 12px;
+            color: #495057;
+            border-left: 3px solid #dc3545;
+            font-style: italic;
+        }
+
+        .afastamento-complemento {
+            margin-top: 8px;
+            padding: 8px;
+            background: #e2e3e5;
+            border-radius: 4px;
+            font-size: 12px;
+            color: #495057;
+            border-left: 3px solid #6c757d;
+            font-style: italic;
+        }
+
+        .protocolos-list {
+            width: 100%;
+        }
+
+        .protocolos-list p {
+            margin-bottom: 15px;
+            color: #495057;
+            font-weight: 600;
+        }
+
+        .protocolo-item {
+            background: #f8f9fa;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 10px;
+            border-left: 4px solid #17a2b8;
+        }
+
+        .protocolo-numero {
+            font-weight: 600;
+            color: #17a2b8;
+            font-size: 16px;
+            margin-bottom: 8px;
+        }
+
+        .protocolo-detalhes {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+
+        .protocolo-detalhes span {
+            background: white;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            color: #6c757d;
+            border: 1px solid #e9ecef;
+        }
+
+        .protocolo-descricao {
+            margin-top: 8px;
+            padding: 8px;
+            background: #f8f9fa;
+            border-radius: 4px;
+            font-size: 12px;
+            color: #495057;
+            border-left: 3px solid #17a2b8;
+            font-style: italic;
+        }
+
+        .protocolo-servicos {
+            margin-top: 8px;
+        }
+
+        .protocolo-servicos-titulo {
+            font-size: 12px;
+            font-weight: 600;
+            color: #17a2b8;
+            margin-bottom: 6px;
+        }
+
+        .protocolo-servicos-grid {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .protocolo-servico-tag {
+            background: #e3f2fd;
+            color: #1976d2;
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 11px;
+            font-weight: 500;
+            border: 1px solid #bbdefb;
+        }
+
         .inspecao-info-adicional {
             margin-top: 8px;
         }
@@ -718,6 +862,12 @@
                 
                 // Carregar histórico de inspeções
                 carregarHistoricoInspecoes(empresa);
+                
+                // Carregar afastamentos da empresa
+                carregarAfastamentosEmpresa(empresa);
+                
+                // Carregar protocolos da empresa
+                carregarProtocolosEmpresa(empresa);
                 
             } catch (error) {
                 console.error('❌ Erro ao carregar detalhes da empresa:', error);
@@ -1111,6 +1261,26 @@
                         <p style="color: #6c757d; font-style: italic;">Histórico de inspeções será exibido aqui</p>
                     </div>
                 </div>
+
+                <div class="afastamentos-card">
+                    <h3 class="accordion-header" onclick="toggleAfastamentos()">
+                        🚫 Afastamentos da Empresa
+                        <span class="accordion-icon">▼</span>
+                    </h3>
+                    <div class="afastamentos-content accordion-content" id="afastamentos-content">
+                        <p style="color: #6c757d; font-style: italic;">Afastamentos da empresa serão exibidos aqui</p>
+                    </div>
+                </div>
+
+                <div class="protocolos-card">
+                    <h3 class="accordion-header" onclick="toggleProtocolos()">
+                        📋 Protocolos da Empresa
+                        <span class="accordion-icon">▼</span>
+                    </h3>
+                    <div class="protocolos-content accordion-content" id="protocolos-content">
+                        <p style="color: #6c757d; font-style: italic;">Protocolos da empresa serão exibidos aqui</p>
+                    </div>
+                </div>
             `;
             
             container.innerHTML = detalhesHTML;
@@ -1173,6 +1343,42 @@
         // Função para controlar a sanfona das inspeções
         function toggleInspecoes() {
             const content = document.getElementById('inspecoes-content');
+            const icon = content.previousElementSibling.querySelector('.accordion-icon');
+            
+            if (content.classList.contains('collapsed')) {
+                // Abrir
+                content.classList.remove('collapsed');
+                icon.textContent = '▼';
+                icon.style.transform = 'rotate(0deg)';
+            } else {
+                // Fechar
+                content.classList.add('collapsed');
+                icon.textContent = '▶';
+                icon.style.transform = 'rotate(0deg)';
+            }
+        }
+
+        // Função para controlar a sanfona dos afastamentos
+        function toggleAfastamentos() {
+            const content = document.getElementById('afastamentos-content');
+            const icon = content.previousElementSibling.querySelector('.accordion-icon');
+            
+            if (content.classList.contains('collapsed')) {
+                // Abrir
+                content.classList.remove('collapsed');
+                icon.textContent = '▼';
+                icon.style.transform = 'rotate(0deg)';
+            } else {
+                // Fechar
+                content.classList.add('collapsed');
+                icon.textContent = '▶';
+                icon.style.transform = 'rotate(0deg)';
+            }
+        }
+
+        // Função para controlar a sanfona dos protocolos
+        function toggleProtocolos() {
+            const content = document.getElementById('protocolos-content');
             const icon = content.previousElementSibling.querySelector('.accordion-icon');
             
             if (content.classList.contains('collapsed')) {
@@ -1586,6 +1792,333 @@
                 inspecoesEmpresa.push(inspecaoPadronizada);
             } else {
                 console.log('❌ Inspeção não corresponde à empresa:', { itemIdempresa, empresaIdempresa });
+            }
+        }
+
+        // Função para atualizar o card dos afastamentos
+        function atualizarCardAfastamentos(data, tipo) {
+            const cardContent = document.getElementById('afastamentos-content');
+            
+            if (tipo === 'success' && Array.isArray(data)) {
+                // Renderizar lista de afastamentos
+                let html = `<div class="afastamentos-list">`;
+                html += `<p><strong>Total de afastamentos encontrados:</strong> ${data.length}</p>`;
+                
+                data.forEach((afastamento, index) => {
+                    html += `<div class="afastamento-item">`;
+                    html += `<div class="afastamento-profissional">🚫 ${afastamento.profissional || 'Profissional não informado'}</div>`;
+                    html += `<div class="afastamento-detalhes">`;
+                    if (afastamento.dataInicio && afastamento.horarioInicio) {
+                        html += `<span>Início: ${afastamento.dataInicio} ${afastamento.horarioInicio}</span>`;
+                    } else if (afastamento.dataInicio) {
+                        html += `<span>Início: ${afastamento.dataInicio}</span>`;
+                    }
+                    if (afastamento.dataFim && afastamento.horarioFim) {
+                        html += `<span>Fim: ${afastamento.dataFim} ${afastamento.horarioFim}</span>`;
+                    } else if (afastamento.dataFim) {
+                        html += `<span>Fim: ${afastamento.dataFim}</span>`;
+                    }
+
+
+                    if (afastamento.registro) html += `<span>Registro: ${afastamento.registro}</span>`;
+                    if (afastamento.dataInclusao) html += `<span>Inclusão: ${afastamento.dataInclusao}</span>`;
+                    html += `</div>`;
+                    
+                    // Adicionar informações adicionais se disponíveis
+                    if (afastamento.complemento) {
+                        html += `<div class="afastamento-complemento">📋 Complemento: ${afastamento.complemento}</div>`;
+                    }
+                    
+                    if (afastamento.motivo) {
+                        html += `<div class="afastamento-motivo">📝 ${afastamento.motivo}</div>`;
+                    }
+                    html += `</div>`;
+                });
+                
+                html += `</div>`;
+                cardContent.innerHTML = html;
+                
+            } else if (tipo === 'error') {
+                cardContent.innerHTML = `
+                    <div class="error-message">
+                        <p style="color: #dc3545; font-weight: 600;">❌ ${data}</p>
+                    </div>
+                `;
+            } else if (tipo === 'info') {
+                cardContent.innerHTML = `
+                    <div class="info-message">
+                        <p style="color: #6c757d; font-style: italic;">ℹ️ ${data}</p>
+                    </div>
+                `;
+            }
+        }
+
+        // Função para carregar afastamentos da empresa
+        function carregarAfastamentosEmpresa(empresa) {
+            try {
+                const afastamentosData = localStorage.getItem('afastamentos');
+                
+                if (!afastamentosData) {
+                    atualizarCardAfastamentos('❌ Dados de afastamentos não encontrados. Use "BAIXAR AFASTAMENTOS" no dashboard primeiro.', 'error');
+                    return;
+                }
+
+                const afastamentos = JSON.parse(afastamentosData);
+                console.log('📊 Dados de afastamentos carregados:', afastamentos);
+
+                // Filtrar afastamentos da empresa atual
+                const afastamentosEmpresa = filtrarAfastamentosPorEmpresa(afastamentos, empresa);
+                
+                if (afastamentosEmpresa.length > 0) {
+                    atualizarCardAfastamentos(afastamentosEmpresa, 'success');
+                } else {
+                    atualizarCardAfastamentos('ℹ️ Nenhum afastamento encontrado para esta empresa.', 'info');
+                }
+                
+            } catch (error) {
+                console.error('❌ Erro ao carregar afastamentos da empresa:', error);
+                atualizarCardAfastamentos('❌ Erro ao carregar afastamentos da empresa', 'error');
+            }
+        }
+
+        // Função para filtrar afastamentos por empresa
+        function filtrarAfastamentosPorEmpresa(afastamentos, empresa) {
+            const afastamentosEmpresa = [];
+            
+            console.log('🔍 Filtrando afastamentos para empresa:', empresa);
+            console.log('🔍 ID da empresa (idempresa):', empresa.idempresa);
+            
+            // Verificar se é um array ou objeto com chaves numéricas
+            if (Array.isArray(afastamentos)) {
+                console.log('🔍 Total de registros de afastamentos (array):', afastamentos.length);
+                processarArrayAfastamentos(afastamentos, empresa, afastamentosEmpresa);
+            } else if (typeof afastamentos === 'object' && afastamentos !== null) {
+                console.log('🔍 Processando objeto de afastamentos com chaves numéricas');
+                
+                // Filtrar apenas as chaves numéricas (0, 1, 2, etc.) e ignorar 'msg'
+                const chavesNumericas = Object.keys(afastamentos).filter(key => !isNaN(key) && key !== 'msg');
+                console.log('🔍 Chaves numéricas encontradas:', chavesNumericas);
+                console.log('🔍 Total de registros de afastamentos:', chavesNumericas.length);
+                
+                chavesNumericas.forEach(key => {
+                    const item = afastamentos[key];
+                    console.log(`🔍 Item afastamento ${key}:`, item);
+                    processarItemAfastamento(item, empresa, afastamentosEmpresa);
+                });
+            }
+            
+            console.log('🔍 Total de afastamentos encontrados para a empresa:', afastamentosEmpresa.length);
+            
+            return afastamentosEmpresa;
+        }
+
+        // Função para processar array de afastamentos
+        function processarArrayAfastamentos(afastamentos, empresa, afastamentosEmpresa) {
+            afastamentos.forEach((item, index) => {
+                processarItemAfastamento(item, empresa, afastamentosEmpresa);
+            });
+        }
+
+        // Função para processar item individual de afastamento
+        function processarItemAfastamento(item, empresa, afastamentosEmpresa) {
+            console.log(`🔍 Processando afastamento:`, item);
+            
+            // Verificar se o afastamento está vinculado à empresa atual
+            // Campo 'idempresa' da tabela afastamentos corresponde ao 'idempresa' da tabela empresa
+            const itemIdempresa = item.idempresa;
+            const empresaIdempresa = empresa.idempresa;
+
+            console.log('🔍 Comparando:', { itemIdempresa, empresaIdempresa });
+            console.log('🔍 Tipos:', { itemIdempresaType: typeof itemIdempresa, empresaIdempresaType: typeof empresaIdempresa });
+
+            // Comparar como string e como número
+            const matchString = String(itemIdempresa) === String(empresaIdempresa);
+            const matchNumber = Number(itemIdempresa) === Number(empresaIdempresa);
+
+            console.log('🔍 Match como string:', matchString);
+            console.log('🔍 Match como número:', matchNumber);
+
+            if (matchString || matchNumber) {
+                console.log('✅ Afastamento da empresa encontrado:', item);
+
+                // Criar objeto padronizado para o afastamento
+                const afastamentoPadronizado = {
+                    profissional: item.pro_nome || item.nome || item.nomepf || item.profissional,
+                    dataInicio: item.dataini || item.datainicio || item.data_inicio || item.inicio,
+                    dataFim: item.datafim || item.data_fim || item.fim,
+                    tipo: item.motivo || item.tipo || item.tipoafastamento,
+                    cargo: item.pro_categoria || item.cargo || item.funcao || item.hierarquia,
+                    registro: item.pro_inscricao || item.registro || item.inscrpf || item.crf,
+                    motivo: item.motivo || item.observacao || item.obs || item.descricao,
+                    horarioInicio: item.horaini || null,
+                    horarioFim: item.horafim || null,
+                    dataInclusao: item.datainclusao || null,
+                    horaInclusao: item.horainclusao || null,
+                    complemento: item.pro_complemento || null
+                };
+
+                afastamentosEmpresa.push(afastamentoPadronizado);
+            } else {
+                console.log('❌ Afastamento não corresponde à empresa:', { itemIdempresa, empresaIdempresa });
+            }
+        }
+
+        // Função para atualizar o card dos protocolos
+        function atualizarCardProtocolos(data, tipo) {
+            const cardContent = document.getElementById('protocolos-content');
+            
+            if (tipo === 'success' && Array.isArray(data)) {
+                // Renderizar lista de protocolos
+                let html = `<div class="protocolos-list">`;
+                html += `<p><strong>Total de protocolos encontrados:</strong> ${data.length}</p>`;
+                
+                data.forEach((protocolo, index) => {
+                    html += `<div class="protocolo-item">`;
+                    html += `<div class="protocolo-numero">📋 ${protocolo.numero || 'Protocolo não informado'}</div>`;
+                    html += `<div class="protocolo-detalhes">`;
+                    if (protocolo.data) html += `<span>Data: ${protocolo.data}</span>`;
+                    if (protocolo.solicitante) html += `<span>Solicitante: ${protocolo.solicitante}</span>`;
+                    if (protocolo.tipo) html += `<span>Status: ${protocolo.tipo}</span>`;
+                    html += `</div>`;
+                    
+                    // Adicionar serviços se existirem
+                    if (protocolo.servicos && protocolo.servicos.length > 0) {
+                        html += `<div class="protocolo-servicos">`;
+                        html += `<div class="protocolo-servicos-titulo">🔧 Serviços:</div>`;
+                        html += `<div class="protocolo-servicos-grid">`;
+                        protocolo.servicos.forEach(servico => {
+                            html += `<span class="protocolo-servico-tag">${servico.servico}</span>`;
+                        });
+                        html += `</div>`;
+                        html += `</div>`;
+                    }
+                    
+                    if (protocolo.descricao) {
+                        html += `<div class="protocolo-descricao">📝 ${protocolo.descricao}</div>`;
+                    }
+                    html += `</div>`;
+                });
+                
+                html += `</div>`;
+                cardContent.innerHTML = html;
+                
+            } else if (tipo === 'error') {
+                cardContent.innerHTML = `
+                    <div class="error-message">
+                        <p style="color: #dc3545; font-weight: 600;">❌ ${data}</p>
+                    </div>
+                `;
+            } else if (tipo === 'info') {
+                cardContent.innerHTML = `
+                    <div class="info-message">
+                        <p style="color: #6c757d; font-style: italic;">ℹ️ ${data}</p>
+                    </div>
+                `;
+            }
+        }
+
+        // Função para carregar protocolos da empresa
+        function carregarProtocolosEmpresa(empresa) {
+            try {
+                const protocolosData = localStorage.getItem('protocolos');
+                
+                if (!protocolosData) {
+                    atualizarCardProtocolos('❌ Dados de protocolos não encontrados. Use "BAIXAR PROTOCOLOS" no dashboard primeiro.', 'error');
+                    return;
+                }
+
+                const protocolos = JSON.parse(protocolosData);
+                console.log('📊 Dados de protocolos carregados:', protocolos);
+
+                // Filtrar protocolos da empresa atual
+                const protocolosEmpresa = filtrarProtocolosPorEmpresa(protocolos, empresa);
+                
+                if (protocolosEmpresa.length > 0) {
+                    atualizarCardProtocolos(protocolosEmpresa, 'success');
+                } else {
+                    atualizarCardProtocolos('ℹ️ Nenhum protocolo encontrado para esta empresa.', 'info');
+                }
+                
+            } catch (error) {
+                console.error('❌ Erro ao carregar protocolos da empresa:', error);
+                atualizarCardProtocolos('❌ Erro ao carregar protocolos da empresa', 'error');
+            }
+        }
+
+        // Função para filtrar protocolos por empresa
+        function filtrarProtocolosPorEmpresa(protocolos, empresa) {
+            const protocolosEmpresa = [];
+            
+            console.log('🔍 Filtrando protocolos para empresa:', empresa);
+            console.log('🔍 ID da empresa (idempresa):', empresa.idempresa);
+            
+            // Verificar se é um array ou objeto com chaves numéricas
+            if (Array.isArray(protocolos)) {
+                console.log('🔍 Total de registros de protocolos (array):', protocolos.length);
+                processarArrayProtocolos(protocolos, empresa, protocolosEmpresa);
+            } else if (typeof protocolos === 'object' && protocolos !== null) {
+                console.log('🔍 Processando objeto de protocolos com chaves numéricas');
+                
+                // Filtrar apenas as chaves numéricas (0, 1, 2, etc.) e ignorar 'msg'
+                const chavesNumericas = Object.keys(protocolos).filter(key => !isNaN(key) && key !== 'msg');
+                console.log('🔍 Chaves numéricas encontradas:', chavesNumericas);
+                console.log('🔍 Total de registros de protocolos:', chavesNumericas.length);
+                
+                chavesNumericas.forEach(key => {
+                    const item = protocolos[key];
+                    console.log(`🔍 Item protocolo ${key}:`, item);
+                    processarItemProtocolo(item, empresa, protocolosEmpresa);
+                });
+            }
+            
+            console.log('🔍 Total de protocolos encontrados para a empresa:', protocolosEmpresa.length);
+            
+            return protocolosEmpresa;
+        }
+
+        // Função para processar array de protocolos
+        function processarArrayProtocolos(protocolos, empresa, protocolosEmpresa) {
+            protocolos.forEach((item, index) => {
+                processarItemProtocolo(item, empresa, protocolosEmpresa);
+            });
+        }
+
+        // Função para processar item individual de protocolo
+        function processarItemProtocolo(item, empresa, protocolosEmpresa) {
+            console.log(`🔍 Processando protocolo:`, item);
+            
+            // Verificar se o protocolo está vinculado à empresa atual
+            // Campo 'idempresa' da tabela protocolos corresponde ao 'idempresa' da tabela empresa
+            const itemIdempresa = item.idempresa;
+            const empresaIdempresa = empresa.idempresa;
+
+            console.log('🔍 Comparando:', { itemIdempresa, empresaIdempresa });
+            console.log('🔍 Tipos:', { itemIdempresaType: typeof itemIdempresa, empresaIdempresaType: typeof empresaIdempresa });
+
+            // Comparar como string e como número
+            const matchString = String(itemIdempresa) === String(empresaIdempresa);
+            const matchNumber = Number(itemIdempresa) === Number(empresaIdempresa);
+
+            console.log('🔍 Match como string:', matchString);
+            console.log('🔍 Match como número:', matchNumber);
+
+            if (matchString || matchNumber) {
+                console.log('✅ Protocolo da empresa encontrado:', item);
+
+                // Criar objeto padronizado para o protocolo
+                const protocoloPadronizado = {
+                    numero: item.idprotocolo || item.numero || item.protocolo || item.id,
+                    data: item.datahora || item.data || item.dataprotocolo,
+                    tipo: item.andamento || item.tipo || item.status,
+                    status: item.andamento || item.status || item.situacao,
+                    solicitante: item.nomepf || item.solicitante || item.nome,
+                    servicos: item.servicos || [],
+                    descricao: item.observacoes || item.observacao || item.obs || item.descricao
+                };
+
+                protocolosEmpresa.push(protocoloPadronizado);
+            } else {
+                console.log('❌ Protocolo não corresponde à empresa:', { itemIdempresa, empresaIdempresa });
             }
         }
 
