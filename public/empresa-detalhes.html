@@ -303,7 +303,8 @@
         .outros-profissionais-card,
         .inspecoes-card,
         .afastamentos-card,
-        .protocolos-card {
+        .protocolos-card,
+        .rts-historico-card {
             background: white;
             border-radius: 12px;
             padding: 20px;
@@ -326,7 +327,8 @@
         .outros-profissionais-content,
         .inspecoes-content,
         .afastamentos-content,
-        .protocolos-content {
+        .protocolos-content,
+        .rts-historico-content {
             min-height: 0;
             display: flex;
             align-items: center;
@@ -719,6 +721,57 @@
             border: 1px solid #bbdefb;
         }
 
+        .rts-historico-list {
+            width: 100%;
+        }
+
+        .rts-historico-list p {
+            margin-bottom: 15px;
+            color: #495057;
+            font-weight: 600;
+        }
+
+        .rts-historico-item {
+            background: #f8f9fa;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 10px;
+            border-left: 4px solid #28a745;
+        }
+
+        .rts-historico-meta {
+            font-weight: 600;
+            color: #28a745;
+            font-size: 16px;
+            margin-bottom: 8px;
+        }
+
+        .rts-historico-detalhes {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+
+        .rts-historico-detalhes span {
+            background: white;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            color: #6c757d;
+            border: 1px solid #e9ecef;
+        }
+
+        .rts-historico-resptec {
+            margin-top: 8px;
+            padding: 8px;
+            background: #f8f9fa;
+            border-radius: 4px;
+            font-size: 12px;
+            color: #495057;
+            border-left: 3px solid #28a745;
+            font-style: italic;
+        }
+
         .inspecao-info-adicional {
             margin-top: 8px;
         }
@@ -868,6 +921,9 @@
                 
                 // Carregar protocolos da empresa
                 carregarProtocolosEmpresa(empresa);
+                
+                // Carregar histórico de RTs da empresa
+                carregarRtsHistoricoEmpresa(empresa);
                 
             } catch (error) {
                 console.error('❌ Erro ao carregar detalhes da empresa:', error);
@@ -1281,6 +1337,16 @@
                         <p style="color: #6c757d; font-style: italic;">Protocolos da empresa serão exibidos aqui</p>
                     </div>
                 </div>
+
+                <div class="rts-historico-card">
+                    <h3 class="accordion-header" onclick="toggleRtsHistorico()">
+                        📊 Histórico de RTs
+                        <span class="accordion-icon">▼</span>
+                    </h3>
+                    <div class="rts-historico-content accordion-content" id="rts-historico-content">
+                        <p style="color: #6c757d; font-style: italic;">Histórico de RTs da empresa será exibido aqui</p>
+                    </div>
+                </div>
             `;
             
             container.innerHTML = detalhesHTML;
@@ -1379,6 +1445,24 @@
         // Função para controlar a sanfona dos protocolos
         function toggleProtocolos() {
             const content = document.getElementById('protocolos-content');
+            const icon = content.previousElementSibling.querySelector('.accordion-icon');
+            
+            if (content.classList.contains('collapsed')) {
+                // Abrir
+                content.classList.remove('collapsed');
+                icon.textContent = '▼';
+                icon.style.transform = 'rotate(0deg)';
+            } else {
+                // Fechar
+                content.classList.add('collapsed');
+                icon.textContent = '▶';
+                icon.style.transform = 'rotate(0deg)';
+            }
+        }
+
+        // Função para controlar a sanfona do histórico de RTs
+        function toggleRtsHistorico() {
+            const content = document.getElementById('rts-historico-content');
             const icon = content.previousElementSibling.querySelector('.accordion-icon');
             
             if (content.classList.contains('collapsed')) {
@@ -2119,6 +2203,206 @@
                 protocolosEmpresa.push(protocoloPadronizado);
             } else {
                 console.log('❌ Protocolo não corresponde à empresa:', { itemIdempresa, empresaIdempresa });
+            }
+        }
+
+        // Função para atualizar o card do histórico de RTs
+        function atualizarCardRtsHistorico(data, tipo) {
+            const cardContent = document.getElementById('rts-historico-content');
+            
+            if (tipo === 'success' && Array.isArray(data)) {
+                // Renderizar lista de histórico de RTs
+                let html = `<div class="rts-historico-list">`;
+                html += `<p><strong>Total de registros de RTs encontrados:</strong> ${data.length}</p>`;
+                
+                data.forEach((rts, index) => {
+                    html += `<div class="rts-historico-item">`;
+                    html += `<div class="rts-historico-meta">📊 ${rts.meta || 'RTS não informado'}</div>`;
+                    html += `<div class="rts-historico-detalhes">`;
+                    if (rts.inscricao) html += `<span>Inscrição: ${rts.inscricao}</span>`;
+                    if (rts.categoria) html += `<span>Categoria: ${rts.categoria}</span>`;
+                    if (rts.inspetoria) html += `<span>Inspetoria: ${rts.inspetoria}</span>`;
+                    html += `</div>`;
+                    
+                    // Adicionar responsáveis técnicos se existirem
+                    if (rts.responsaveisTecnicos && rts.responsaveisTecnicos.length > 0) {
+                        html += `<div class="rts-historico-resptec">`;
+                        html += `<div><strong>👥 Responsáveis Técnicos:</strong></div>`;
+                        rts.responsaveisTecnicos.forEach(resp => {
+                            html += `<div style="margin-top: 8px; padding: 8px; background: white; border-radius: 4px; border: 1px solid #e9ecef;">`;
+                            html += `<div><strong>${resp.nome}</strong> (${resp.inscricao}) - ${resp.hierarquia}</div>`;
+                            if (resp.email) html += `<div>📧 ${resp.email}</div>`;
+                            if (resp.dataInicio) html += `<div>📅 Início: ${resp.dataInicio}</div>`;
+                            
+                            // Adicionar horários se existirem
+                            if (resp.horarios) {
+                                const horarios = resp.horarios;
+                                const diasSemana = [
+                                    { key: 'seg', nome: 'Segunda', valor: horarios.seg },
+                                    { key: 'ter', nome: 'Terça', valor: horarios.ter },
+                                    { key: 'qua', nome: 'Quarta', valor: horarios.qua },
+                                    { key: 'qui', nome: 'Quinta', valor: horarios.qui },
+                                    { key: 'sex', nome: 'Sexta', valor: horarios.sex },
+                                    { key: 'sab', nome: 'Sábado', valor: horarios.sab },
+                                    { key: 'dom', nome: 'Domingo', valor: horarios.dom }
+                                ];
+                                const horariosDisponiveis = diasSemana.filter(dia => dia.valor && dia.valor !== 'null');
+                                if (horariosDisponiveis.length > 0) {
+                                    html += `<div style="margin-top: 6px;">`;
+                                    html += `<div style="font-weight: 600; color: #28a745; margin-bottom: 4px;">🕐 Horários de Trabalho:</div>`;
+                                    html += `<div style="display: flex; gap: 8px; flex-wrap: wrap;">`;
+                                    horariosDisponiveis.forEach(dia => {
+                                        html += `<span style="background: #e8f5e8; color: #28a745; padding: 2px 6px; border-radius: 8px; font-size: 11px; border: 1px solid #c3e6cb;">`;
+                                        html += `${dia.nome}: ${dia.valor}`;
+                                        html += `</span>`;
+                                    });
+                                    html += `</div>`;
+                                    html += `</div>`;
+                                }
+                            }
+                            
+                            if (resp.observacoes) html += `<div style="margin-top: 6px;"><em>📝 ${resp.observacoes}</em></div>`;
+                            html += `</div>`;
+                        });
+                        html += `</div>`;
+                    }
+                    html += `</div>`;
+                });
+                
+                html += `</div>`;
+                cardContent.innerHTML = html;
+                
+            } else if (tipo === 'error') {
+                cardContent.innerHTML = `
+                    <div class="error-message">
+                        <p style="color: #dc3545; font-weight: 600;">❌ ${data}</p>
+                    </div>
+                `;
+            } else if (tipo === 'info') {
+                cardContent.innerHTML = `
+                    <div class="info-message">
+                        <p style="color: #6c757d; font-style: italic;">ℹ️ ${data}</p>
+                    </div>
+                `;
+            }
+        }
+
+        // Função para carregar histórico de RTs da empresa
+        function carregarRtsHistoricoEmpresa(empresa) {
+            try {
+                const rtsData = localStorage.getItem('historico_rts');
+                
+                if (!rtsData) {
+                    atualizarCardRtsHistorico('❌ Dados de histórico de RTs não encontrados. Use "BAIXAR HISTÓRICO RTS" no dashboard primeiro.', 'error');
+                    return;
+                }
+
+                const historico = JSON.parse(rtsData);
+                console.log('📊 Dados de histórico de RTs carregados:', historico);
+
+                // Filtrar histórico de RTs da empresa atual
+                const rtsEmpresa = filtrarRtsHistoricoPorEmpresa(historico, empresa);
+                
+                if (rtsEmpresa.length > 0) {
+                    atualizarCardRtsHistorico(rtsEmpresa, 'success');
+                } else {
+                    atualizarCardRtsHistorico('ℹ️ Nenhum registro de RT encontrado para esta empresa.', 'info');
+                }
+                
+            } catch (error) {
+                console.error('❌ Erro ao carregar histórico de RTs da empresa:', error);
+                atualizarCardRtsHistorico('❌ Erro ao carregar histórico de RTs da empresa', 'error');
+            }
+        }
+
+        // Função para filtrar histórico de RTs por empresa
+        function filtrarRtsHistoricoPorEmpresa(historico, empresa) {
+            const rtsEmpresa = [];
+            
+            console.log('🔍 Filtrando histórico de RTs para empresa:', empresa);
+            console.log('🔍 ID da empresa (idempresa):', empresa.idempresa);
+            
+            // Verificar se é um array ou objeto com chaves numéricas
+            if (Array.isArray(historico)) {
+                console.log('🔍 Total de registros de RTs (array):', historico.length);
+                processarArrayRtsHistorico(historico, empresa, rtsEmpresa);
+            } else if (typeof historico === 'object' && historico !== null) {
+                console.log('🔍 Processando objeto de RTs com chaves numéricas');
+                
+                // Filtrar apenas as chaves numéricas (0, 1, 2, etc.) e ignorar 'msg'
+                const chavesNumericas = Object.keys(historico).filter(key => !isNaN(key) && key !== 'msg');
+                console.log('🔍 Chaves numéricas encontradas:', chavesNumericas);
+                console.log('🔍 Total de registros de RTs:', chavesNumericas.length);
+                
+                chavesNumericas.forEach(key => {
+                    const item = historico[key];
+                    console.log(`🔍 Item RTS ${key}:`, item);
+                    processarItemRtsHistorico(item, empresa, rtsEmpresa);
+                });
+            }
+            
+            console.log('🔍 Total de registros de RTs encontrados para a empresa:', rtsEmpresa.length);
+            
+            return rtsEmpresa;
+        }
+
+        // Função para processar array de histórico de RTs
+        function processarArrayRtsHistorico(historico, empresa, rtsEmpresa) {
+            historico.forEach((item, index) => {
+                processarItemRtsHistorico(item, empresa, rtsEmpresa);
+            });
+        }
+
+        // Função para processar item individual de histórico de RTs
+        function processarItemRtsHistorico(item, empresa, rtsEmpresa) {
+            console.log(`🔍 Processando item RTS:`, item);
+            
+            // Verificar se o item está vinculado à empresa atual
+            // Campo 'inscrpj' da tabela RTS corresponde ao 'idempresa' da tabela empresa
+            const itemInscrpj = item.inscrpj;
+            const empresaIdempresa = empresa.idempresa;
+
+            console.log('🔍 Comparando:', { itemInscrpj, empresaIdempresa });
+            console.log('🔍 Tipos:', { itemInscrpjType: typeof itemInscrpj, empresaIdempresaType: typeof empresaIdempresa });
+
+            // Comparar como string e como número
+            const matchString = String(itemInscrpj) === String(empresaIdempresa);
+            const matchNumber = Number(itemInscrpj) === Number(empresaIdempresa);
+
+            console.log('🔍 Match como string:', matchString);
+            console.log('🔍 Match como número:', matchNumber);
+
+            if (matchString || matchNumber) {
+                console.log('✅ Item RTS da empresa encontrado:', item);
+
+                // Criar objeto padronizado para o histórico de RTs
+                const rtsPadronizado = {
+                    meta: item.idmeta || item.meta || item.numero || 'RTS não informado',
+                    inscricao: item.inscrpj || item.inscricao || item.cnpj,
+                    categoria: item.catpjantigo || item.categoria || item.tipo,
+                    inspetoria: item.inspjantigo || item.inspetoria || item.inspetor,
+                    responsaveisTecnicos: item.resptec ? item.resptec.map(resp => ({
+                        nome: resp.nomepf || resp.nome,
+                        inscricao: resp.inscrpf || resp.inscricao,
+                        hierarquia: resp.hierarquia || resp.cargo,
+                        email: resp.emailpf || resp.email,
+                        dataInicio: resp.datainicio || resp.data_inicio,
+                        observacoes: resp.obs || resp.observacao,
+                        horarios: {
+                            seg: resp.pro_hora_seg,
+                            ter: resp.pro_hora_ter,
+                            qua: resp.pro_hora_qua,
+                            qui: resp.pro_hora_qui,
+                            sex: resp.pro_hora_sex,
+                            sab: resp.pro_hora_sab,
+                            dom: resp.pro_hora_dom
+                        }
+                    })) : []
+                };
+
+                rtsEmpresa.push(rtsPadronizado);
+            } else {
+                console.log('❌ Item RTS não corresponde à empresa:', { itemInscrpj, empresaIdempresa });
             }
         }
 

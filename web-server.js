@@ -94,7 +94,7 @@ const server = http.createServer((req, res) => {
 
     if (req.url === '/api/rts-historico') {
         console.log(`   👥 Rota processada: /api/rts-historico (proxy API CRF)`);
-        handleRealApiProxy(req, res, '/resp-tec-json.php');
+        handleRealApiProxy(req, res, '/rts-hist-json.php');
         return;
     }
 

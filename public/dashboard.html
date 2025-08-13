@@ -352,6 +352,20 @@
                 </div>
             </div>
 
+            <!-- Histórico de RTs -->
+            <div class="actions-row">
+                <div class="action-card" onclick="baixarHistoricoRts()">
+                    <div class="action-icon">📊</div>
+                    <div class="action-title">Baixar Histórico RTs</div>
+                    <div class="action-description">Histórico completo de RTs</div>
+                </div>
+                <div class="action-card" onclick="visualizarHistoricoRts()" style="background-color: #28a745; color: white;">
+                    <div class="action-icon">📊</div>
+                    <div class="action-title">Ver Histórico RTs</div>
+                    <div class="action-description">Visualizar histórico RTs</div>
+                </div>
+            </div>
+
             <!-- Tipos de Inspeção -->
             <div class="actions-row">
                 <div class="action-card" onclick="baixarTiposInspecao()">
@@ -520,6 +534,7 @@
             const downloads = [
                 { name: 'Configuração', func: baixarConfigTermo },
                 { name: 'RTS', func: baixarRtsHistorico },
+                { name: 'Histórico RTs', func: baixarHistoricoRts },
                 { name: 'Tipos de Inspeção', func: baixarTiposInspecao },
                 { name: 'Inspeções', func: baixarInspecoesHistorico },
                 { name: 'Protocolos', func: baixarProtocolos },
@@ -1101,6 +1116,105 @@
                     reject();
                 });
             });
+        }
+
+        function baixarHistoricoRts() {
+            return new Promise((resolve, reject) => {
+                const endpoint = '/api/rts-historico';
+                showAlert('📊 Baixando histórico de RTs...', 'success');
+                
+                console.log(`🌐 Acessando endpoint: ${endpoint}`);
+                
+                // Pegar o ID do usuário do localStorage ou usar um valor padrão
+                const user = localStorage.getItem('user');
+                let iduser = '1'; // valor padrão
+                
+                if (user) {
+                    try {
+                        const userData = JSON.parse(user);
+                        iduser = userData.id || '1';
+                    } catch (error) {
+                        console.log('Usando ID padrão para usuário');
+                    }
+                }
+
+                fetch(endpoint, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded'
+                    },
+                    body: `iduser=${iduser}`
+                })
+                .then(response => {
+                    console.log(`📡 Status da resposta: ${response.status} ${response.statusText}`);
+                    return response.json();
+                })
+                .then(data => {
+                    console.log(`📥 Retorno do servidor:`, data);
+                    
+                    // Verificar se há dados válidos (pode ser data.success, data.msg, ou diretamente data)
+                    if (data && (data.success || data.msg === 'sucesso' || data.length > 0 || Object.keys(data).length > 0)) {
+                        // Salvar localmente - tentar diferentes estruturas possíveis
+                        const historicoRtsData = data.historico || data.data || data;
+                        console.log(`💾 Salvando histórico de RTs no localStorage:`, historicoRtsData);
+                        localStorage.setItem('historico_rts', JSON.stringify(historicoRtsData));
+                        localStorage.setItem('historico_rts_timestamp', Date.now().toString());
+                        
+                        // Verificar se foi salvo
+                        const savedData = localStorage.getItem('historico_rts');
+                        console.log(`✅ Histórico de RTs salvo no localStorage:`, savedData);
+                        
+                        showAlert('✅ Histórico de RTs baixado com sucesso!', 'success');
+                        resolve();
+                    } else {
+                        showAlert('❌ Erro ao baixar histórico de RTs', 'error');
+                        reject();
+                    }
+                })
+                .catch(error => {
+                    console.error('❌ Erro ao baixar histórico de RTs:', error);
+                    showAlert('❌ Erro ao baixar histórico de RTs', 'error');
+                    reject();
+                });
+            });
+        }
+
+        function visualizarHistoricoRts() {
+            const historicoRtsData = localStorage.getItem('historico_rts');
+            
+            if (!historicoRtsData) {
+                showAlert('❌ Nenhum histórico de RTs encontrado. Use "BAIXAR HISTÓRICO RTS" primeiro.', 'error');
+                return;
+            }
+
+            try {
+                const historico = JSON.parse(historicoRtsData);
+                console.log('📊 Histórico de RTs carregado:', historico);
+                
+                // Criar modal para visualizar os dados
+                let modalContent = `
+                    <div class="modal-header">
+                        <h2>📊 Histórico de RTs</h2>
+                        <span class="close" onclick="closeModal()">&times;</span>
+                    </div>
+                    <div class="modal-body">
+                        <div class="data-info">
+                            <p><strong>Total de registros:</strong> ${Array.isArray(historico) ? historico.length : Object.keys(historico).filter(key => !isNaN(key)).length}</p>
+                            <p><strong>Última atualização:</strong> ${new Date(parseInt(localStorage.getItem('historico_rts_timestamp'))).toLocaleString('pt-BR')}</p>
+                        </div>
+                        <div class="data-preview">
+                            <h3>Prévia dos dados:</h3>
+                            <pre>${JSON.stringify(historico, null, 2)}</pre>
+                        </div>
+                    </div>
+                `;
+                
+                showModal(modalContent);
+                
+            } catch (error) {
+                console.error('❌ Erro ao visualizar histórico de RTs:', error);
+                showAlert('❌ Erro ao visualizar histórico de RTs', 'error');
+            }
         }
 
         function baixarDenuncias() {
