@@ -326,6 +326,7 @@
         .empresa-info-bottom .farmaceutico-tag,
         .empresa-info-bottom .empresa-perfil-tag,
         .empresa-info-bottom .empresa-afastamentos-tag,
+        .empresa-info-bottom .empresa-denuncias-tag,
         .empresa-info-bottom .horario-tag {
             flex: 0 0 auto;
             white-space: nowrap;
@@ -364,13 +365,14 @@
 
         .empresa-info-bottom {
             display: flex;
-            gap: 8px;
+            gap: 4px;
             align-items: center;
             flex-wrap: nowrap;
             margin-top: 8px;
             width: 100%;
             justify-content: flex-start;
             overflow-x: auto;
+            overflow-y: hidden;
         }
 
         .empresa-horario {
@@ -389,14 +391,21 @@
         }
 
         .empresa-perfil-tag {
-            font-size: 10px;
+            background: #e3f2fd;
+            color: #1976d2;
             padding: 2px 4px;
             border-radius: 8px;
+            font-size: 10px;
             font-weight: 500;
-            display: inline-block;
-            background: #e8f5e8;
-            color: #2e7d32;
-            border: 1px solid #a5d6a7;
+            border: 1px solid #bbdefb;
+        }
+
+        .empresa-perfil-tag.perfil-5 {
+            background: #f8d7da;
+            color: #721c24;
+            border: 2px solid #dc3545;
+            font-weight: 600;
+            box-shadow: 0 2px 8px rgba(220, 53, 69, 0.3);
         }
 
         .empresa-afastamentos-tag {
@@ -408,6 +417,31 @@
             background: #fff3e0;
             color: #e65100;
             border: 1px solid #ffcc02;
+        }
+
+        .empresa-denuncias-tag {
+            font-size: 10px;
+            padding: 2px 4px;
+            border-radius: 8px;
+            font-weight: 500;
+            display: inline-block;
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #dc3545;
+        }
+
+        .empresa-denuncias-tag.tem-denuncias {
+            background: #dc3545;
+            color: white;
+            font-weight: 600;
+            box-shadow: 0 2px 4px rgba(220, 53, 69, 0.4);
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
         }
 
         .empty-state {
@@ -729,6 +763,49 @@
             }
         }
 
+        // Função para verificar se uma empresa possui denúncias ativas (retornar ≠ "Nao")
+        function verificarDenunciasEmpresa(empresa) {
+            try {
+                const denunciasData = localStorage.getItem('denuncias');
+                
+                if (!denunciasData) {
+                    return { temDenuncias: false, quantidade: 0 };
+                }
+
+                const denuncias = JSON.parse(denunciasData);
+                let quantidadeDenunciasAtivas = 0;
+                
+                // A estrutura real é um objeto com msg e chaves numéricas
+                if (typeof denuncias === 'object' && denuncias !== null) {
+                    // Filtrar apenas as chaves numéricas (0, 1, 2, etc.) e ignorar 'msg'
+                    const chavesNumericas = Object.keys(denuncias).filter(key => !isNaN(key) && key !== 'msg');
+                    
+                    chavesNumericas.forEach(key => {
+                        const denuncia = denuncias[key];
+                        if (String(denuncia.idempresa) === String(empresa.idempresa) &&
+                            String(denuncia.retornar).toLowerCase() !== 'nao') {
+                            quantidadeDenunciasAtivas++;
+                        }
+                    });
+                } else if (Array.isArray(denuncias)) {
+                    // Fallback para caso seja array
+                    quantidadeDenunciasAtivas = denuncias.filter(denuncia => 
+                        String(denuncia.idempresa) === String(empresa.idempresa) &&
+                        String(denuncia.retornar).toLowerCase() !== 'nao'
+                    ).length;
+                }
+                
+                return { 
+                    temDenuncias: quantidadeDenunciasAtivas > 0, 
+                    quantidade: quantidadeDenunciasAtivas 
+                };
+                
+            } catch (error) {
+                console.error('❌ Erro ao verificar denúncias da empresa:', error);
+                return { temDenuncias: false, quantidade: 0 };
+            }
+        }
+
         // Função para renderizar empresas
         function renderizarEmpresas(empresas) {
             console.log('🎨 Renderizando empresas...');
@@ -747,12 +824,15 @@
                 // Buscar informações de farmacêuticos da empresa
                 const farmaceuticosInfo = buscarFarmaceuticosEmpresa(empresa);
                 
+                // Verificar se a empresa possui denúncias
+                const denunciasInfo = verificarDenunciasEmpresa(empresa);
+                
                                 return `
                     <div class="empresa-item" onclick="selecionarEmpresa(${index})">
                         <div class="empresa-content-left">
                             <div class="empresa-top-info">
                                 <div class="empresa-inspecao">🔍 Inspeção: ${empresa.idmeta || 'Não informado'}</div>
-                                <div class="empresa-cnpj">🆔 ${cnpj}</div>
+                                <div class="empresa-cnpj">📄 CNPJ: ${cnpj}</div>
                             </div>
                             <div class="empresa-razao-inscricao">
                                 <div class="empresa-inscricao-numero">📋 Inscrição: ${empresa.inscricao || empresa.inscricaonova || 'Não informado'}</div>
@@ -762,10 +842,11 @@
                             <div class="empresa-localizacao">📍 ${cidade}${estado ? ', ' + estado : ''}</div>
                             <div class="empresa-endereco">🏠 ${obterEnderecoCompleto(empresa)}</div>
                         <div class="empresa-info-bottom">
-                            <span class="farmaceutico-tag diretor">👨‍⚕️ ${farmaceuticosInfo.diretores} Diretor</span>
-                            <span class="farmaceutico-tag assistente">👨‍⚕️ ${farmaceuticosInfo.assistentes} Assistente</span>
-                            <span class="empresa-perfil-tag">🏭 ${empresa.perfil || 'Perfil não informado'}</span>
-                            <span class="empresa-afastamentos-tag">🏥 Afast. Ano: ${empresa.qtdeafas1ano || '0'}</span>
+                            <span class="farmaceutico-tag diretor">👨‍⚕️ ${farmaceuticosInfo.diretores} Dir</span>
+                            <span class="farmaceutico-tag assistente">👨‍⚕️ ${farmaceuticosInfo.assistentes} Ass</span>
+                            <span class="empresa-perfil-tag ${empresa.perfil == 5 ? 'perfil-5' : ''}">🏭 ${empresa.perfil || 'Perfil não informado'}</span>
+                            <span class="empresa-afastamentos-tag">🏥 Af: ${empresa.qtdeafas1ano || '0'}</span>
+                            ${denunciasInfo.temDenuncias ? `<span class="empresa-denuncias-tag tem-denuncias">🚨 Den.${denunciasInfo.quantidade}</span>` : ''}
                             <span class="horario-tag">🕐 ${obterHorarioDiaAtual(empresa)}</span>
                         </div>
                     </div>

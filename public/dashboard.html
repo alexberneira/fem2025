@@ -290,21 +290,21 @@
         <div class="download-section">
             <h3>📥 Downloads de Dados</h3>
             
-            <!-- Baixar Tudo -->
-            <div class="actions-row">
-                <div class="action-card" onclick="baixarTudo()">
-                    <div class="action-icon">🚀</div>
-                    <div class="action-title">Baixar Tudo</div>
-                    <div class="action-description">Download completo de todos os dados</div>
-                </div>
-            </div>
-
             <!-- Listar Empresas (linha inteira) -->
             <div class="actions-row">
                 <div class="action-card" onclick="window.location.href='/empresas'">
                     <div class="action-icon">📋</div>
                     <div class="action-title">Listar Empresas</div>
                     <div class="action-description">Visualizar empresas cadastradas</div>
+                </div>
+            </div>
+
+            <!-- Botão Baixar Tudo (linha inteira) -->
+            <div class="actions-row">
+                <div class="action-card" onclick="baixarTudo()" style="background: linear-gradient(135deg, #ff6b6b 0%, #ee5a24 100%); color: white; font-weight: bold;">
+                    <div class="action-icon">🚀</div>
+                    <div class="action-title">BAIXAR TUDO</div>
+                    <div class="action-description">Baixar todos os dados disponíveis</div>
                 </div>
             </div>
 
@@ -489,25 +489,33 @@
         const alertDiv = document.getElementById('alert');
         const userNameElement = document.getElementById('userName');
 
-        function showAlert(message, type) {
+        function showAlert(message, type, persistent = false) {
             const alertMessage = document.getElementById('alertMessage');
             alertMessage.textContent = message;
             alertDiv.className = `alert ${type}`;
             alertDiv.style.display = 'block';
             
-            // Auto-hide após 3 segundos para mensagens de sucesso e info
-            if (type === 'success' || type === 'info') {
-                setTimeout(() => {
-                    hideAlert();
-                }, 3000);
+            // Se não for persistente, aplicar auto-hide
+            if (!persistent) {
+                // Auto-hide após 3 segundos para mensagens de sucesso e info
+                if (type === 'success' || type === 'info') {
+                    setTimeout(() => {
+                        hideAlert();
+                    }, 3000);
+                }
+                
+                // Auto-hide após 5 segundos para mensagens de erro
+                if (type === 'error') {
+                    setTimeout(() => {
+                        hideAlert();
+                    }, 5000);
+                }
             }
-            
-            // Auto-hide após 5 segundos para mensagens de erro
-            if (type === 'error') {
-                setTimeout(() => {
-                    hideAlert();
-                }, 5000);
-            }
+        }
+
+        // Função específica para mensagens de download que permanecem até conclusão
+        function showDownloadAlert(message, type) {
+            showAlert(message, type, true); // persistente = true
         }
 
         function hideAlert() {
@@ -532,6 +540,7 @@
             
             // Executar todos os downloads sequencialmente
             const downloads = [
+                { name: 'Empresas', func: baixarEmpresas },
                 { name: 'Configuração', func: baixarConfigTermo },
                 { name: 'RTS', func: baixarRtsHistorico },
                 { name: 'Histórico RTs', func: baixarHistoricoRts },
@@ -549,91 +558,124 @@
             let successCount = 0;
             let errorCount = 0;
 
-            downloads.forEach((download, index) => {
-                setTimeout(() => {
-                    download.func().then(() => {
+            // Função para executar downloads sequencialmente
+            async function executarDownloads() {
+                for (let i = 0; i < downloads.length; i++) {
+                    const download = downloads[i];
+                    try {
+                        console.log(`🔄 Executando: ${download.name} (${i + 1}/${downloads.length})`);
+                        showDownloadAlert(`🔄 Baixando ${download.name}... (${i + 1}/${downloads.length})`, 'info');
+                        
+                        await download.func();
+                        
                         successCount++;
                         completed++;
-                        if (completed === downloads.length) {
-                            showAlert(`✅ Download completo finalizado! ${successCount} sucessos, ${errorCount} erros`, 'success');
+                        console.log(`✅ ${download.name} concluído com sucesso!`);
+                        showAlert(`✅ ${download.name} baixado com sucesso! (${completed}/${downloads.length})`, 'success');
+                        
+                        // Aguardar 1 segundo antes do próximo download
+                        if (i < downloads.length - 1) {
+                            await new Promise(resolve => setTimeout(resolve, 1000));
                         }
-                    }).catch(() => {
+                        
+                    } catch (error) {
                         errorCount++;
                         completed++;
-                        if (completed === downloads.length) {
-                            showAlert(`⚠️ Download completo finalizado! ${successCount} sucessos, ${errorCount} erros`, 'error');
+                        console.error(`❌ Erro ao baixar ${download.name}:`, error);
+                        showAlert(`❌ Erro ao baixar ${download.name} (${completed}/${downloads.length})`, 'error');
+                        
+                        // Aguardar 1 segundo antes do próximo download
+                        if (i < downloads.length - 1) {
+                            await new Promise(resolve => setTimeout(resolve, 1000));
                         }
-                    });
-                }, index * 1000); // Executar com 1 segundo de intervalo
-            });
+                    }
+                }
+                
+                // Resumo final
+                if (errorCount === 0) {
+                    showAlert(`🎉 Download completo finalizado com sucesso! Todos os ${successCount} downloads foram concluídos.`, 'success');
+                } else {
+                    showAlert(`⚠️ Download completo finalizado! ${successCount} sucessos, ${errorCount} erros.`, 'warning');
+                }
+            }
+
+            // Iniciar execução sequencial
+            executarDownloads();
         }
 
         function baixarEmpresas() {
-            showAlert('📥 Baixando empresas do servidor...', 'success');
-            
-            // Pegar o ID do usuário do localStorage ou usar um valor padrão
-            const user = localStorage.getItem('user');
-            let iduser = '1'; // valor padrão
-            
-            if (user) {
-                try {
-                    const userData = JSON.parse(user);
-                    iduser = userData.id || '1';
-                } catch (error) {
-                    console.log('Usando ID padrão para usuário');
-                }
-            }
-            
-            fetch('/api/empresas', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/x-www-form-urlencoded'
-                },
-                body: `iduser=${iduser}`
-            })
-            .then(response => {
-                if (!response.ok) {
-                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
-                }
-                return response.json();
-            })
-            .then(data => {
-                console.log('📥 Resposta da API empresas:', data);
+            return new Promise((resolve, reject) => {
+                showDownloadAlert('📥 Baixando empresas do servidor...', 'info');
                 
-                if (data.msg === "Nenhum dado Encontrado") {
-                    showAlert('ℹ️ Nenhuma empresa encontrada para este usuário', 'success');
-                    localStorage.setItem('empresas', JSON.stringify([]));
-                    localStorage.setItem('empresas_timestamp', Date.now().toString());
-                } else if (data.msg === "sucesso" && data[0]) {
-                    // A API retorna: {"msg":"sucesso","0":{"idempresa":"517798",...},"1":{"idempresa":"...",...}}
-                    const empresas = [];
-                    Object.keys(data).forEach(key => {
-                        if (key !== 'msg' && data[key]) {
-                            // Adicionar campo 'realizado' para controle de inspeção
-                            const empresa = {
-                                ...data[key],
-                                realizado: false // Por padrão, inspeção não foi realizada
-                            };
-                            empresas.push(empresa);
-                        }
-                    });
-                    
-                    localStorage.setItem('empresas', JSON.stringify(empresas));
-                    localStorage.setItem('empresas_timestamp', Date.now().toString());
-                    showAlert(`✅ ${empresas.length} empresas baixadas com sucesso!`, 'success');
-                } else if (data.empresas || Array.isArray(data)) {
-                    const empresas = data.empresas || data;
-                    localStorage.setItem('empresas', JSON.stringify(empresas));
-                    localStorage.setItem('empresas_timestamp', Date.now().toString());
-                    showAlert(`✅ ${empresas.length} empresas baixadas com sucesso!`, 'success');
-                } else {
-                    showAlert('❌ Formato de resposta inesperado da API', 'error');
-                    console.log('Resposta inesperada:', data);
+                // Pegar o ID do usuário do localStorage ou usar um valor padrão
+                const user = localStorage.getItem('user');
+                let iduser = '1'; // valor padrão
+                
+                if (user) {
+                    try {
+                        const userData = JSON.parse(user);
+                        iduser = userData.id || '1';
+                    } catch (error) {
+                        console.log('Usando ID padrão para usuário');
+                    }
                 }
-            })
-            .catch(error => {
-                console.error('❌ Erro ao baixar empresas:', error);
-                showAlert(`❌ Erro ao baixar empresas: ${error.message}`, 'error');
+                
+                fetch('/api/empresas', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded'
+                    },
+                    body: `iduser=${iduser}`
+                })
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    console.log('📥 Resposta da API empresas:', data);
+                    
+                    if (data.msg === "Nenhum dado Encontrado") {
+                        showAlert('ℹ️ Nenhuma empresa encontrada para este usuário', 'success');
+                        localStorage.setItem('empresas', JSON.stringify([]));
+                        localStorage.setItem('empresas_timestamp', Date.now().toString());
+                        resolve();
+                    } else if (data.msg === "sucesso" && data[0]) {
+                        // A API retorna: {"msg":"sucesso","0":{"idempresa":"517798",...},"1":{"idempresa":"...",...}}
+                        const empresas = [];
+                        Object.keys(data).forEach(key => {
+                            if (key !== 'msg' && data[key]) {
+                                // Adicionar campo 'realizado' para controle de inspeção
+                                const empresa = {
+                                    ...data[key],
+                                    realizado: false // Por padrão, inspeção não foi realizada
+                                };
+                                empresas.push(empresa);
+                            }
+                        });
+                        
+                        localStorage.setItem('empresas', JSON.stringify(empresas));
+                        localStorage.setItem('empresas_timestamp', Date.now().toString());
+                        showAlert(`✅ ${empresas.length} empresas baixadas com sucesso!`, 'success');
+                        resolve();
+                    } else if (data.empresas || Array.isArray(data)) {
+                        const empresas = data.empresas || data;
+                        localStorage.setItem('empresas', JSON.stringify(empresas));
+                        localStorage.setItem('empresas_timestamp', Date.now().toString());
+                        showAlert(`✅ ${empresas.length} empresas baixadas com sucesso!`, 'success');
+                        resolve();
+                    } else {
+                        showAlert('❌ Formato de resposta inesperado da API', 'error');
+                        console.log('Resposta inesperada:', data);
+                        reject(new Error('Formato de resposta inesperado da API'));
+                    }
+                })
+                .catch(error => {
+                    console.error('❌ Erro ao baixar empresas:', error);
+                    showAlert(`❌ Erro ao baixar empresas: ${error.message}`, 'error');
+                    reject(error);
+                });
             });
         }
 
@@ -769,7 +811,7 @@
         function baixarConfigTermo() {
             return new Promise((resolve, reject) => {
                 const endpoint = '/api/config-termo';
-                showAlert('📋 Baixando configuração do termo...', 'success');
+                showDownloadAlert('📋 Baixando configuração do termo...', 'info');
                 
                 console.log(`🌐 Acessando endpoint: ${endpoint}`);
                 
@@ -816,7 +858,7 @@
         function baixarRtsHistorico() {
             return new Promise((resolve, reject) => {
                 const endpoint = '/api/rts-historico';
-                showAlert('👥 Baixando histórico de RTS...', 'success');
+                showDownloadAlert('👥 Baixando histórico de RTS...', 'info');
                 
                 console.log(`🌐 Acessando endpoint: ${endpoint}`);
                 
@@ -877,7 +919,7 @@
         function baixarTiposInspecao() {
             return new Promise((resolve, reject) => {
                 const endpoint = '/api/tipos-inspecao';
-                showAlert('🔍 Baixando tipos de inspeção...', 'success');
+                showDownloadAlert('🔍 Baixando tipos de inspeção...', 'info');
                 
                 console.log(`🌐 Acessando endpoint: ${endpoint}`);
                 
@@ -938,7 +980,7 @@
         function baixarInspecoesHistorico() {
             return new Promise((resolve, reject) => {
                 const endpoint = '/api/inspecoes-historico';
-                showAlert('📊 Baixando histórico de inspeções...', 'success');
+                showDownloadAlert('📊 Baixando histórico de inspeções...', 'info');
                 
                 console.log(`🌐 Acessando endpoint: ${endpoint}`);
                 
@@ -999,7 +1041,7 @@
         function baixarProtocolos() {
             return new Promise((resolve, reject) => {
                 const endpoint = '/api/protocolos';
-                showAlert('📄 Baixando protocolos...', 'success');
+                showDownloadAlert('📄 Baixando protocolos...', 'info');
                 
                 console.log(`🌐 Acessando endpoint: ${endpoint}`);
                 
@@ -1060,7 +1102,7 @@
         function baixarAfastamentos() {
             return new Promise((resolve, reject) => {
                 const endpoint = '/api/afastamentos';
-                showAlert('🏥 Baixando afastamentos...', 'success');
+                showDownloadAlert('🏥 Baixando afastamentos...', 'info');
                 
                 console.log(`🌐 Acessando endpoint: ${endpoint}`);
                 
@@ -1121,7 +1163,7 @@
         function baixarHistoricoRts() {
             return new Promise((resolve, reject) => {
                 const endpoint = '/api/rts-historico';
-                showAlert('📊 Baixando histórico de RTs...', 'success');
+                showDownloadAlert('📊 Baixando histórico de RTs...', 'info');
                 
                 console.log(`🌐 Acessando endpoint: ${endpoint}`);
                 
@@ -1220,7 +1262,7 @@
         function baixarDenuncias() {
             return new Promise((resolve, reject) => {
                 const endpoint = '/api/denuncias';
-                showAlert('🚨 Baixando denúncias...', 'success');
+                showDownloadAlert('🚨 Baixando denúncias...', 'info');
                 
                 console.log(`🌐 Acessando endpoint: ${endpoint}`);
                 
@@ -1281,7 +1323,7 @@
         function baixarOutrosProfissionais() {
             return new Promise((resolve, reject) => {
                 const endpoint = '/api/outros-profissionais';
-                showAlert('👨‍⚕️ Baixando outros profissionais...', 'success');
+                showDownloadAlert('👨‍⚕️ Baixando outros profissionais...', 'info');
                 
                 console.log(`🌐 Acessando endpoint: ${endpoint}`);
                 
@@ -1342,7 +1384,7 @@
         function baixarOutrosVinculos() {
             return new Promise((resolve, reject) => {
                 const endpoint = '/api/outros-vinculos';
-                showAlert('🔗 Baixando outros vínculos...', 'success');
+                showDownloadAlert('🔗 Baixando outros vínculos...', 'info');
                 
                 console.log(`🌐 Acessando endpoint: ${endpoint}`);
                 
@@ -1403,7 +1445,7 @@
         function baixarProcessosEticos() {
             return new Promise((resolve, reject) => {
                 const endpoint = '/api/processos-eticos';
-                showAlert('⚖️ Baixando processos éticos...', 'success');
+                showDownloadAlert('⚖️ Baixando processos éticos...', 'info');
                 
                 console.log(`🌐 Acessando endpoint: ${endpoint}`);
                 

@@ -129,6 +129,14 @@
             margin-bottom: 4px;
         }
 
+        .empresa-perfil.perfil-5 {
+            background: #f8d7da;
+            color: #721c24;
+            border: 2px solid #dc3545;
+            font-weight: 600;
+            box-shadow: 0 2px 8px rgba(220, 53, 69, 0.3);
+        }
+
         .empresa-inscricao {
             font-size: 18px;
             color: #7f8c8d;
@@ -304,7 +312,8 @@
         .inspecoes-card,
         .afastamentos-card,
         .protocolos-card,
-        .rts-historico-card {
+        .rts-historico-card,
+        .denuncias-card {
             background: white;
             border-radius: 12px;
             padding: 20px;
@@ -328,7 +337,8 @@
         .inspecoes-content,
         .afastamentos-content,
         .protocolos-content,
-        .rts-historico-content {
+        .rts-historico-content,
+        .denuncias-content {
             min-height: 0;
             display: flex;
             align-items: center;
@@ -772,6 +782,64 @@
             font-style: italic;
         }
 
+        .denuncias-list {
+            width: 100%;
+        }
+
+        .denuncias-list p {
+            margin-bottom: 15px;
+            color: #495057;
+            font-weight: 600;
+        }
+
+        .denuncia-item {
+            background: #f8f9fa;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 10px;
+            border-left: 4px solid #dc3545;
+        }
+
+        .denuncia-item.denuncia-ativa {
+            background: #fff5f5;
+            border-left: 4px solid #dc3545;
+            box-shadow: 0 2px 8px rgba(220, 53, 69, 0.2);
+            border: 1px solid #f5c6cb;
+        }
+
+        .denuncia-numero {
+            font-weight: 600;
+            color: #dc3545;
+            font-size: 16px;
+            margin-bottom: 8px;
+        }
+
+        .denuncia-detalhes {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+
+        .denuncia-detalhes span {
+            background: white;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            color: #6c757d;
+            border: 1px solid #e9ecef;
+        }
+
+        .denuncia-descricao {
+            margin-top: 8px;
+            padding: 8px;
+            background: #f8f9fa;
+            border-radius: 4px;
+            font-size: 12px;
+            color: #495057;
+            border-left: 3px solid #dc3545;
+            font-style: italic;
+        }
+
         .inspecao-info-adicional {
             margin-top: 8px;
         }
@@ -924,6 +992,9 @@
                 
                 // Carregar histórico de RTs da empresa
                 carregarRtsHistoricoEmpresa(empresa);
+                
+                // Carregar denúncias da empresa
+                carregarDenunciasEmpresa(empresa);
                 
             } catch (error) {
                 console.error('❌ Erro ao carregar detalhes da empresa:', error);
@@ -1198,7 +1269,7 @@
                     <div class="empresa-atividade">
                         ${empresa.atividades && empresa.atividades.length > 0 ? empresa.atividades[0].nomeatividade : 'Atividade não informada'}
                     </div>
-                    <div class="empresa-perfil">
+                    <div class="empresa-perfil ${empresa.perfil == 5 ? 'perfil-5' : ''}">
                         Perfil Empresa: ${empresa.perfil || 'Não informado'}
                     </div>
                     <div class="empresa-inscricao">
@@ -1347,6 +1418,16 @@
                         <p style="color: #6c757d; font-style: italic;">Histórico de RTs da empresa será exibido aqui</p>
                     </div>
                 </div>
+
+                <div class="denuncias-card">
+                    <h3 class="accordion-header" onclick="toggleDenuncias()">
+                        🚨 Denúncias Relacionadas
+                        <span class="accordion-icon">▼</span>
+                    </h3>
+                    <div class="denuncias-content accordion-content" id="denuncias-content">
+                        <p style="color: #6c757d; font-style: italic;">Denúncias relacionadas à empresa serão exibidas aqui</p>
+                    </div>
+                </div>
             `;
             
             container.innerHTML = detalhesHTML;
@@ -1463,6 +1544,24 @@
         // Função para controlar a sanfona do histórico de RTs
         function toggleRtsHistorico() {
             const content = document.getElementById('rts-historico-content');
+            const icon = content.previousElementSibling.querySelector('.accordion-icon');
+            
+            if (content.classList.contains('collapsed')) {
+                // Abrir
+                content.classList.remove('collapsed');
+                icon.textContent = '▼';
+                icon.style.transform = 'rotate(0deg)';
+            } else {
+                // Fechar
+                content.classList.add('collapsed');
+                icon.textContent = '▶';
+                icon.style.transform = 'rotate(0deg)';
+            }
+        }
+
+        // Função para controlar a sanfona das denúncias
+        function toggleDenuncias() {
+            const content = document.getElementById('denuncias-content');
             const icon = content.previousElementSibling.querySelector('.accordion-icon');
             
             if (content.classList.contains('collapsed')) {
@@ -2218,8 +2317,6 @@
                 data.forEach((rts, index) => {
                     html += `<div class="rts-historico-item">`;
                     html += `<div class="rts-historico-detalhes">`;
-                    if (rts.categoria) html += `<span>Categoria: ${rts.categoria}</span>`;
-                    if (rts.inspetoria) html += `<span>Inspetoria: ${rts.inspetoria}</span>`;
                     html += `</div>`;
                     
                     // Adicionar responsáveis técnicos se existirem
@@ -2261,6 +2358,87 @@
                             if (resp.observacoes) html += `<div style="margin-top: 6px;"><em>📝 ${resp.observacoes}</em></div>`;
                             html += `</div>`;
                         });
+                    }
+                    html += `</div>`;
+                });
+                
+                html += `</div>`;
+                cardContent.innerHTML = html;
+                
+            } else if (tipo === 'error') {
+                cardContent.innerHTML = `
+                    <div class="error-message">
+                        <p style="color: #dc3545; font-weight: 600;">❌ ${data}</p>
+                    </div>
+                `;
+            } else if (tipo === 'info') {
+                cardContent.innerHTML = `
+                    <div class="info-message">
+                        <p style="color: #6c757d; font-style: italic;">ℹ️ ${data}</p>
+                    </div>
+                `;
+            }
+        }
+
+        // Função para atualizar o card das denúncias
+        function atualizarCardDenuncias(data, tipo) {
+            const cardContent = document.getElementById('denuncias-content');
+            
+            if (tipo === 'success' && Array.isArray(data)) {
+                // Ordenar denúncias por data (mais novas primeiro)
+                const denunciasOrdenadas = data.sort((a, b) => {
+                    // Converter datas do formato brasileiro DD/MM/YYYY para ordenação
+                    const converterData = (dataStr) => {
+                        if (!dataStr || dataStr === 'N/A') return new Date('1900-01-01');
+                        
+                        // Se já é uma data válida, usar diretamente
+                        const data = new Date(dataStr);
+                        if (!isNaN(data.getTime())) return data;
+                        
+                        // Converter formato brasileiro DD/MM/YYYY HH:MM:SS
+                        const partes = dataStr.split(' ')[0].split('/');
+                        if (partes.length === 3) {
+                            const [dia, mes, ano] = partes;
+                            return new Date(ano, mes - 1, dia);
+                        }
+                        
+                        return new Date('1900-01-01');
+                    };
+                    
+                    const dataA = converterData(a.data);
+                    const dataB = converterData(b.data);
+                    return dataB - dataA; // Mais novas primeiro
+                });
+                
+                // Renderizar lista de denúncias
+                let html = `<div class="denuncias-list">`;
+                html += `<p><strong>Total de denúncias encontradas:</strong> ${denunciasOrdenadas.length}</p>`;
+                
+                denunciasOrdenadas.forEach((denuncia, index) => {
+                    // Verificar se a denúncia está ativa (retorno diferente de "Nao")
+                    const isAtiva = String(denuncia.retornar).toLowerCase() !== 'nao';
+                    const classeDestaque = isAtiva ? ' denuncia-ativa' : '';
+                    
+                    html += `<div class="denuncia-item${classeDestaque}">`;
+                    html += `<div class="denuncia-numero">🚨 Denúncia ${denuncia.numero}</div>`;
+                    html += `<div class="denuncia-detalhes">`;
+                    if (denuncia.dataFormatada) html += `<span>📅 Data: ${denuncia.dataFormatada}</span>`;
+                    if (denuncia.origem) html += `<span>📋 Origem: ${denuncia.origem}</span>`;
+                    if (denuncia.irregularidade) html += `<span>⚠️ Irregularidade: ${denuncia.irregularidade}</span>`;
+                    if (denuncia.status) html += `<span>📊 Status: ${denuncia.status}</span>`;
+                    if (denuncia.prioridade) html += `<span>🔴 Prioridade: ${denuncia.prioridade}</span>`;
+                    if (denuncia.retornar) html += `<span>🔄 Retorno: ${denuncia.retornar}</span>`;
+                    html += `</div>`;
+                    
+                    if (denuncia.descricao) {
+                        // Limpar formatação HTML e quebras de linha
+                        const descricaoLimpa = denuncia.descricao
+                            .replace(/<br\s*\/?>/gi, '\n')
+                            .replace(/<[^>]*>/g, '')
+                            .replace(/\r\n/g, '\n')
+                            .trim();
+                        
+                        html += `<div class="denuncia-descricao">📝 ${descricaoLimpa}</div>`;
                     }
                     html += `</div>`;
                 });
@@ -2373,8 +2551,6 @@
 
                 // Criar objeto padronizado para o histórico de RTs
                 const rtsPadronizado = {
-                    categoria: item.catpjantigo || item.categoria || item.tipo,
-                    inspetoria: item.inspjantigo || item.inspetoria || item.inspetor,
                     responsaveisTecnicos: item.resptec ? item.resptec.map(resp => ({
                         nome: resp.nomepf || resp.nome,
                         inscricao: resp.inscrpf || resp.inscricao,
@@ -2410,6 +2586,149 @@
                 rtsEmpresa.push(rtsPadronizado);
             } else {
                 console.log('❌ Item RTS não corresponde à empresa:', { itemInscrpj, empresaIdempresa });
+            }
+        }
+
+        // Função para carregar denúncias da empresa
+        function carregarDenunciasEmpresa(empresa) {
+            try {
+                const denunciasData = localStorage.getItem('denuncias');
+                
+                if (!denunciasData) {
+                    atualizarCardDenuncias('❌ Dados de denúncias não encontrados. Use "BAIXAR DENÚNCIAS" no dashboard primeiro.', 'error');
+                    return;
+                }
+
+                const denuncias = JSON.parse(denunciasData);
+                console.log('📊 Dados de denúncias carregados:', denuncias);
+
+                // Filtrar denúncias da empresa atual
+                const denunciasEmpresa = filtrarDenunciasPorEmpresa(denuncias, empresa);
+                
+                if (denunciasEmpresa.length > 0) {
+                    atualizarCardDenuncias(denunciasEmpresa, 'success');
+                } else {
+                    atualizarCardDenuncias('ℹ️ Nenhuma denúncia encontrada para esta empresa.', 'info');
+                }
+                
+            } catch (error) {
+                console.error('❌ Erro ao carregar denúncias da empresa:', error);
+                atualizarCardDenuncias('❌ Erro ao carregar denúncias da empresa', 'error');
+            }
+        }
+
+        // Função para filtrar denúncias por empresa
+        function filtrarDenunciasPorEmpresa(denuncias, empresa) {
+            const denunciasEmpresa = [];
+            
+            console.log('🔍 Filtrando denúncias para empresa:', empresa);
+            console.log('🔍 ID da empresa (idempresa):', empresa.idempresa);
+            
+            // Verificar se é um array ou objeto com chaves numéricas
+            if (Array.isArray(denuncias)) {
+                console.log('🔍 Total de registros de denúncias (array):', denuncias.length);
+                processarArrayDenuncias(denuncias, empresa, denunciasEmpresa);
+            } else if (typeof denuncias === 'object' && denuncias !== null) {
+                console.log('🔍 Processando objeto de denúncias com chaves numéricas');
+                
+                // Filtrar apenas as chaves numéricas (0, 1, 2, etc.) e ignorar 'msg'
+                const chavesNumericas = Object.keys(denuncias).filter(key => !isNaN(key) && key !== 'msg');
+                console.log('🔍 Chaves numéricas encontradas:', chavesNumericas);
+                console.log('🔍 Total de registros de denúncias:', chavesNumericas.length);
+                
+                chavesNumericas.forEach(key => {
+                    const item = denuncias[key];
+                    console.log(`🔍 Item denúncia ${key}:`, item);
+                    processarItemDenuncia(item, empresa, denunciasEmpresa);
+                });
+            }
+            
+            console.log('🔍 Total de denúncias encontradas para a empresa:', denunciasEmpresa.length);
+            
+            return denunciasEmpresa;
+        }
+
+        // Função para processar array de denúncias
+        function processarArrayDenuncias(denuncias, empresa, denunciasEmpresa) {
+            denuncias.forEach((item, index) => {
+                processarItemDenuncia(item, empresa, denunciasEmpresa);
+            });
+        }
+
+        // Função para processar item individual de denúncia
+        function processarItemDenuncia(item, empresa, denunciasEmpresa) {
+            console.log(`🔍 Processando denúncia:`, item);
+            
+            // Verificar se a denúncia está vinculada à empresa atual
+            // Campo 'idempresa' da tabela denúncias corresponde ao 'idempresa' da tabela empresa
+            const itemIdempresa = item.idempresa;
+            const empresaIdempresa = empresa.idempresa;
+
+            console.log('🔍 Comparando:', { itemIdempresa, empresaIdempresa });
+            console.log('🔍 Tipos:', { itemIdempresaType: typeof itemIdempresa, empresaIdempresaType: typeof empresaIdempresa });
+
+            // Comparar como string e como número
+            const matchString = String(itemIdempresa) === String(empresaIdempresa);
+            const matchNumber = Number(itemIdempresa) === Number(empresaIdempresa);
+
+            console.log('🔍 Match como string:', matchString);
+            console.log('🔍 Match como número:', matchNumber);
+
+            if (matchString || matchNumber) {
+                console.log('✅ Denúncia da empresa encontrada:', item);
+
+                // Criar objeto padronizado para a denúncia usando os campos reais
+                const denunciaPadronizada = {
+                    numero: item.iddenuncia || item.numdenantigo || 'N/A',
+                    data: item.data_hora_denuncia || 'N/A',
+                    origem: item.origem_denuncia || 'N/A',
+                    irregularidade: item.irregularidade || 'N/A',
+                    descricao: item.conteudo_denuncia || 'N/A',
+                    retornar: item.retornar || 'N/A',
+                    // Campos adicionais para exibição
+                    dataFormatada: item.data_hora_denuncia ? formatarDataHora(item.data_hora_denuncia) : 'N/A',
+                    prioridade: item.retornar === 'Sim' ? 'Alta' : 'Normal',
+                    status: item.retornar === 'Sim' ? 'Pendente de Retorno' : 'Em Análise'
+                };
+
+                denunciasEmpresa.push(denunciaPadronizada);
+            } else {
+                console.log('❌ Denúncia não corresponde à empresa:', { itemIdempresa, empresaIdempresa });
+            }
+        }
+
+        // Função para formatar data e hora da denúncia
+        function formatarDataHora(dataHoraString) {
+            try {
+                // Formato esperado: "04/05/2016 00:00:00"
+                if (!dataHoraString || dataHoraString === '00/00/0000 00:00:00') {
+                    return 'Data não informada';
+                }
+                
+                const partes = dataHoraString.split(' ');
+                const dataParte = partes[0]; // "04/05/2016"
+                const horaParte = partes[1]; // "00:00:00"
+                
+                const dataPartes = dataParte.split('/');
+                const dia = dataPartes[0];
+                const mes = dataPartes[1];
+                const ano = dataPartes[2];
+                
+                // Formatar data em português brasileiro
+                const dataFormatada = `${dia}/${mes}/${ano}`;
+                
+                // Se a hora for 00:00:00, mostrar apenas a data
+                if (horaParte === '00:00:00') {
+                    return dataFormatada;
+                } else {
+                    // Formatar hora (remover segundos se for 00)
+                    const horaFormatada = horaParte.substring(0, 5); // "00:00"
+                    return `${dataFormatada} às ${horaFormatada}`;
+                }
+                
+            } catch (error) {
+                console.error('❌ Erro ao formatar data/hora:', error);
+                return dataHoraString; // Retornar original se houver erro
             }
         }
 

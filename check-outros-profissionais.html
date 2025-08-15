@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Verificar Outros Profissionais</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .empresa-item {
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 6px;
+            padding: 15px;
+            margin-bottom: 15px;
+        }
+        .empresa-header {
+            font-weight: bold;
+            color: #495057;
+            margin-bottom: 10px;
+        }
+        .profissional-item {
+            background: white;
+            border: 1px solid #e9ecef;
+            border-radius: 4px;
+            padding: 10px;
+            margin: 5px 0;
+            margin-left: 20px;
+        }
+        .btn {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        .btn:hover {
+            background: #0056b3;
+        }
+        .info {
+            background: #d1ecf1;
+            border: 1px solid #bee5eb;
+            border-radius: 4px;
+            padding: 10px;
+            margin: 10px 0;
+            color: #0c5460;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔍 Verificar Outros Profissionais Vinculados</h1>
+        
+        <div class="info">
+            <strong>Instruções:</strong>
+            <ol>
+                <li>Abra o console do navegador (F12)</li>
+                <li>Execute o comando: <code>verificarOutrosProfissionais()</code></li>
+                <li>Veja os resultados abaixo</li>
+            </ol>
+        </div>
+
+        <button class="btn" onclick="verificarOutrosProfissionais()">🔍 Verificar Outros Profissionais</button>
+        <button class="btn" onclick="limparResultados()">🗑️ Limpar Resultados</button>
+        
+        <div id="resultados"></div>
+    </div>
+
+    <script>
+        function verificarOutrosProfissionais() {
+            const resultadosDiv = document.getElementById('resultados');
+            resultadosDiv.innerHTML = '<h3>🔍 Analisando dados...</h3>';
+            
+            try {
+                // Verificar dados dos outros vínculos
+                const outrosVinculos = localStorage.getItem('outros_vinculos');
+                
+                if (!outrosVinculos) {
+                    resultadosDiv.innerHTML = '<div class="info">❌ Nenhum dado de outros vínculos encontrado no localStorage</div>';
+                    return;
+                }
+
+                const dados = JSON.parse(outrosVinculos);
+                console.log('📊 Dados dos outros vínculos:', dados);
+                
+                let html = '<h3>🏢 Empresas com Outros Profissionais</h3>';
+                
+                // Verificar se é um array ou objeto
+                if (Array.isArray(dados)) {
+                    html += '<p>📋 Estrutura: Array</p>';
+                    html += '<p>📊 Total de registros: ' + dados.length + '</p>';
+                    
+                    dados.forEach((item, index) => {
+                        if (item.outrovin && Object.keys(item.outrovin).length > 0) {
+                            html += criarHTMLEmpresa(item, index);
+                        }
+                    });
+                    
+                } else if (typeof dados === 'object' && dados !== null) {
+                    html += '<p>📋 Estrutura: Objeto</p>';
+                    
+                    // Filtrar apenas as chaves numéricas (0, 1, 2, etc.) e ignorar 'msg'
+                    const chavesNumericas = Object.keys(dados).filter(key => !isNaN(key) && key !== 'msg');
+                    html += '<p>📊 Total de registros: ' + chavesNumericas.length + '</p>';
+                    
+                    let empresasComProfissionais = 0;
+                    
+                    chavesNumericas.forEach(key => {
+                        const item = dados[key];
+                        if (item.outrovin && Object.keys(item.outrovin).length > 0) {
+                            html += criarHTMLEmpresa(item, key);
+                            empresasComProfissionais++;
+                        }
+                    });
+                    
+                    if (empresasComProfissionais === 0) {
+                        html += '<div class="info">ℹ️ Nenhuma empresa com outros profissionais encontrada</div>';
+                    }
+                    
+                } else {
+                    html += '<div class="info">⚠️ Estrutura de dados não reconhecida</div>';
+                }
+                
+                resultadosDiv.innerHTML = html;
+                
+            } catch (error) {
+                console.error('❌ Erro ao verificar outros profissionais:', error);
+                resultadosDiv.innerHTML = '<div class="info">❌ Erro ao processar dados: ' + error.message + '</div>';
+            }
+        }
+
+        function criarHTMLEmpresa(item, key) {
+            let html = '<div class="empresa-item">';
+            html += '<div class="empresa-header">';
+            html += '🏢 Empresa ' + key;
+            html += '</div>';
+            html += '<p><strong>ID:</strong> ' + (item.inscrpj || 'N/A') + '</p>';
+            html += '<p><strong>Meta:</strong> ' + (item.idmeta || 'N/A') + '</p>';
+            html += '<p><strong>Total de Profissionais:</strong> ' + Object.keys(item.outrovin).length + '</p>';
+            
+            html += '<h4>👥 Profissionais:</h4>';
+            Object.keys(item.outrovin).forEach(profKey => {
+                const prof = item.outrovin[profKey];
+                html += '<div class="profissional-item">';
+                html += '<p><strong>Nome:</strong> ' + (prof.nomepf || 'N/A') + '</p>';
+                html += '<p><strong>Cargo:</strong> ' + (prof.cargo || 'N/A') + '</p>';
+                html += '<p><strong>Registro:</strong> ' + (prof.inscrpf || 'N/A') + '</p>';
+                html += '<p><strong>Email:</strong> ' + (prof.emailpf || 'N/A') + '</p>';
+                html += '<p><strong>CPF:</strong> ' + (prof.cpf || 'N/A') + '</p>';
+                html += '<p><strong>Data Início:</strong> ' + (prof.datainicio || 'N/A') + '</p>';
+                html += '<p><strong>Data Fim:</strong> ' + (prof.datafim || 'N/A') + '</p>';
+                html += '</div>';
+            });
+            
+            html += '</div>';
+            return html;
+        }
+
+        function limparResultados() {
+            document.getElementById('resultados').innerHTML = '';
+        }
+
+        // Executar automaticamente ao carregar a página
+        window.addEventListener('load', function() {
+            console.log('🚀 Página carregada. Execute verificarOutrosProfissionais() para ver os dados.');
+        });
+    </script>
+</body>
+</html>
+
