@@ -1504,58 +1504,121 @@
         }
 
         // Funções de Visualização (dados locais)
-        function visualizarConfigTermo() {
-            const configData = localStorage.getItem('config_termo');
+        
+        // Função genérica para visualizar dados
+        function visualizarDadosGenerica(dadosKey, timestampKey, titulo, icone) {
+            const dadosString = localStorage.getItem(dadosKey);
             
-            if (configData) {
+            if (dadosString) {
                 try {
-                    const config = JSON.parse(configData);
-                    const timestamp = localStorage.getItem('config_termo_timestamp');
-                    const data = new Date(parseInt(timestamp)).toLocaleString('pt-BR');
+                    const dados = JSON.parse(dadosString);
+                    const timestamp = localStorage.getItem(timestampKey);
+                    const data = timestamp ? new Date(parseInt(timestamp)).toLocaleString('pt-BR') : 'Data não disponível';
+                    
+                    console.log(`${icone} Dados de ${titulo.toLowerCase()} carregados:`, dados);
+                    console.log(`${icone} Tipo dos dados:`, typeof dados);
                     
                     let html = `
                         <div style="background: white; padding: 20px; border-radius: 8px; margin: 20px; box-shadow: 0 2px 10px rgba(0,0,0,0.1);">
-                            <h3>📋 Configuração do Termo</h3>
+                            <h3>${icone} ${titulo}</h3>
                             <p><strong>Baixado em:</strong> ${data}</p>
                     `;
                     
+                    // Função auxiliar para renderizar valores
+                    function renderizarValor(valor, nivel = 0) {
+                        if (valor === null || valor === undefined) return 'N/A';
+                        if (typeof valor === 'string' || typeof valor === 'number' || typeof valor === 'boolean') {
+                            return String(valor);
+                        }
+                        if (Array.isArray(valor)) {
+                            return `Array com ${valor.length} itens`;
+                        }
+                        if (typeof valor === 'object') {
+                            const keys = Object.keys(valor);
+                            return `Objeto com ${keys.length} propriedades: [${keys.slice(0, 3).join(', ')}${keys.length > 3 ? '...' : ''}]`;
+                        }
+                        return String(valor);
+                    }
+                    
                     // Verificar se é um array ou objeto e exibir adequadamente
-                    if (Array.isArray(config)) {
-                        html += `<p><strong>Total de campos:</strong> ${config.length}</p>`;
+                    if (Array.isArray(dados)) {
+                        html += `<p><strong>Total de registros:</strong> ${dados.length}</p>`;
                         
-                        // Mostrar apenas os dados principais, sem JSON completo
-                        if (config.length > 0) {
-                            html += `<p><strong>Primeiros campos:</strong></p>`;
-                            config.slice(0, 5).forEach((campo, index) => {
+                        if (dados.length > 0) {
+                            html += `<div style="max-height: 400px; overflow-y: auto;">`;
+                            dados.slice(0, 10).forEach((item, index) => {
                                 html += `<div style="background: #f8f9fa; padding: 12px; margin: 8px 0; border-radius: 6px; border-left: 4px solid #5abaa3;">`;
-                                if (typeof campo === 'object') {
-                                    Object.entries(campo).forEach(([chave, valor]) => {
-                                        if (valor && valor !== 'null' && valor !== '') {
-                                            html += `<strong>${chave}:</strong> ${valor}<br>`;
-                                        }
+                                html += `<strong>Registro ${index + 1}:</strong><br>`;
+                                
+                                if (typeof item === 'object' && item !== null) {
+                                    Object.entries(item).slice(0, 5).forEach(([chave, valor]) => {
+                                        html += `<span style="color: #666; margin-left: 10px;"><strong>${chave}:</strong> ${renderizarValor(valor)}</span><br>`;
                                     });
+                                    
+                                    const totalKeys = Object.keys(item).length;
+                                    if (totalKeys > 5) {
+                                        html += `<span style="color: #999; margin-left: 10px; font-style: italic;">... e mais ${totalKeys - 5} campos</span><br>`;
+                                    }
                                 } else {
-                                    html += `<strong>Campo ${index + 1}:</strong> ${campo}`;
+                                    html += `<span style="margin-left: 10px;">${renderizarValor(item)}</span><br>`;
                                 }
                                 html += `</div>`;
                             });
+                            html += `</div>`;
                             
-                            if (config.length > 5) {
-                                html += `<p><em>... e mais ${config.length - 5} campos</em></p>`;
+                            if (dados.length > 10) {
+                                html += `<p style="color: #666; font-style: italic;">... e mais ${dados.length - 10} registros</p>`;
                             }
                         }
-                    } else if (typeof config === 'object') {
-                        // Para objetos, mostrar campos principais
-                        html += `<p><strong>Campos disponíveis:</strong></p>`;
-                        Object.entries(config).forEach(([chave, valor]) => {
-                            if (valor && valor !== 'null' && valor !== '') {
-                                html += `<div style="background: #f8f9fa; padding: 8px; margin: 3px 0; border-radius: 4px;">`;
-                                html += `<strong>${chave}:</strong> ${valor}`;
-                                html += `</div>`;
+                    } else if (typeof dados === 'object' && dados !== null) {
+                        // Para objetos, verificar se tem chaves numéricas (como denúncias)
+                        const chavesNumericas = Object.keys(dados).filter(key => !isNaN(key) && key !== 'msg');
+                        
+                        if (chavesNumericas.length > 0) {
+                            // Objeto com chaves numéricas (estrutura similar às denúncias)
+                            html += `<p><strong>Total de registros:</strong> ${chavesNumericas.length}</p>`;
+                            if (dados.msg) {
+                                html += `<p><strong>Status:</strong> ${dados.msg}</p>`;
                             }
-                        });
+                            
+                            html += `<div style="max-height: 400px; overflow-y: auto;">`;
+                            chavesNumericas.slice(0, 10).forEach(key => {
+                                const item = dados[key];
+                                html += `<div style="background: #f8f9fa; padding: 12px; margin: 8px 0; border-radius: 6px; border-left: 4px solid #5abaa3;">`;
+                                html += `<strong>Registro ${key}:</strong><br>`;
+                                
+                                if (typeof item === 'object' && item !== null) {
+                                    Object.entries(item).slice(0, 5).forEach(([chave, valor]) => {
+                                        html += `<span style="color: #666; margin-left: 10px;"><strong>${chave}:</strong> ${renderizarValor(valor)}</span><br>`;
+                                    });
+                                    
+                                    const totalKeys = Object.keys(item).length;
+                                    if (totalKeys > 5) {
+                                        html += `<span style="color: #999; margin-left: 10px; font-style: italic;">... e mais ${totalKeys - 5} campos</span><br>`;
+                                    }
+                                } else {
+                                    html += `<span style="margin-left: 10px;">${renderizarValor(item)}</span><br>`;
+                                }
+                                html += `</div>`;
+                            });
+                            html += `</div>`;
+                            
+                            if (chavesNumericas.length > 10) {
+                                html += `<p style="color: #666; font-style: italic;">... e mais ${chavesNumericas.length - 10} registros</p>`;
+                            }
+                        } else {
+                            // Objeto simples
+                            html += `<p><strong>Propriedades disponíveis:</strong></p>`;
+                            html += `<div style="max-height: 400px; overflow-y: auto;">`;
+                            Object.entries(dados).forEach(([chave, valor]) => {
+                                html += `<div style="background: #f8f9fa; padding: 8px; margin: 3px 0; border-radius: 4px;">`;
+                                html += `<strong>${chave}:</strong> ${renderizarValor(valor)}`;
+                                html += `</div>`;
+                            });
+                            html += `</div>`;
+                        }
                     } else {
-                        html += `<p><strong>Valor:</strong> ${config}</p>`;
+                        html += `<p><strong>Valor:</strong> ${renderizarValor(dados)}</p>`;
                     }
                     
                     html += `
@@ -1567,85 +1630,22 @@
                     </div>
                     `;
                     
-                    showAlert('📋 Exibindo configuração do termo', 'success');
+                    showAlert(`${icone} Exibindo ${titulo.toLowerCase()}`, 'success');
                     document.getElementById('content').innerHTML = html;
                 } catch (error) {
-                    console.error('❌ Erro ao carregar configuração:', error);
-                    showAlert('❌ Erro ao carregar configuração', 'error');
+                    console.error(`❌ Erro ao carregar ${titulo.toLowerCase()}:`, error);
+                    showAlert(`❌ Erro ao carregar ${titulo.toLowerCase()}: ` + error.message, 'error');
                 }
             } else {
-                showAlert('❌ Nenhuma configuração encontrada. Baixe primeiro!', 'error');
+                showAlert(`❌ Nenhum dado de ${titulo.toLowerCase()} encontrado. Baixe primeiro!`, 'error');
             }
+        }
+        function visualizarConfigTermo() {
+            visualizarDadosGenerica('config_termo', 'config_termo_timestamp', 'Configuração do Termo', '📋');
         }
 
         function visualizarRtsHistorico() {
-            const rtsData = localStorage.getItem('rts_historico');
-            
-            if (rtsData) {
-                try {
-                    const historico = JSON.parse(rtsData);
-                    const timestamp = localStorage.getItem('rts_historico_timestamp');
-                    const data = new Date(parseInt(timestamp)).toLocaleString('pt-BR');
-                    
-                    let html = `
-                        <div style="background: white; padding: 20px; border-radius: 8px; margin: 20px; box-shadow: 0 2px 10px rgba(0,0,0,0.1);">
-                            <h3>👥 Histórico de RTS</h3>
-                            <p><strong>Baixado em:</strong> ${data}</p>
-                    `;
-                    
-                    // Verificar se é um array ou objeto e exibir adequadamente
-                    if (Array.isArray(historico)) {
-                        html += `<p><strong>Total de registros:</strong> ${historico.length}</p>`;
-                        
-                        // Mostrar apenas os dados principais, sem JSON completo
-                        if (historico.length > 0) {
-                            html += `<p><strong>Primeiros registros:</strong></p>`;
-                            historico.slice(0, 5).forEach((item, index) => {
-                                html += `<div style="background: #f8f9fa; padding: 12px; margin: 8px 0; border-radius: 6px; border-left: 4px solid #5abaa3;">`;
-                                Object.entries(item).forEach(([chave, valor]) => {
-                                    if (valor && valor !== 'null' && valor !== '') {
-                                        html += `<strong>${chave}:</strong> ${valor}<br>`;
-                                    }
-                                });
-                                html += `</div>`;
-                            });
-                            
-                            if (historico.length > 5) {
-                                html += `<p><em>... e mais ${historico.length - 5} registros</em></p>`;
-                            }
-                        }
-                    } else if (typeof historico === 'object') {
-                        // Para objetos, mostrar campos principais
-                        html += `<p><strong>Campos disponíveis:</strong></p>`;
-                        Object.entries(historico).forEach(([chave, valor]) => {
-                            if (valor && valor !== 'null' && valor !== '') {
-                                html += `<div style="background: #f8f9fa; padding: 8px; margin: 3px 0; border-radius: 4px;">`;
-                                html += `<strong>${chave}:</strong> ${valor}`;
-                                html += `</div>`;
-                            }
-                        });
-                    } else {
-                        html += `<p><strong>Valor:</strong> ${historico}</p>`;
-                    }
-                    
-                    html += `
-                        <div style="margin-top: 20px; text-align: center;">
-                            <button onclick="limparConteudo()" style="background: #e9e674; color: #26397f; border: none; padding: 10px 20px; border-radius: 6px; cursor: pointer; font-weight: bold;">
-                                🗑️ Limpar Visualização
-                            </button>
-                        </div>
-                    </div>
-                    `;
-                    
-                    showAlert('👥 Exibindo histórico de RTS', 'success');
-                    document.getElementById('content').innerHTML = html;
-                } catch (error) {
-                    console.error('❌ Erro ao carregar histórico RTS:', error);
-                    showAlert('❌ Erro ao carregar histórico RTS', 'error');
-                }
-            } else {
-                showAlert('❌ Nenhum histórico RTS encontrado. Baixe primeiro!', 'error');
-            }
+            visualizarDadosGenerica('rts_historico', 'rts_historico_timestamp', 'Histórico de RTS', '👥');
         }
 
         function visualizarTiposInspecao() {
